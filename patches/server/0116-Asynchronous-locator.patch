@@ -61,7 +61,7 @@ index 39f5deea47d8f573c3cfec5df431216ee806c32c..51994f272737f8754aac41dc0c55f43f
              .getGenerator()
              .findNearestMapStructure(serverLevel, holderSet, blockPos, 100, false);
 diff --git a/src/main/java/net/minecraft/world/entity/animal/Dolphin.java b/src/main/java/net/minecraft/world/entity/animal/Dolphin.java
-index ef0124ceb7cafd58c01c7f0b4b542f38a383ab88..3646810c21641559ee81084da8ac290c720bd411 100644
+index ef0124ceb7cafd58c01c7f0b4b542f38a383ab88..061d020c08b722b92187ba9042ab4084ecd72b06 100644
 --- a/src/main/java/net/minecraft/world/entity/animal/Dolphin.java
 +++ b/src/main/java/net/minecraft/world/entity/animal/Dolphin.java
 @@ -466,6 +466,8 @@ public class Dolphin extends WaterAnimal {
@@ -69,7 +69,7 @@ index ef0124ceb7cafd58c01c7f0b4b542f38a383ab88..3646810c21641559ee81084da8ac290c
          private final Dolphin dolphin;
          private boolean stuck;
 +        @Nullable
-+        private org.dreeam.leaf.async.locate.AsyncLocator.LocateTask locateTask;
++        private org.dreeam.leaf.async.locate.AsyncLocator.LocateTask<?> asyncLocator$locateTask;
  
          DolphinSwimToTreasureGoal(Dolphin dolphin) {
              this.dolphin = dolphin;
@@ -78,21 +78,22 @@ index ef0124ceb7cafd58c01c7f0b4b542f38a383ab88..3646810c21641559ee81084da8ac290c
          @Override
          public boolean canContinueToUse() {
 +            // Leaf start - Async locator
-+            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.locateTask != null) {
++            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.asyncLocator$locateTask != null) {
 +                return true;
 +            }
 +            // Leaf end - Async locator
              BlockPos blockposition = this.dolphin.getTreasurePos();
  
              return !BlockPos.containing((double) blockposition.getX(), this.dolphin.getY(), (double) blockposition.getZ()).closerToCenterThan(this.dolphin.position(), 4.0D) && !this.stuck && this.dolphin.getAirSupply() >= 100;
-@@ -498,6 +505,20 @@ public class Dolphin extends WaterAnimal {
+@@ -498,6 +505,21 @@ public class Dolphin extends WaterAnimal {
                  this.stuck = false;
                  this.dolphin.getNavigation().stop();
                  BlockPos blockposition = this.dolphin.blockPosition();
 +                // Leaf start - Async locator
 +                if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled) {
-+                    locateTask = org.dreeam.leaf.async.locate.AsyncLocator.locate(worldserver, StructureTags.DOLPHIN_LOCATED, blockposition, 50, false)
++                    asyncLocator$locateTask = org.dreeam.leaf.async.locate.AsyncLocator.locate(worldserver, StructureTags.DOLPHIN_LOCATED, blockposition, 50, false)
 +                            .thenOnServerThread(pos -> {
++                                asyncLocator$locateTask = null;
 +                                if (pos != null) {
 +                                    this.dolphin.setTreasurePos(pos);
 +                                    worldserver.broadcastEntityEvent(this.dolphin, (byte) 38);
@@ -106,25 +107,25 @@ index ef0124ceb7cafd58c01c7f0b4b542f38a383ab88..3646810c21641559ee81084da8ac290c
                  BlockPos blockposition1 = worldserver.findNearestMapStructure(StructureTags.DOLPHIN_LOCATED, blockposition, 50, false);
  
                  if (blockposition1 != null) {
-@@ -511,6 +532,12 @@ public class Dolphin extends WaterAnimal {
+@@ -511,6 +533,12 @@ public class Dolphin extends WaterAnimal {
  
          @Override
          public void stop() {
 +            // Leaf start - Async locator
-+            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.locateTask != null) {
-+                this.locateTask.cancel();
-+                this.locateTask = null;
++            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.asyncLocator$locateTask != null) {
++                this.asyncLocator$locateTask.cancel();
++                this.asyncLocator$locateTask = null;
 +            }
 +            // Leaf end - Async locator
              BlockPos blockposition = this.dolphin.getTreasurePos();
  
              if (BlockPos.containing((double) blockposition.getX(), this.dolphin.getY(), (double) blockposition.getZ()).closerToCenterThan(this.dolphin.position(), 4.0D) || this.stuck) {
-@@ -521,6 +548,11 @@ public class Dolphin extends WaterAnimal {
+@@ -521,6 +549,11 @@ public class Dolphin extends WaterAnimal {
  
          @Override
          public void tick() {
 +            // Leaf start - Async locator
-+            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.locateTask != null) {
++            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.asyncLocator$locateTask != null) {
 +                return;
 +            }
 +            // Leaf end - Async locator
