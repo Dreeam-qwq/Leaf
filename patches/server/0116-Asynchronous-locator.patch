@@ -157,7 +157,7 @@ index fca3786d0a3f99a3e61e7a4b2251361276eff9d7..cb4ff1e98418c651ef21f04f3c74cac7
          double d0 = this.getX() + vec3d.x;
          double d1 = this.getY() + vec3d.y;
 diff --git a/src/main/java/net/minecraft/world/item/EnderEyeItem.java b/src/main/java/net/minecraft/world/item/EnderEyeItem.java
-index d8ce44a180f848f4c9c04967470c4359af979b2f..2a6ec59672bafe885e6d09ed75bb315f2d33078d 100644
+index d8ce44a180f848f4c9c04967470c4359af979b2f..90abb83a6baa60bbcbedc7d818c3bc9f4317f04f 100644
 --- a/src/main/java/net/minecraft/world/item/EnderEyeItem.java
 +++ b/src/main/java/net/minecraft/world/item/EnderEyeItem.java
 @@ -113,20 +113,54 @@ public class EnderEyeItem extends Item {
@@ -180,6 +180,7 @@ index d8ce44a180f848f4c9c04967470c4359af979b2f..2a6ec59672bafe885e6d09ed75bb315f
 +                    // Leaf start - Async locator
 +                    final boolean isAsyncLocatorEnabled = org.dreeam.leaf.config.modules.async.AsyncLocator.enabled;
 +                    if (isAsyncLocatorEnabled) {
++                        entityendersignal.asyncLocator$locateTaskOngoing = true;
 +                        org.dreeam.leaf.async.locate.AsyncLocator.locate(
 +                                worldserver,
 +                                StructureTags.EYE_OF_ENDER_LOCATED,
@@ -197,7 +198,6 @@ index d8ce44a180f848f4c9c04967470c4359af979b2f..2a6ec59672bafe885e6d09ed75bb315f
 +                                entityendersignal.life = Integer.MAX_VALUE - 100;
 +                            }
 +                        });
-+                        entityendersignal.asyncLocator$locateTaskOngoing = true;
 +                    }
 +                    // Leaf end - Async locator
                      entityendersignal.setItem(itemstack);
