@@ -40,7 +40,7 @@ index e42677bb004201efe1702779a78cc8d0ca05e80f..6676be8304e9415099ed423d3315180c
          }
          // Leaves start - skip photographer
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 6985da233e41a62bea04277260f81b3ba200a415..965c147a5d9c300be19418d56736e5719dd10ad4 100644
+index 6985da233e41a62bea04277260f81b3ba200a415..58e79417e3722ce73cbbc1f9c74cbc73178f762d 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -234,6 +234,15 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -106,20 +106,22 @@ index 6985da233e41a62bea04277260f81b3ba200a415..965c147a5d9c300be19418d56736e571
  
          // Paper start - optimise entity tracker
          private long lastChunkUpdate = -1L;
-@@ -1182,6 +1215,37 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1181,7 +1214,39 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+             this.lastTrackedChunk = chunk;
  
              final ServerPlayer[] playersRaw = players.getRawDataUnchecked();
- 
++            final int playersLen = players.size(); // Ensure length won't change in the future tasks
++
 +            // Leaf start - Multithreaded tracker
 +            if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled && org.dreeam.leaf.config.modules.async.MultithreadedTracker.compatModeEnabled) {
 +                final boolean isServerPlayer = this.entity instanceof ServerPlayer;
 +                final boolean isRealPlayer = isServerPlayer && ((ca.spottedleaf.moonrise.patches.chunk_system.player.ChunkSystemServerPlayer) this.entity).moonrise$isRealPlayer();
 +                Runnable updatePlayerTasks = () -> {
-+                    for (int i = 0, len = players.size(); i < len; ++i) {
++                    for (int i = 0; i < playersLen; ++i) {
 +                        final ServerPlayer player = playersRaw[i];
 +                        this.updatePlayer(player);
 +                    }
-+
+ 
 +                    if (lastChunkUpdate != currChunkUpdate || lastTrackedChunk != chunk) {
 +                        // need to purge any players possible not in the chunk list
 +                        for (final ServerPlayerConnection conn : new java.util.ArrayList<>(this.seenBy)) {
@@ -144,7 +146,7 @@ index 6985da233e41a62bea04277260f81b3ba200a415..965c147a5d9c300be19418d56736e571
              for (int i = 0, len = players.size(); i < len; ++i) {
                  final ServerPlayer player = playersRaw[i];
                  this.updatePlayer(player);
-@@ -1196,6 +1260,8 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1196,6 +1261,8 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
                      }
                  }
              }
@@ -153,7 +155,7 @@ index 6985da233e41a62bea04277260f81b3ba200a415..965c147a5d9c300be19418d56736e571
          }
  
          @Override
-@@ -1250,14 +1316,11 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1250,14 +1317,11 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          }
  
          public void broadcast(Packet<?> packet) {
@@ -171,7 +173,7 @@ index 6985da233e41a62bea04277260f81b3ba200a415..965c147a5d9c300be19418d56736e571
          }
  
          public void broadcastAndSend(Packet<?> packet) {
-@@ -1269,18 +1332,15 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1269,18 +1333,15 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          }
  
          public void broadcastRemoved() {
@@ -194,7 +196,7 @@ index 6985da233e41a62bea04277260f81b3ba200a415..965c147a5d9c300be19418d56736e571
              if (this.seenBy.remove(player.connection)) {
                  this.serverEntity.removePairing(player);
              }
-@@ -1288,8 +1348,9 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1288,8 +1349,9 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          }
  
          public void updatePlayer(ServerPlayer player) {
