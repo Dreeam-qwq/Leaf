@@ -156,10 +156,10 @@ index fca3786d0a3f99a3e61e7a4b2251361276eff9d7..cb4ff1e98418c651ef21f04f3c74cac7
          double d0 = this.getX() + vec3d.x;
          double d1 = this.getY() + vec3d.y;
 diff --git a/src/main/java/net/minecraft/world/item/EnderEyeItem.java b/src/main/java/net/minecraft/world/item/EnderEyeItem.java
-index d8ce44a180f848f4c9c04967470c4359af979b2f..500c4a86500dd193d9b4f0b33c1cd53e42874876 100644
+index d8ce44a180f848f4c9c04967470c4359af979b2f..2a6ec59672bafe885e6d09ed75bb315f2d33078d 100644
 --- a/src/main/java/net/minecraft/world/item/EnderEyeItem.java
 +++ b/src/main/java/net/minecraft/world/item/EnderEyeItem.java
-@@ -113,20 +113,53 @@ public class EnderEyeItem extends Item {
+@@ -113,20 +113,54 @@ public class EnderEyeItem extends Item {
              user.startUsingItem(hand);
              if (world instanceof ServerLevel) {
                  ServerLevel worldserver = (ServerLevel) world;
@@ -175,7 +175,7 @@ index d8ce44a180f848f4c9c04967470c4359af979b2f..500c4a86500dd193d9b4f0b33c1cd53e
  
                  if (blockposition != null) {
                      EyeOfEnder entityendersignal = new EyeOfEnder(world, user.getX(), user.getY(0.5D), user.getZ());
--
+ 
 +                    // Leaf start - Async locator
 +                    final boolean isAsyncLocatorEnabled = org.dreeam.leaf.config.modules.async.AsyncLocator.enabled;
 +                    if (isAsyncLocatorEnabled) {
@@ -217,7 +217,7 @@ index d8ce44a180f848f4c9c04967470c4359af979b2f..500c4a86500dd193d9b4f0b33c1cd53e
                          ServerPlayer entityplayer = (ServerPlayer) user;
  
                          CriteriaTriggers.USED_ENDER_EYE.trigger(entityplayer, blockposition);
-@@ -136,7 +169,11 @@ public class EnderEyeItem extends Item {
+@@ -136,7 +170,11 @@ public class EnderEyeItem extends Item {
  
                      world.playSound((Player) null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, f);
                      itemstack.consume(1, user);
