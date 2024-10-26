@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Sat, 26 Oct 2024 15:00:21 +0800
+Subject: [PATCH] Use parallelQuickSort in NearestLivingEntitySensor
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/src/main/java/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
+index 5a059e1ec232d82e8e891ae78fea962bec2f878e..f6cdabf05b034fab5f72d098017bf1115e9ffb57 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
++++ b/src/main/java/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
+@@ -16,10 +16,16 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
+     protected void doTick(ServerLevel world, T entity) {
+         AABB aABB = entity.getBoundingBox().inflate((double)this.radiusXZ(), (double)this.radiusY(), (double)this.radiusXZ());
+         List<LivingEntity> list = world.getEntitiesOfClass(LivingEntity.class, aABB, e -> e != entity && e.isAlive());
+-        list.sort(Comparator.comparingDouble(entity::distanceToSqr));
++        // Leaf start - Use parallelQuickSort in NearestLivingEntitySensor
++        LivingEntity[] sorted = list.toArray(new LivingEntity[]{});
++        it.unimi.dsi.fastutil.objects.ObjectArrays.parallelQuickSort(sorted, Comparator.comparingDouble(entity::distanceToSqr));
++        List<LivingEntity> sortedList = java.util.Arrays.asList(sorted);
++        // Leaf end - Use parallelQuickSort in NearestLivingEntitySensor
+         Brain<?> brain = entity.getBrain();
+-        brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, list);
+-        brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(entity, list));
++        // Leaf start - Use parallelQuickSort in NearestLivingEntitySensor
++        brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, sortedList);
++        brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(entity, sortedList));
++        // Leaf end - Use parallelQuickSort in NearestLivingEntitySensor
+     }
+ 
+     protected int radiusXZ() {
