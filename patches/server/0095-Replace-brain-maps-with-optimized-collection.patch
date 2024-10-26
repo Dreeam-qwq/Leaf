@@ -5,7 +5,7 @@ Subject: [PATCH] Replace brain maps with optimized collection
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/ai/Brain.java b/src/main/java/net/minecraft/world/entity/ai/Brain.java
-index 88ba505fc5ca084317aaf6be402472ccd42413d8..481cdef8550129983dba2532225b9798fb98c88f 100644
+index 88ba505fc5ca084317aaf6be402472ccd42413d8..65bd8c2cccd0a4a68984ea8ff4cd3cf365330630 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/Brain.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/Brain.java
 @@ -45,14 +45,18 @@ public class Brain<E extends LivingEntity> {
@@ -14,12 +14,11 @@ index 88ba505fc5ca084317aaf6be402472ccd42413d8..481cdef8550129983dba2532225b9798
      private static final int SCHEDULE_UPDATE_DELAY = 20;
 -    private final Map<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> memories = Maps.newHashMap();
 -    private final Map<SensorType<? extends Sensor<? super E>>, Sensor<? super E>> sensors = Maps.newLinkedHashMap();
--    private final Map<Integer, Map<Activity, Set<BehaviorControl<? super E>>>> availableBehaviorsByPriority = Maps.newTreeMap();
 +    // Leaf start - Replace brain maps with optimized collection
 +    private final Map<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> memories = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
 +    private final Map<SensorType<? extends Sensor<? super E>>, Sensor<? super E>> sensors = new it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap<>();
-+    private final Map<Integer, Map<Activity, Set<BehaviorControl<? super E>>>> availableBehaviorsByPriority = new it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap<>();
 +    // Leaf end - Replace brain maps with optimized collection
+     private final Map<Integer, Map<Activity, Set<BehaviorControl<? super E>>>> availableBehaviorsByPriority = Maps.newTreeMap();
      private Schedule schedule = Schedule.EMPTY;
 -    private final Map<Activity, Set<Pair<MemoryModuleType<?>, MemoryStatus>>> activityRequirements = Maps.newHashMap();
 -    private final Map<Activity, Set<MemoryModuleType<?>>> activityMemoriesToEraseWhenStopped = Maps.newHashMap();
