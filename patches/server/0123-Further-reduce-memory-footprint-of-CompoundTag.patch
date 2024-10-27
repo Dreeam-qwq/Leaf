@@ -1,0 +1,102 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Sat, 26 Oct 2024 22:38:30 +0800
+Subject: [PATCH] Further reduce memory footprint of CompoundTag
+
+StringCanonizingOpenHashMap was taken from ModernFix
+
+diff --git a/src/main/java/net/minecraft/nbt/CompoundTag.java b/src/main/java/net/minecraft/nbt/CompoundTag.java
+index ea48637234fdb1e5f54342590def30e11b6a5df0..956711f832a1c0a32739a1c4efab47dd74e42f0a 100644
+--- a/src/main/java/net/minecraft/nbt/CompoundTag.java
++++ b/src/main/java/net/minecraft/nbt/CompoundTag.java
+@@ -49,7 +49,7 @@ public class CompoundTag implements Tag {
+ 
+         private static CompoundTag loadCompound(DataInput input, NbtAccounter tracker) throws IOException {
+             tracker.accountBytes(48L);
+-            it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<String, Tag> map = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(8, 0.8f); // Paper - Reduce memory footprint of CompoundTag
++            it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<String, Tag> map = new org.dreeam.leaf.util.map.StringCanonizingOpenHashMap<>(8, 0.8f); // Paper - Reduce memory footprint of CompoundTag // Leaf - Further reduce memory footprint
+ 
+             byte b;
+             while ((b = input.readByte()) != 0) {
+@@ -166,7 +166,7 @@ public class CompoundTag implements Tag {
+     }
+ 
+     public CompoundTag() {
+-        this(new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(8, 0.8f)); // Paper - Reduce memory footprint of CompoundTag
++        this(new org.dreeam.leaf.util.map.StringCanonizingOpenHashMap<>(8, 0.8f)); // Paper - Reduce memory footprint of CompoundTag // Leaf - Further reduce memory footprint of CompoundTag
+     }
+ 
+     @Override
+@@ -497,6 +497,11 @@ public class CompoundTag implements Tag {
+ 
+     @Override
+     public CompoundTag copy() {
++        // Leaf start - Further reduce memory footprint of CompoundTag
++        if (this.tags instanceof org.dreeam.leaf.util.map.StringCanonizingOpenHashMap<Tag> stringCanonizingTags) {
++            return new CompoundTag(org.dreeam.leaf.util.map.StringCanonizingOpenHashMap.deepCopy(stringCanonizingTags, Tag::copy));
++        }
++        // Leaf end - Further reduce memory footprint of CompoundTag
+         // Paper start - Reduce memory footprint of CompoundTag
+         it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<String, Tag> ret = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(this.tags.size(), 0.8f);
+         java.util.Iterator<java.util.Map.Entry<String, Tag>> iterator = (this.tags instanceof it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap) ? ((it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap)this.tags).object2ObjectEntrySet().fastIterator() : this.tags.entrySet().iterator();
+diff --git a/src/main/java/org/dreeam/leaf/util/map/StringCanonizingOpenHashMap.java b/src/main/java/org/dreeam/leaf/util/map/StringCanonizingOpenHashMap.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c07aa51366a80448271d0bf73458fc3b0a115979
+--- /dev/null
++++ b/src/main/java/org/dreeam/leaf/util/map/StringCanonizingOpenHashMap.java
+@@ -0,0 +1,54 @@
++package org.dreeam.leaf.util.map;
++
++import com.github.benmanes.caffeine.cache.Interner;
++import com.google.common.base.Function;
++import com.google.common.collect.Maps;
++import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
++
++import java.util.Map;
++
++/**
++ * Backed by an {@link Object2ObjectOpenHashMap}, with string keys interned to save memory.
++ */
++public class StringCanonizingOpenHashMap<T> extends Object2ObjectOpenHashMap<String, T> {
++    private static final Interner<String> KEY_INTERNER = Interner.newWeakInterner();
++
++    private static String intern(String key) {
++        return key != null ? KEY_INTERNER.intern(key) : null;
++    }
++
++    public StringCanonizingOpenHashMap() {
++        super();
++    }
++
++    public StringCanonizingOpenHashMap(int expectedSize) {
++        super(expectedSize);
++    }
++
++    public StringCanonizingOpenHashMap(int expectedSize, float loadFactor) {
++        super(expectedSize, loadFactor);
++    }
++
++    @Override
++    public T put(String key, T value) {
++        return super.put(intern(key), value);
++    }
++
++    @Override
++    public void putAll(Map<? extends String, ? extends T> m) {
++        if (m.isEmpty()) return;
++        Map<String, T> tmp = new Object2ObjectOpenHashMap<>(m.size());
++        m.forEach((k, v) -> tmp.put(intern(k), v));
++        super.putAll(tmp);
++    }
++
++    private void putAllWithoutInterning(Map<? extends String, ? extends T> m) {
++        super.putAll(m);
++    }
++
++    public static <T> StringCanonizingOpenHashMap<T> deepCopy(StringCanonizingOpenHashMap<T> incomingMap, Function<T, T> deepCopier) {
++        StringCanonizingOpenHashMap<T> newMap = new StringCanonizingOpenHashMap<>();
++        newMap.putAllWithoutInterning(Maps.transformValues(incomingMap, deepCopier));
++        return newMap;
++    }
++}
+\ No newline at end of file
