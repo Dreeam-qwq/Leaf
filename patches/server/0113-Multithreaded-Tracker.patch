@@ -352,14 +352,15 @@ index 14ceb3308474e76220bd64b0254df3f2925d4206..6cd45791b19df76e367d2693bce349c6
      private final net.minecraft.world.entity.LivingEntity entity; // Purpur
 diff --git a/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java b/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..1fc19cc2945eff7bd5d3d3da826f4f973e5a7eb8
+index 0000000000000000000000000000000000000000..587c2c5b75dedfd8e218a8e26284ef83f56a0d51
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java
-@@ -0,0 +1,168 @@
+@@ -0,0 +1,189 @@
 +package org.dreeam.leaf.async.tracker;
 +
 +import ca.spottedleaf.moonrise.common.list.ReferenceList;
 +import ca.spottedleaf.moonrise.common.misc.NearbyPlayers;
++import ca.spottedleaf.moonrise.common.util.TickThread;
 +import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel;
 +import ca.spottedleaf.moonrise.patches.chunk_system.level.entity.server.ServerEntityLookup;
 +import ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerEntity;
@@ -376,16 +377,36 @@ index 0000000000000000000000000000000000000000..1fc19cc2945eff7bd5d3d3da826f4f97
 +import java.util.concurrent.LinkedBlockingQueue;
 +import java.util.concurrent.ThreadPoolExecutor;
 +import java.util.concurrent.TimeUnit;
++import java.util.concurrent.atomic.AtomicInteger;
 +
 +public class MultithreadedTracker {
 +
 +    private static final Logger LOGGER = LogManager.getLogger("MultithreadedTracker");
++    public static class MultithreadedTrackerThread extends TickThread {
++        private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(0);
++        public MultithreadedTrackerThread(Runnable run, String name) {
++            super(run, name, THREAD_COUNTER.incrementAndGet());
++        }
++
++        @Override
++        public void run() {
++            super.run();
++        }
++    }
 +    private static final Executor trackerExecutor = new ThreadPoolExecutor(
 +            1,
 +            org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads,
 +            org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerKeepalive, TimeUnit.SECONDS,
 +            new LinkedBlockingQueue<>(),
 +            new ThreadFactoryBuilder()
++                    .setThreadFactory(
++                            r -> new MultithreadedTrackerThread(r, "Leaf Async Tracker Thread") {
++                                @Override
++                                public void run() {
++                                    r.run();
++                                }
++                            }
++                    )
 +                    .setNameFormat("Leaf Async Tracker Thread - %d")
 +                    .setPriority(Thread.NORM_PRIORITY - 2)
 +                    .build());
