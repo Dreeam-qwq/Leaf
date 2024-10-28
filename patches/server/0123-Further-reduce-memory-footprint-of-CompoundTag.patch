@@ -3,6 +3,7 @@ From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 Date: Sat, 26 Oct 2024 22:38:30 +0800
 Subject: [PATCH] Further reduce memory footprint of CompoundTag
 
+Ported from project: https://github.com/embeddedt/ModernFix
 
 diff --git a/src/main/java/net/minecraft/nbt/CompoundTag.java b/src/main/java/net/minecraft/nbt/CompoundTag.java
 index ea48637234fdb1e5f54342590def30e11b6a5df0..a7a5e1c70d1e4f7df6533d0531a200fe50b38b7a 100644
