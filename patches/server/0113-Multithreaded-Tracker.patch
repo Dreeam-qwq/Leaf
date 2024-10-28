@@ -223,10 +223,25 @@ index 4f91107f9ae42f96c060c310596db9aa869a8dbc..f9889f593ed144ee8f1f5bd380e631c6
      public boolean visible = true;
  
 diff --git a/src/main/java/net/minecraft/server/level/ServerEntity.java b/src/main/java/net/minecraft/server/level/ServerEntity.java
-index 05125144ce0cb50fa6ac769fa025cda010c93f14..3b40fc420ec1a8aca4c66a77f54cf628a39aa6f2 100644
+index 05125144ce0cb50fa6ac769fa025cda010c93f14..189bfe0e97943f3f560fa3c2674013e2e833bd5e 100644
 --- a/src/main/java/net/minecraft/server/level/ServerEntity.java
 +++ b/src/main/java/net/minecraft/server/level/ServerEntity.java
-@@ -336,7 +336,11 @@ public class ServerEntity {
+@@ -115,7 +115,13 @@ public class ServerEntity {
+             this.broadcastAndSend(new ClientboundSetPassengersPacket(this.entity)); // CraftBukkit
+             ServerEntity.removedPassengers(list, this.lastPassengers).forEach((entity) -> {
+                 if (entity instanceof ServerPlayer entityplayer) {
+-                    entityplayer.connection.teleport(entityplayer.getX(), entityplayer.getY(), entityplayer.getZ(), entityplayer.getYRot(), entityplayer.getXRot());
++                    // Leaf start - Multithreaded tracker - Ensure teleport is executed on server thread
++                    if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled && Thread.currentThread() instanceof org.dreeam.leaf.async.tracker.MultithreadedTracker.MultithreadedTrackerThread) {
++                        net.minecraft.server.MinecraftServer.getServer().scheduleOnMain(() -> entityplayer.connection.teleport(entityplayer.getX(), entityplayer.getY(), entityplayer.getZ(), entityplayer.getYRot(), entityplayer.getXRot()));
++                    } else {
++                        entityplayer.connection.teleport(entityplayer.getX(), entityplayer.getY(), entityplayer.getZ(), entityplayer.getYRot(), entityplayer.getXRot());
++                    }
++                    // Leaf end - Multithreaded tracker - Ensure teleport is executed on server thread
+                 }
+ 
+             });
+@@ -336,7 +342,11 @@ public class ServerEntity {
  
      public void removePairing(ServerPlayer player) {
          this.entity.stopSeenByPlayer(player);
@@ -239,7 +254,7 @@ index 05125144ce0cb50fa6ac769fa025cda010c93f14..3b40fc420ec1a8aca4c66a77f54cf628
      }
  
      public void addPairing(ServerPlayer player) {
-@@ -344,7 +348,11 @@ public class ServerEntity {
+@@ -344,7 +354,11 @@ public class ServerEntity {
  
          Objects.requireNonNull(list);
          this.sendPairingData(player, list::add);
@@ -252,7 +267,7 @@ index 05125144ce0cb50fa6ac769fa025cda010c93f14..3b40fc420ec1a8aca4c66a77f54cf628
          this.entity.startSeenByPlayer(player);
      }
  
-@@ -464,19 +472,28 @@ public class ServerEntity {
+@@ -464,19 +478,28 @@ public class ServerEntity {
  
          if (list != null) {
              this.trackedDataValues = datawatcher.getNonDefaultValues();
@@ -352,7 +367,7 @@ index 14ceb3308474e76220bd64b0254df3f2925d4206..6cd45791b19df76e367d2693bce349c6
      private final net.minecraft.world.entity.LivingEntity entity; // Purpur
 diff --git a/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java b/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d94d34c8b63079c9a18b860a22e91c17a88b062e
+index 0000000000000000000000000000000000000000..587c2c5b75dedfd8e218a8e26284ef83f56a0d51
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java
 @@ -0,0 +1,189 @@
@@ -382,7 +397,7 @@ index 0000000000000000000000000000000000000000..d94d34c8b63079c9a18b860a22e91c17
 +public class MultithreadedTracker {
 +
 +    private static final Logger LOGGER = LogManager.getLogger("MultithreadedTracker");
-+    private static class MultithreadedTrackerThread extends TickThread {
++    public static class MultithreadedTrackerThread extends TickThread {
 +        private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(0);
 +        public MultithreadedTrackerThread(Runnable run, String name) {
 +            super(run, name, THREAD_COUNTER.incrementAndGet());
