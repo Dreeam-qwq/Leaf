@@ -352,7 +352,7 @@ index 14ceb3308474e76220bd64b0254df3f2925d4206..6cd45791b19df76e367d2693bce349c6
      private final net.minecraft.world.entity.LivingEntity entity; // Purpur
 diff --git a/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java b/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..587c2c5b75dedfd8e218a8e26284ef83f56a0d51
+index 0000000000000000000000000000000000000000..d94d34c8b63079c9a18b860a22e91c17a88b062e
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java
 @@ -0,0 +1,189 @@
@@ -382,7 +382,7 @@ index 0000000000000000000000000000000000000000..587c2c5b75dedfd8e218a8e26284ef83
 +public class MultithreadedTracker {
 +
 +    private static final Logger LOGGER = LogManager.getLogger("MultithreadedTracker");
-+    public static class MultithreadedTrackerThread extends TickThread {
++    private static class MultithreadedTrackerThread extends TickThread {
 +        private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(0);
 +        public MultithreadedTrackerThread(Runnable run, String name) {
 +            super(run, name, THREAD_COUNTER.incrementAndGet());
