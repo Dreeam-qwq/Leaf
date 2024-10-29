@@ -1,0 +1,82 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Tue, 29 Oct 2077 00:00:00 +0800
+Subject: [PATCH] Optimize Entity distanceToSqr
+
+This patch optimizes Entity#distanceToSqr call by using Math#fma which is around 1.2x to 4x faster than original method on CPUs support Fused Multiply-Add (FMA) operation,
+avoids multiple casting in Entity#distanceTo, using Math#hypot instead of Mojang's Mth#sqrt. Additionally, this patch makes
+these methods more able to be inlined by the JIT compiler.
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 08a3714c530fb375ee729e91965c65efb9e6e3d2..976d72b611011cccf4b4efadc9772ce1c68ef5ee 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -2368,33 +2368,41 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+         this.xRotO = this.getXRot();
+     }
+ 
+-    public float distanceTo(Entity entity) {
+-        float f = (float) (this.getX() - entity.getX());
+-        float f1 = (float) (this.getY() - entity.getY());
+-        float f2 = (float) (this.getZ() - entity.getZ());
++    // Leaf start - Optimize distanceTo - inlining
++    public final float distanceTo(Entity entity) {
++        // Leaf start - Optimize distanceTo - Avoid casting
++        final double dx = this.getX() - entity.getX();
++        final double dy = this.getY() - entity.getY();
++        final double dz = this.getZ() - entity.getZ();
++        // Leaf end - Optimize distanceTo - Avoid casting
+ 
+-        return Mth.sqrt(f * f + f1 * f1 + f2 * f2);
++        return (float) Math.hypot(dx, Math.hypot(dy, dz)); // Leaf - Use Math#hypot instead of Mojang's Mth#sqrt
+     }
++    // Leaf end - Optimize distanceTo - inlining
+ 
+-    public double distanceToSqr(double x, double y, double z) {
+-        double d3 = this.getX() - x;
+-        double d4 = this.getY() - y;
+-        double d5 = this.getZ() - z;
++    // Leaf start - Optimize distanceToSqr - inlining
++    public final double distanceToSqr(final double x, final double y, final double z) {
++        final double dx = this.getX() - x;
++        final double dy = this.getY() - y;
++        final double dz = this.getZ() - z;
+ 
+-        return d3 * d3 + d4 * d4 + d5 * d5;
++        return org.dreeam.leaf.LeafBootstrap.enableFMA ? Math.fma(dx, dx, Math.fma(dy, dy, dz * dz)) : dx * dx + dy * dy + dz * dz; // Leaf - Use FMA for distanceToSqr
+     }
++    // Leaf end - Optimize distanceToSqr
+ 
+     public double distanceToSqr(Entity entity) {
+         return this.distanceToSqr(entity.position());
+     }
+ 
+-    public double distanceToSqr(Vec3 vector) {
+-        double d0 = this.getX() - vector.x;
+-        double d1 = this.getY() - vector.y;
+-        double d2 = this.getZ() - vector.z;
++    // Leaf start - Optimize distanceToSqr - inlining
++    public final double distanceToSqr(Vec3 vector) {
++        final double dx = this.getX() - vector.x;
++        final double dy = this.getY() - vector.y;
++        final double dz = this.getZ() - vector.z;
+ 
+-        return d0 * d0 + d1 * d1 + d2 * d2;
++        return org.dreeam.leaf.LeafBootstrap.enableFMA ? Math.fma(dx, dx, Math.fma(dy, dy, dz * dz)) : dx * dx + dy * dy + dz * dz; // Leaf - Use FMA for distanceToSqr
+     }
++    // Leaf end - Optimize distanceToSqr - inlining
+ 
+     public void playerTouch(Player player) {}
+ 
+diff --git a/src/main/java/org/dreeam/leaf/LeafBootstrap.java b/src/main/java/org/dreeam/leaf/LeafBootstrap.java
+index 2f5122a61af183d6a4c20a175122c228b6e9fc48..9055727c16659ae43eb5424f0aa61e419f53483e 100644
+--- a/src/main/java/org/dreeam/leaf/LeafBootstrap.java
++++ b/src/main/java/org/dreeam/leaf/LeafBootstrap.java
+@@ -4,6 +4,7 @@ import io.papermc.paper.PaperBootstrap;
+ import joptsimple.OptionSet;
+ 
+ public class LeafBootstrap {
++    public static final boolean enableFMA = Boolean.parseBoolean(System.getProperty("Leaf.enableFMA", "false")); // Leaf - FMA feature
+ 
+     public static void boot(final OptionSet options) {
+         runPreBootTasks();
