@@ -295,10 +295,10 @@ index 71a3eadd2f1e00fa066dbfe9918d749d43435a18..03513d3b6118ac5d0a58788462dcbc98
          }
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/opt/DynamicActivationofBrain.java b/src/main/java/org/dreeam/leaf/config/modules/opt/DynamicActivationofBrain.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ed8496e344284f79ff66c1d216090a218d95c311
+index 0000000000000000000000000000000000000000..a2e60c43074df560eb01f150bf52b8d0f5af9b54
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/opt/DynamicActivationofBrain.java
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,71 @@
 +package org.dreeam.leaf.config.modules.opt;
 +
 +import net.minecraft.core.registries.BuiltInRegistries;
@@ -322,6 +322,7 @@ index 0000000000000000000000000000000000000000..ed8496e344284f79ff66c1d216090a21
 +    public static int startDistanceSquared;
 +    public static int maximumActivationPrio = 20;
 +    public static int activationDistanceMod = 8;
++    public static boolean dontEnableIfInWater = false;
 +    public static List<String> blackedEntities = new ArrayList<>();
 +
 +    @Override
@@ -331,6 +332,9 @@ index 0000000000000000000000000000000000000000..ed8496e344284f79ff66c1d216090a21
 +                they're far away from the player""");
 +
 +        enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
++        dontEnableIfInWater = config.getBoolean(getBasePath() + ".dont-enable-if-in-water", dontEnableIfInWater, """
++                After enabling this, non-aquatic entities in the water will not be affected by DAB.
++                This could fix entities suffocate in the water.""");
 +        startDistance = config.getInt(getBasePath() + ".start-distance", startDistance, """
 +                This value determines how far away an entity has to be
 +                from the player to start being effected by DEAR.""");
@@ -367,16 +371,24 @@ index 0000000000000000000000000000000000000000..ed8496e344284f79ff66c1d216090a21
 +    }
 +}
 diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
-index 0b2f2fbe462ed628ef3d640824d4162e79279089..456f64fcae7a12ca141d8061f69797e58efa1899 100644
+index 0b2f2fbe462ed628ef3d640824d4162e79279089..e4c0092179e702ecc8dc6aa345b7fb4cc4ea6ebf 100644
 --- a/src/main/java/org/spigotmc/ActivationRange.java
 +++ b/src/main/java/org/spigotmc/ActivationRange.java
-@@ -238,6 +238,25 @@ public class ActivationRange
+@@ -38,7 +38,6 @@ import co.aikar.timings.MinecraftTimings;
+ import net.minecraft.world.entity.schedule.Activity;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.phys.AABB;
+-import org.galemc.gale.configuration.GaleGlobalConfiguration;
+ import org.galemc.gale.configuration.GaleWorldConfiguration;
+ 
+ public class ActivationRange
+@@ -238,6 +237,25 @@ public class ActivationRange
                  }
                  // Paper end - Configurable marker ticking
                  ActivationRange.activateEntity(entity);
 +
 +                // Pufferfish start
-+                if (org.dreeam.leaf.config.modules.opt.DynamicActivationofBrain.enabled && entity.getType().dabEnabled) {
++                if (org.dreeam.leaf.config.modules.opt.DynamicActivationofBrain.enabled && entity.getType().dabEnabled && (!org.dreeam.leaf.config.modules.opt.DynamicActivationofBrain.dontEnableIfInWater || entity instanceof WaterAnimal || !entity.isInWaterOrBubble())) { // Leaf - Option for dontEnableIfInWater
 +                    if (!entity.activatedPriorityReset) {
 +                        entity.activatedPriorityReset = true;
 +                        entity.activatedPriority = org.dreeam.leaf.config.modules.opt.DynamicActivationofBrain.maximumActivationPrio;
@@ -396,7 +408,7 @@ index 0b2f2fbe462ed628ef3d640824d4162e79279089..456f64fcae7a12ca141d8061f69797e5
              }
              // Paper end
          }
-@@ -254,12 +273,12 @@ public class ActivationRange
+@@ -254,12 +272,12 @@ public class ActivationRange
          if ( MinecraftServer.currentTick > entity.activatedTick )
          {
              if ( entity.defaultActivationState )

@@ -1,9 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
-Date: Tue, 29 Oct 2077 00:00:00 +0800
+Date: Fri, 29 Oct 2077 00:00:00 +0800
 Subject: [PATCH] Optimize Entity distanceToSqr
 
-This patch optimizes Entity#distanceToSqr call by using Math#fma which is around 1.2x to 4x faster than original method on CPUs support Fused Multiply-Add (FMA) operation,
+This patch optimizes Entity#distanceToSqr call by using Math#fma which is around 1.2x to 4x faster than original method,
 avoids multiple casting in Entity#distanceTo, using Math#hypot instead of Mojang's Mth#sqrt. Additionally, this patch makes
 these methods more able to be inlined by the JIT compiler.
 

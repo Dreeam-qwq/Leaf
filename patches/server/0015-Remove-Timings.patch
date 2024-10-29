@@ -1838,7 +1838,7 @@ index 579c2e69d8f6ce8398eb1297d1d1ead98c9068a5..00000000000000000000000000000000
 -
 -}
 diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
-index 530c5d656b6b362d0df85a897d7e8d0497250680..7fd2a463e9208635bd2d9f0b1a4291d60c5dedf2 100644
+index ab22da71bcd4bd52eb49f92999459684fb29875e..e4731087598dca93d55e7ccb65bf440561ad8a96 100644
 --- a/src/main/java/org/spigotmc/ActivationRange.java
 +++ b/src/main/java/org/spigotmc/ActivationRange.java
 @@ -34,7 +34,6 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
@@ -1849,7 +1849,7 @@ index 530c5d656b6b362d0df85a897d7e8d0497250680..7fd2a463e9208635bd2d9f0b1a4291d6
  import net.minecraft.world.entity.schedule.Activity;
  import net.minecraft.world.level.Level;
  import net.minecraft.world.phys.AABB;
-@@ -182,7 +181,6 @@ public class ActivationRange
+@@ -181,7 +180,6 @@ public class ActivationRange
       */
      public static void activateEntities(Level world)
      {
@@ -1857,7 +1857,7 @@ index 530c5d656b6b362d0df85a897d7e8d0497250680..7fd2a463e9208635bd2d9f0b1a4291d6
          final int miscActivationRange = world.spigotConfig.miscActivationRange;
          final int raiderActivationRange = world.spigotConfig.raiderActivationRange;
          final int animalActivationRange = world.spigotConfig.animalActivationRange;
-@@ -262,7 +260,6 @@ public class ActivationRange
+@@ -261,7 +259,6 @@ public class ActivationRange
              }
              // Paper end
          }
