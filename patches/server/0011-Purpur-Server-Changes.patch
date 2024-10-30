@@ -24824,10 +24824,10 @@ index 0000000000000000000000000000000000000000..129acb8ad139decc6b1c023cb10bc32d
 +    // Paper end - lifecycle events
 +}
 diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
-index fe1d053a703b6652485b24ba487d8ebfcbabf28b..b16970195d560dba9d0b3a258961857008b3550c 100644
+index dce90b9c38ed5734bc3259c4de4387fa862b9c9f..103571f5aa880b0118e1b946e166c86b1e7bf5b5 100644
 --- a/src/main/java/org/spigotmc/ActivationRange.java
 +++ b/src/main/java/org/spigotmc/ActivationRange.java
-@@ -215,6 +215,8 @@ public class ActivationRange
+@@ -216,6 +216,8 @@ public class ActivationRange
                  continue;
              }
  
@@ -24836,7 +24836,7 @@ index fe1d053a703b6652485b24ba487d8ebfcbabf28b..b16970195d560dba9d0b3a2589618570
              // Paper start
              int worldHeight = world.getHeight();
              ActivationRange.maxBB = player.getBoundingBox().inflate( maxRange, worldHeight, maxRange );
-@@ -413,6 +415,7 @@ public class ActivationRange
+@@ -414,6 +416,7 @@ public class ActivationRange
       */
      public static boolean checkIfActive(Entity entity)
      {
