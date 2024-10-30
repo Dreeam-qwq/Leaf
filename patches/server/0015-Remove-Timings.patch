@@ -1838,7 +1838,7 @@ index 579c2e69d8f6ce8398eb1297d1d1ead98c9068a5..00000000000000000000000000000000
 -
 -}
 diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
-index ab22da71bcd4bd52eb49f92999459684fb29875e..e4731087598dca93d55e7ccb65bf440561ad8a96 100644
+index b16970195d560dba9d0b3a258961857008b3550c..0f8987d1fe6a9e4d8e9d984d242797215993a269 100644
 --- a/src/main/java/org/spigotmc/ActivationRange.java
 +++ b/src/main/java/org/spigotmc/ActivationRange.java
 @@ -34,7 +34,6 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
@@ -1857,7 +1857,7 @@ index ab22da71bcd4bd52eb49f92999459684fb29875e..e4731087598dca93d55e7ccb65bf4405
          final int miscActivationRange = world.spigotConfig.miscActivationRange;
          final int raiderActivationRange = world.spigotConfig.raiderActivationRange;
          final int animalActivationRange = world.spigotConfig.animalActivationRange;
-@@ -261,7 +259,6 @@ public class ActivationRange
+@@ -262,7 +260,6 @@ public class ActivationRange
              }
              // Paper end
          }
