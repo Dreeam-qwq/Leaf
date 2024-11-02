@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MachineBreaker <saltspigotpp@gmail.com>
+Date: Wed, 16 Oct 2024 03:39:24 -0400
+Subject: [PATCH] perf: Avoid useless deque clear on
+ LevelTicks#cleanupAfterTick
+
+
+diff --git a/src/main/java/net/minecraft/world/ticks/LevelTicks.java b/src/main/java/net/minecraft/world/ticks/LevelTicks.java
+index 6f0dc05ec55214a2e68c37cd91b850b161a3641b..df1caabb9ca6af05950c0cb5ac51c76bd08878ff 100644
+--- a/src/main/java/net/minecraft/world/ticks/LevelTicks.java
++++ b/src/main/java/net/minecraft/world/ticks/LevelTicks.java
+@@ -195,7 +195,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
+     }
+ 
+     private void cleanupAfterTick() {
+-        this.toRunThisTick.clear();
++        //this.toRunThisTick.clear(); // Leaf - This method runs after toRunThisTick is polled so this is always empty
+         this.containersToTick.clear();
+         this.alreadyRunThisTick.clear();
+         this.toRunThisTickSet.clear();
