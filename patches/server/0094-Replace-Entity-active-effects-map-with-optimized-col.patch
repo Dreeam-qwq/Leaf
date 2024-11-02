@@ -3,21 +3,24 @@ From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Tue, 17 Sep 2024 02:35:13 -0400
 Subject: [PATCH] Replace Entity active effects map with optimized collection
 
+Dreeam TODO: check this
 
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 2539f688102a3c9c10ddeff39f3562668e9010be..827162f51cc58bd090ddc3576e5fe21043075e8d 100644
+index 2539f688102a3c9c10ddeff39f3562668e9010be..d44e48719fcf51f6d425b9c18835ad44339177df 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-@@ -199,7 +199,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -199,6 +199,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
      public static final String ATTRIBUTES_FIELD = "attributes";
      private final AttributeMap attributes;
      public CombatTracker combatTracker = new CombatTracker(this);
--    public final Map<Holder<MobEffect>, MobEffectInstance> activeEffects = Maps.newHashMap();
-+    public final Map<Holder<MobEffect>, MobEffectInstance> activeEffects = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(0); // Leaf - Replace Entity active effects map with optimized collection
++    // Need to figure out the difference of mem access pattern between hash map and obj2obj hash map (separate chaining vs open addressing)
++    // Benchmark is needed for get calls for this active effects map.
++    // Also need to check whether call from out of main using bukkit api
++    //public final Map<Holder<MobEffect>, MobEffectInstance> activeEffects = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(0); // Leaf - Replace Entity active effects map with optimized collection
+     public final Map<Holder<MobEffect>, MobEffectInstance> activeEffects = Maps.newHashMap();
      private final NonNullList<ItemStack> lastHandItemStacks;
      private final NonNullList<ItemStack> lastArmorItemStacks;
-     private ItemStack lastBodyItemStack;
-@@ -1011,8 +1011,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -1011,8 +1015,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
      private void updateSynchronizedMobEffectParticles() {
          // Leaf start - Remove stream in entity visible effects filter
          List<ParticleOptions> list = new ArrayList<>();
@@ -28,7 +31,7 @@ index 2539f688102a3c9c10ddeff39f3562668e9010be..827162f51cc58bd090ddc3576e5fe210
              if (effect.isVisible()) {
                  list.add(effect.getParticleOptions());
              }
-@@ -1020,7 +1021,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -1020,7 +1025,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
          // Leaf end - Remove stream in entity visible effects filter
  
          this.entityData.set(LivingEntity.DATA_EFFECT_PARTICLES, list);
