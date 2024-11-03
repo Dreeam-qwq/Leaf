@@ -1,0 +1,163 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Wed, 22 May 2024 14:14:30 -0700
+Subject: [PATCH] Moonrise: Bitstorage optimisations
+
+Original license: GPLv3
+Original project: https://github.com/Tuinity/Moonrise
+
+This patch is based on the following mixin:
+"ca/spottedleaf/moonrise/mixin/bitstorage/SimpleBitStorageMixin.java"
+
+Credit to https://lemire.me/blog/2019/02/08/faster-remainders-when-the-divisor-is-a-constant-beating-compilers-and-libdivide
+and https://github.com/Vrganj for the algorithm to determine a magic value to use for both division and mod operations
+
+Do not validate input, and optimise method to use our magic value, which does not perform an add
+
+diff --git a/src/main/java/ca/spottedleaf/concurrentutil/util/IntegerUtil.java b/src/main/java/ca/spottedleaf/concurrentutil/util/IntegerUtil.java
+index 77699c5fa9681f9ec7aa05cbb50eb60828e193ab..1ba0bd5f0f90c691394307833612ef75ed4ab759 100644
+--- a/src/main/java/ca/spottedleaf/concurrentutil/util/IntegerUtil.java
++++ b/src/main/java/ca/spottedleaf/concurrentutil/util/IntegerUtil.java
+@@ -170,6 +170,28 @@ public final class IntegerUtil {
+         return (mask ^ val) - mask; // if val < 0, then (0 ^ val) - 0 else (-1 ^ val) + 1
+     }
+ 
++    // Moonrise start - Bitstorage optimisations
++    // https://lemire.me/blog/2019/02/08/faster-remainders-when-the-divisor-is-a-constant-beating-compilers-and-libdivide
++
++    /**
++     * Usage:
++     * <pre>
++     * {@code
++     *     static final long mult = getSimpleMultiplier(divisor, bits);
++     *     long x = ...;
++     *     long magic = x * mult;
++     *     long divQ = magic >>> bits;
++     *     long divR = ((magic & ((1 << bits) - 1)) * divisor) >>> bits;
++     * }
++     * </pre>
++     *
++     * @param bits The number of bits of precision for the returned result
++     */
++    public static long getUnsignedDivisorMagic(final long divisor, final int bits) {
++        return (((1L << bits) - 1L) / divisor) + 1;
++    }
++    // Moonrise end - Bitstorage optimisations
++
+     private IntegerUtil() {
+         throw new RuntimeException();
+     }
+diff --git a/src/main/java/net/minecraft/util/SimpleBitStorage.java b/src/main/java/net/minecraft/util/SimpleBitStorage.java
+index 0b8b0cf58f637d72eae28e21266df14183f11fb1..397aaa8beb4256404921df8799eb66f12aecf602 100644
+--- a/src/main/java/net/minecraft/util/SimpleBitStorage.java
++++ b/src/main/java/net/minecraft/util/SimpleBitStorage.java
+@@ -209,6 +209,20 @@ public class SimpleBitStorage implements BitStorage {
+     private final int divideAdd; private final long divideAddUnsigned; // Paper - Perf: Optimize SimpleBitStorage
+     private final int divideShift;
+ 
++    // Moonrise start - Bitstorage optimisations
++    private static final int[] BETTER_MAGIC = new int[33];
++    static {
++        // 20 bits of precision
++        // since index is always [0, 4095] (i.e 12 bits), multiplication by a magic value here (20 bits)
++        // fits exactly in an int and allows us to use integer arithmetic
++        for (int bits = 1; bits < BETTER_MAGIC.length; ++bits) {
++            BETTER_MAGIC[bits] = (int) ca.spottedleaf.concurrentutil.util.IntegerUtil.getUnsignedDivisorMagic(64L / bits, 20);
++        }
++    }
++    private final int magic;
++    private final int mulBits;
++    // Moonrise end - Bitstorage optimisations
++
+     public SimpleBitStorage(int elementBits, int size, int[] data) {
+         this(elementBits, size);
+         int i = 0;
+@@ -262,6 +276,14 @@ public class SimpleBitStorage implements BitStorage {
+         } else {
+             this.data = new long[j];
+         }
++
++        // Moonrise start - Bitstorage optimisations
++        this.magic = BETTER_MAGIC[this.bits];
++        this.mulBits = (64 / this.bits) * this.bits;
++        if (this.size > 4096) {
++            throw new IllegalStateException("Size > 4096 not supported");
++        }
++        // Moonrise end - Bitstorage optimisations
+     }
+ 
+     private int cellIndex(int index) {
+@@ -272,33 +294,54 @@ public class SimpleBitStorage implements BitStorage {
+ 
+     @Override
+     public final int getAndSet(int index, int value) { // Paper - Perf: Optimize SimpleBitStorage
+-        //Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index); // Paper - Perf: Optimize SimpleBitStorage
+-        //Validate.inclusiveBetween(0L, this.mask, (long)value); // Paper - Perf: Optimize SimpleBitStorage
+-        int i = this.cellIndex(index);
+-        long l = this.data[i];
+-        int j = (index - i * this.valuesPerLong) * this.bits;
+-        int k = (int)(l >> j & this.mask);
+-        this.data[i] = l & ~(this.mask << j) | ((long)value & this.mask) << j;
+-        return k;
++        // Moonrise start - Bitstorage optimisations
++        // assume index/value in range
++        final int full = this.magic * index; // 20 bits of magic + 12 bits of index = barely int
++        final int divQ = full >>> 20;
++        final int divR = (full & 0xFFFFF) * this.mulBits >>> 20;
++
++        final long[] dataArray = this.data;
++
++        final long data = dataArray[divQ];
++        final long mask = this.mask;
++
++        final long write = data & ~(mask << divR) | ((long) value & mask) << divR;
++
++        dataArray[divQ] = write;
++
++        return (int) (data >>> divR & mask);
++        // Moonrise end - Bitstorage optimisations
+     }
+ 
+     @Override
+     public final void set(int index, int value) { // Paper - Perf: Optimize SimpleBitStorage
+-        //Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index); // Paper - Perf: Optimize SimpleBitStorage
+-        //Validate.inclusiveBetween(0L, this.mask, (long)value); // Paper - Perf: Optimize SimpleBitStorage
+-        int i = this.cellIndex(index);
+-        long l = this.data[i];
+-        int j = (index - i * this.valuesPerLong) * this.bits;
+-        this.data[i] = l & ~(this.mask << j) | ((long)value & this.mask) << j;
++        // Moonrise start - Bitstorage optimisations
++        // assume index/value in range
++        final int full = this.magic * index; // 20 bits of magic + 12 bits of index = barely int
++        final int divQ = full >>> 20;
++        final int divR = (full & 0xFFFFF) * this.mulBits >>> 20;
++
++        final long[] dataArray = this.data;
++
++        final long data = dataArray[divQ];
++        final long mask = this.mask;
++
++        final long write = data & ~(mask << divR) | ((long) value & mask) << divR;
++
++        dataArray[divQ] = write;
++        // Moonrise end - Bitstorage optimisations
+     }
+ 
+     @Override
+     public final int get(int index) { // Paper - Perf: Optimize SimpleBitStorage
+-        //Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index); // Paper - Perf: Optimize SimpleBitStorage
+-        int i = this.cellIndex(index);
+-        long l = this.data[i];
+-        int j = (index - i * this.valuesPerLong) * this.bits;
+-        return (int)(l >> j & this.mask);
++        // Moonrise start - Bitstorage optimisations
++        // assume index in range
++        final int full = this.magic * index; // 20 bits of magic + 12 bits of index = barely int
++        final int divQ = full >>> 20;
++        final int divR = (full & 0xFFFFF) * this.mulBits >>> 20;
++
++        return (int) (this.data[divQ] >>> divR & this.mask);
++        // Moonrise end - Bitstorage optimisations
+     }
+ 
+     @Override

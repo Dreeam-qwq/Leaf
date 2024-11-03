@@ -31,7 +31,7 @@ index 5e89428321d91edb893826b0eb0b9050d327d310..3e8882e4779d6037025e7ee26ebbb46a
  
      private DensityFunction wrapNew(DensityFunction function) {
 diff --git a/src/main/java/net/minecraft/world/level/levelgen/SurfaceRules.java b/src/main/java/net/minecraft/world/level/levelgen/SurfaceRules.java
-index 9df053ddff459d4aab478106c6e66a5fc3cda8f6..49e2aee0093eb8fa34fc7fe11f376c1dd67aa5f1 100644
+index 7ba3a3ca57b55f796a90b700b930f365c3508484..2a0cd84c8a530bc34b6bc8034bd7156131837139 100644
 --- a/src/main/java/net/minecraft/world/level/levelgen/SurfaceRules.java
 +++ b/src/main/java/net/minecraft/world/level/levelgen/SurfaceRules.java
 @@ -314,8 +314,14 @@ public class SurfaceRules {

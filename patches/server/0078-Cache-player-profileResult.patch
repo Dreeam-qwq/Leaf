@@ -5,7 +5,7 @@ Subject: [PATCH] Cache player profileResult
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index f1f6e53dfb1c4646b4eb2e122309ff5d7f06cb45..d7a72ae0f8bb0fadf304da62e6a3ca7cd03770fa 100644
+index c2f2783fc4cdf5f222498d9bd08db152677bbfdb..e392f3fdc9b87c34f068743fff7ea486b19fa393 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -26,6 +26,10 @@ dependencies {
@@ -17,7 +17,7 @@ index f1f6e53dfb1c4646b4eb2e122309ff5d7f06cb45..d7a72ae0f8bb0fadf304da62e6a3ca7c
 +    // Leaf end - Libraries
 +
      // Paper start
-     implementation("org.jline:jline-terminal-jansi:3.26.3") // Leaf - Bump Dependencies
+     implementation("org.jline:jline-terminal-jansi:3.27.1") // Leaf - Bump Dependencies
      implementation("net.minecrell:terminalconsoleappender:1.3.0")
 diff --git a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 index 2fd40cf41d54e450939d11b8ea183ab248072e22..3539397dba1246f345cd3cd210a6e6db876b1c89 100644

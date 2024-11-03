@@ -151,7 +151,7 @@ index 2e2caf1c92cd3616fe40a0cadd5e91f1ebae382d..cf02a980f0110ec9e1277bda846c67b9
          if (packet == null || this.processedDisconnect) { // Spigot
              return;
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 4f1d226bc7c5eea06e837e99f268827ca94e221f..34b70d75295c4c7551ddd3569e3961d80e679a46 100644
+index d8c54a86890c0495dac8f2bff43075e4db00447f..536943f9d9cf756a552188b4050f890e8345f524 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -1642,7 +1642,7 @@ public abstract class PlayerList {

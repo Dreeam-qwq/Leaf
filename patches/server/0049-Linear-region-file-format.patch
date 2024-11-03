@@ -12,7 +12,7 @@ This format saves about 50% of disk space.
 Documentation: https://github.com/xymb-endcrystalme/LinearRegionFileFormatTools
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 32cebbf591b2f822ec32080aa8451f85c64b6787..e16e9b3b815065ed4aae1965edc3a68471470ec5 100644
+index 776e4d697d6d9b4b66806f120066dbf35c66c480..c2f2783fc4cdf5f222498d9bd08db152677bbfdb 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -21,6 +21,11 @@ dependencies {
@@ -20,12 +20,12 @@ index 32cebbf591b2f822ec32080aa8451f85c64b6787..e16e9b3b815065ed4aae1965edc3a684
      // Leaf end - Leaf Config
  
 +    // LinearPaper start
-+    implementation("com.github.luben:zstd-jni:1.5.6-4")
++    implementation("com.github.luben:zstd-jni:1.5.6-7")
 +    implementation("org.lz4:lz4-java:1.8.0")
 +    // LinearPaper end
 +
      // Paper start
-     implementation("org.jline:jline-terminal-jansi:3.26.3") // Leaf - Bump Dependencies
+     implementation("org.jline:jline-terminal-jansi:3.27.1") // Leaf - Bump Dependencies
      implementation("net.minecrell:terminalconsoleappender:1.3.0")
 diff --git a/src/main/java/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java b/src/main/java/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java
 index 73df26b27146bbad2106d57b22dd3c792ed3dd1d..d2f209dd61f4412478a4b8fbe3489787d30bf74b 100644
@@ -71,7 +71,7 @@ index 3218cbf84f54daf06e84442d5eb1a36d8da6b215..ec9b27177dc526510e86d85f48f167b4
              synchronized (cache) {
                  regionFile = ((ChunkSystemRegionFileStorage)(Object)cache).moonrise$getRegionFileIfLoaded(chunkX, chunkZ);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c2049ace0261c0a76b06d7f3da3514e1c12194aa..b46c81a22fa6f278646ef9d2066ba57d58436aad 100644
+index 645c97aef6abf63f0c631a506ccff0e3b9a49dec..ffdecadd2194dd5ab9bd0a814616acb68cf4c3f1 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -968,10 +968,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

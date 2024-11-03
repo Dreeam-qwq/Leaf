@@ -300,7 +300,7 @@ index 05125144ce0cb50fa6ac769fa025cda010c93f14..189bfe0e97943f3f560fa3c2674013e2
  
              set.clear();
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index f3c86193df3b7e1802f1e6fb91ba87506c834d79..9211869969aad355433129c519ddd6e73f8657df 100644
+index 0874d1da44c82c87a8061233f1ed089ee0e0179d..6d8fb4fe9733bd1e83af7f8c148bdb54fa26a14b 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -2398,7 +2398,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ca.spottedleaf.

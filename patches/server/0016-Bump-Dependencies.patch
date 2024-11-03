@@ -6,7 +6,7 @@ Subject: [PATCH] Bump Dependencies
 TODO - Dreeam: Bump & test dependencies, impl new features?
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 0d250a691a0f28770cbd9f847d8cd00af866b583..86c4b60c478817001d622397972ddc1ce3a59a55 100644
+index 0d250a691a0f28770cbd9f847d8cd00af866b583..776e4d697d6d9b4b66806f120066dbf35c66c480 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -22,7 +22,7 @@ dependencies {
@@ -14,7 +14,7 @@ index 0d250a691a0f28770cbd9f847d8cd00af866b583..86c4b60c478817001d622397972ddc1c
  
      // Paper start
 -    implementation("org.jline:jline-terminal-jansi:3.21.0")
-+    implementation("org.jline:jline-terminal-jansi:3.26.3") // Leaf - Bump Dependencies
++    implementation("org.jline:jline-terminal-jansi:3.27.1") // Leaf - Bump Dependencies
      implementation("net.minecrell:terminalconsoleappender:1.3.0")
      implementation("net.kyori:adventure-text-serializer-ansi:4.17.0") // Keep in sync with adventureVersion from Paper-API build file
      /*
@@ -25,15 +25,15 @@ index 0d250a691a0f28770cbd9f847d8cd00af866b583..86c4b60c478817001d622397972ddc1c
 -    implementation("org.apache.logging.log4j:log4j-core:2.19.0") // Paper - implementation
 -    log4jPlugins.annotationProcessorConfigurationName("org.apache.logging.log4j:log4j-core:2.19.0") // Paper - Needed to generate meta for our Log4j plugins
 +    // Leaf start - Bump Dependencies
-+    implementation("org.apache.logging.log4j:log4j-core:2.23.1") // Paper - implementation
-+    log4jPlugins.annotationProcessorConfigurationName("org.apache.logging.log4j:log4j-core:2.23.1") // Paper - Needed to generate meta for our Log4j plugins
++    implementation("org.apache.logging.log4j:log4j-core:2.24.1") // Paper - implementation
++    log4jPlugins.annotationProcessorConfigurationName("org.apache.logging.log4j:log4j-core:2.24.1") // Paper - Needed to generate meta for our Log4j plugins
      runtimeOnly(log4jPlugins.output)
      alsoShade(log4jPlugins.output)
 -    implementation("io.netty:netty-codec-haproxy:4.1.97.Final") // Paper - Add support for proxy protocol
-+    implementation("io.netty:netty-codec-haproxy:4.1.112.Final") // Paper - Add support for proxy protocol
++    implementation("io.netty:netty-codec-haproxy:4.1.114.Final") // Paper - Add support for proxy protocol
      // Paper end
 -    implementation("org.apache.logging.log4j:log4j-iostreams:2.22.1") // Paper - remove exclusion
-+    implementation("org.apache.logging.log4j:log4j-iostreams:2.23.1") // Paper - remove exclusion
++    implementation("org.apache.logging.log4j:log4j-iostreams:2.24.1") // Paper - remove exclusion
 +    // Leaf end - Bump Dependencies
      implementation("org.ow2.asm:asm-commons:9.7.1")
      implementation("org.spongepowered:configurate-yaml:4.2.0-SNAPSHOT") // Paper - config files
@@ -41,11 +41,12 @@ index 0d250a691a0f28770cbd9f847d8cd00af866b583..86c4b60c478817001d622397972ddc1c
 -    runtimeOnly("org.xerial:sqlite-jdbc:3.46.0.0")
 -    runtimeOnly("com.mysql:mysql-connector-j:8.4.0")
 -    runtimeOnly("com.lmax:disruptor:3.4.4") // Paper
-+    runtimeOnly("org.xerial:sqlite-jdbc:3.46.1.0") // Leaf - Bump Dependencies
-+    runtimeOnly("com.mysql:mysql-connector-j:8.4.0") // Dreeam TODO - Update to 9.0.0
++    runtimeOnly("org.xerial:sqlite-jdbc:3.47.0.0") // Leaf - Bump Dependencies
++    runtimeOnly("com.mysql:mysql-connector-j:9.1.0") // Leaf - Bump Dependencies
 +    runtimeOnly("com.lmax:disruptor:3.4.4") // Paper // Leaf - Bump Dependencies // Dreeam TODO - Waiting Log4j 3.x to support disruptor 4.0.0
      // Paper start - Use Velocity cipher
-     implementation("com.velocitypowered:velocity-native:3.3.0-SNAPSHOT") {
+-    implementation("com.velocitypowered:velocity-native:3.3.0-SNAPSHOT") {
++    implementation("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT") { // Leaf - Bump Dependencies
          isTransitive = false
      }
      // Paper end - Use Velocity cipher
@@ -61,28 +62,32 @@ index 0d250a691a0f28770cbd9f847d8cd00af866b583..86c4b60c478817001d622397972ddc1c
  
      // Purpur start
      implementation("org.mozilla:rhino-runtime:1.7.15")
-@@ -60,11 +64,11 @@ dependencies {
+@@ -60,13 +64,13 @@ dependencies {
      implementation("dev.omega24:upnp4j:1.0")
      // Purpur end
  
 -    testImplementation("io.github.classgraph:classgraph:4.8.47") // Paper - mob goal test
 -    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-+    testImplementation("io.github.classgraph:classgraph:4.8.175") // Paper - mob goal test // Leaf - Bump Dependencies
-+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0") // Leaf - Bump Dependencies
-     testImplementation("org.junit.platform:junit-platform-suite-engine:1.10.0")
+-    testImplementation("org.junit.platform:junit-platform-suite-engine:1.10.0")
 -    testImplementation("org.hamcrest:hamcrest:2.2")
 -    testImplementation("org.mockito:mockito-core:5.14.1")
++    testImplementation("io.github.classgraph:classgraph:4.8.177") // Paper - mob goal test // Leaf - Bump Dependencies
++    testImplementation("org.junit.jupiter:junit-jupiter:5.11.3") // Leaf - Bump Dependencies
++    testImplementation("org.junit.platform:junit-platform-suite-engine:1.10.3")
 +    testImplementation("org.hamcrest:hamcrest:3.0")
-+    testImplementation("org.mockito:mockito-core:5.14.") // Leaf - Bump Dependencies
++    testImplementation("org.mockito:mockito-core:5.14.2") // Leaf - Bump Dependencies
      testImplementation("org.ow2.asm:asm-tree:9.7.1")
-     testImplementation("org.junit-pioneer:junit-pioneer:2.2.0") // Paper - CartesianTest
+-    testImplementation("org.junit-pioneer:junit-pioneer:2.2.0") // Paper - CartesianTest
++    testImplementation("org.junit-pioneer:junit-pioneer:2.3.0") // Paper - CartesianTest // Leaf - Bump Dependencies
      implementation("net.neoforged:srgutils:1.0.9") // Paper - mappings handling
+     implementation("net.neoforged:AutoRenamingTool:2.0.3") // Paper - remap plugins
+     // Paper start - Remap reflection
 @@ -79,6 +83,8 @@ dependencies {
      implementation("me.lucko:spark-api:0.1-20240720.200737-2")
      implementation("me.lucko:spark-paper:1.10.105-SNAPSHOT")
      // Paper end - spark
 +
-+    implementation("io.netty:netty-all:4.1.112.Final") // Leaf - Bump Dependencies // Dreeam TODO - Update to 4.2.0
++    implementation("io.netty:netty-all:4.1.114.Final") // Leaf - Bump Dependencies // Dreeam TODO - Update to 4.2.0
  }
  
  paperweight {

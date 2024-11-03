@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Fri, 25 Oct 2024 22:27:07 -0400
+Subject: [PATCH] Cache tile entity position
+
+Check if there is a way to cache isRemoved without problem
+
+diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
+index ae693e08434d251ee57b89d606d3cbd51288d496..61d6f80af62fcc48c16def1905cc57c417fe90a4 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
+@@ -1002,13 +1002,16 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+     private class RebindableTickingBlockEntityWrapper implements TickingBlockEntity {
+ 
+         private TickingBlockEntity ticker;
++        private BlockPos cachedPos; // Leaf - Cache tile entity position
+ 
+         RebindableTickingBlockEntityWrapper(final LevelChunk wrapped, final TickingBlockEntity tickingblockentity) {
+             this.ticker = tickingblockentity;
++            this.cachedPos = this.ticker.getPos(); // Leaf - Cache tile entity position
+         }
+ 
+         void rebind(TickingBlockEntity wrapped) {
+             this.ticker = wrapped;
++            this.cachedPos = this.ticker.getPos(); // Leaf - Cache tile entity position
+         }
+ 
+         @Override
+@@ -1023,7 +1026,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+ 
+         @Override
+         public BlockPos getPos() {
+-            return this.ticker.getPos();
++            return this.cachedPos; // Leaf - Cache tile entity position
+         }
+ 
+         @Override
+@@ -1041,10 +1044,12 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+         private final T blockEntity;
+         private final BlockEntityTicker<T> ticker;
+         private boolean loggedInvalidBlockState;
++        private BlockPos cachedPos; // Leaf - Cache tile entity position
+ 
+         BoundTickingBlockEntity(final BlockEntity tileentity, final BlockEntityTicker blockentityticker) {
+             this.blockEntity = (T) tileentity; // CraftBukkit - decompile error
+             this.ticker = blockentityticker;
++            this.cachedPos = this.blockEntity.getBlockPos(); // Leaf - Cache tile entity position
+         }
+ 
+         @Override
+@@ -1088,7 +1093,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+ 
+         @Override
+         public BlockPos getPos() {
+-            return this.blockEntity.getBlockPos();
++            return this.cachedPos; // Leaf - Cache tile entity position
+         }
+ 
+         @Override

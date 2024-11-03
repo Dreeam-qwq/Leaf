@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dueris <jedimastertoothless@hotmail.com>
+Date: Fri, 18 Oct 2024 23:25:34 -0700
+Subject: [PATCH] Canvas: Use VT executor for noise generating
+
+Original project: https://github.com/CraftCanvasMC/Canvas
+
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java b/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+index c991da3d975e07f3e1e59d5b2e91ed629ea608e6..e3b6dd8a8cca9149aab63e68d0a513c06091b5fa 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+@@ -267,8 +267,32 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
+ 
+     }
+ 
++    private static final java.util.concurrent.ExecutorService noiseGenExecutor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor(); // Canvas - Use VT executor for noise generating
+     @Override
+     public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState noiseConfig, StructureManager structureAccessor, ChunkAccess chunk) {
++        // Canvas start - Use VT executor for noise generating
++        if (true) {
++            NoiseSettings settings = this.settings.value().noiseSettings().clampToHeightAccessor(chunk.getHeightAccessorForGeneration());
++            int miny = settings.minY();
++            int minyDiv = Mth.floorDiv(miny, settings.getCellHeight());
++            int cellHeightDiv = Mth.floorDiv(settings.height(), settings.getCellHeight());
++
++            if (cellHeightDiv <= 0) return CompletableFuture.completedFuture(chunk);
++
++            int startIndex = chunk.getSectionIndex(cellHeightDiv * settings.getCellHeight() - 1 + miny);
++            int minYIndex = chunk.getSectionIndex(miny);
++
++            LevelChunkSection[] sections = chunk.getSections();
++            for (int i = startIndex; i >= minYIndex; --i) sections[i].acquire();
++
++            return CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName(
++                    "wgen_fill_noise",
++                    () -> this.doFill(blender, structureAccessor, noiseConfig, chunk, minyDiv, cellHeightDiv)
++            ), Util.backgroundExecutor()).whenCompleteAsync((result, ignored) -> {
++                for (int i = startIndex; i >= minYIndex; --i) sections[i].release();
++            }, noiseGenExecutor);
++        }
++        // Canvas end - Use VT executor for noise generating
+         NoiseSettings noisesettings = ((NoiseGeneratorSettings) this.settings.value()).noiseSettings().clampToHeightAccessor(chunk.getHeightAccessorForGeneration());
+         int i = noisesettings.minY();
+         int j = Mth.floorDiv(i, noisesettings.getCellHeight());

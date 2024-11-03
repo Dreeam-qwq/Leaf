@@ -1,0 +1,110 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Tue, 17 Sep 2024 16:29:23 -0700
+Subject: [PATCH] Moonrise: Optimise countEntries for low size SimpleBitStorage
+
+Original license: GPLv3
+Original project:
+- https://github.com/Tuinity/Moonrise
+- https://github.com/PaperMC/Paper
+
+https://github.com/Tuinity/Moonrise/commit/c2e2f0b9f20abb4c2247ffbaba892b3e364f7424
+
+We can use a simple array lookup table by palette id when the
+number of palette entries is low. This eliminates the need for
+the map lookup on each entry.
+
+diff --git a/src/main/java/net/minecraft/util/SimpleBitStorage.java b/src/main/java/net/minecraft/util/SimpleBitStorage.java
+index d11fad2a92fc39e9918b0000e737fcbfbe56a50c..5f613be5424a4955ec6cba2a1d4db110bd421849 100644
+--- a/src/main/java/net/minecraft/util/SimpleBitStorage.java
++++ b/src/main/java/net/minecraft/util/SimpleBitStorage.java
+@@ -407,39 +407,66 @@ public class SimpleBitStorage implements BitStorage {
+     }
+ 
+     // Paper start - block counting
++    // Moonrise start - Optimise countEntries for low size SimpleBitStorage
+     @Override
+     public final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> moonrise$countEntries() { // Moonrise - block counting optimisations
+         final int valuesPerLong = this.valuesPerLong;
+         final int bits = this.bits;
+-        final long mask = this.mask;
++        final long mask = (1L << bits) - 1L;
+         final int size = this.size;
+ 
+-        // we may be backed by global palette, so limit bits for init capacity
+-        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> ret = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>( // Moonrise - block counting optimisations
+-            1 << Math.min(6, bits)
+-        );
+-
+-        int index = 0;
+-
+-        for (long value : this.data) {
+-            int li = 0;
+-            do {
+-                final int paletteIdx = (int)(value & mask);
+-                value >>= bits;
++        if (bits <= 6) {
++            final it.unimi.dsi.fastutil.shorts.ShortArrayList[] byId = new it.unimi.dsi.fastutil.shorts.ShortArrayList[1 << bits];
++            final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> ret = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(1 << bits);
++
++            int index = 0;
++
++            for (long value : this.data) {
++                int li = 0;
++                do {
++                    final int paletteIdx = (int) (value & mask);
++                    value >>= bits;
++                    ++li;
++
++                    final it.unimi.dsi.fastutil.shorts.ShortArrayList coords = byId[paletteIdx];
++                    if (coords != null) {
++                        coords.add((short) index++);
++                        continue;
++                    } else {
++                        final it.unimi.dsi.fastutil.shorts.ShortArrayList newCoords = new it.unimi.dsi.fastutil.shorts.ShortArrayList(64);
++                        byId[paletteIdx] = newCoords;
++                        newCoords.add((short) index++);
++                        ret.put(paletteIdx, newCoords);
++                        continue;
++                    }
++                } while (li < valuesPerLong && index < size);
++            }
+ 
+-                ret.computeIfAbsent(paletteIdx, (final int key) -> {
+-                    // Moonrise start - block counting optimisations
+-                    return new it.unimi.dsi.fastutil.shorts.ShortArrayList();
+-                }).add((short) index);
+-                // Moonrise end - block counting optimisations
++            return ret;
++        } else {
++            final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> ret = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(
++                    1 << 6
++            );
++
++            int index = 0;
++
++            for (long value : this.data) {
++                int li = 0;
++                do {
++                    final int paletteIdx = (int) (value & mask);
++                    value >>= bits;
++                    ++li;
++
++                    ret.computeIfAbsent(paletteIdx, (final int key) -> {
++                        return new it.unimi.dsi.fastutil.shorts.ShortArrayList(64);
++                    }).add((short) index++);
++                } while (li < valuesPerLong && index < size);
++            }
+ 
+-                ++li;
+-                ++index;
+-            } while (li < valuesPerLong && index < size);
++            return ret;
+         }
+-
+-        return ret;
+     }
++    // Moonrise end - Optimise countEntries for low size SimpleBitStorage
+     // Paper end - block counting
+ 
+     public static class InitializationException extends RuntimeException {

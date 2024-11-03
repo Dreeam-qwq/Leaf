@@ -1,0 +1,504 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Tue, 13 Aug 2024 23:53:27 -0700
+Subject: [PATCH] Moonrise: block counting optimisations
+
+Original license: GPLv3
+Original project:
+- https://github.com/Tuinity/Moonrise
+- https://github.com/PaperMC/Paper
+
+https://github.com/Tuinity/Moonrise/commit/fc9d35c4b0869a82d1939cf306f75b048a5524b2
+https://github.com/Tuinity/Moonrise/commit/1374ea34eeb539bbefd35ffff8c0324bfbf065a2
+
+Since we no longer use the state stored directly in the
+IBlockDataList, it makes no sense to use IBlockDataList
+at all.
+
+And further more, we can store a position (ranging from 0-4095) into a short,
+so we can use ShortList to cut the memory usage in half.
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/common/list/ShortList.java b/src/main/java/ca/spottedleaf/moonrise/common/list/ShortList.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ca5928b132aadb11772af48680362c8fa770f115
+--- /dev/null
++++ b/src/main/java/ca/spottedleaf/moonrise/common/list/ShortList.java
+@@ -0,0 +1,79 @@
++package ca.spottedleaf.moonrise.common.list;
++
++import it.unimi.dsi.fastutil.shorts.Short2ShortOpenHashMap;
++
++import java.util.Arrays;
++
++public final class ShortList {
++
++    private final Short2ShortOpenHashMap map = new Short2ShortOpenHashMap();
++
++    {
++        this.map.defaultReturnValue(Short.MIN_VALUE);
++    }
++
++    private static final short[] EMPTY_LIST = new short[0];
++
++    private short[] byIndex = EMPTY_LIST;
++    private short count;
++
++    public int size() {
++        return (int) this.count;
++    }
++
++    public short getRaw(final int index) {
++        return this.byIndex[index];
++    }
++
++    public void setMinCapacity(final int len) {
++        final short[] byIndex = this.byIndex;
++        if (byIndex.length < len) {
++            this.byIndex = Arrays.copyOf(byIndex, len);
++        }
++    }
++
++    public boolean add(final short value) {
++        final int count = (int) this.count;
++        final short currIndex = this.map.putIfAbsent(value, (short) count);
++
++        if (currIndex != Short.MIN_VALUE) {
++            return false; // already in this list
++        }
++
++        short[] list = this.byIndex;
++
++        if (list.length == count) {
++            // resize required
++            list = this.byIndex = Arrays.copyOf(list, (int) Math.max(4L, count * 2L)); // overflow results in negative
++        }
++
++        list[count] = value;
++        this.count = (short) (count + 1);
++
++        return true;
++    }
++
++    public boolean remove(final short value) {
++        final short index = this.map.remove(value);
++        if (index == Short.MIN_VALUE) {
++            return false;
++        }
++
++        // move the entry at the end to this index
++        final short endIndex = --this.count;
++        final short end = this.byIndex[endIndex];
++        if (index != endIndex) {
++            // not empty after this call
++            this.map.put(end, index);
++        }
++        this.byIndex[(int) index] = end;
++        this.byIndex[(int) endIndex] = (short) 0;
++
++        return true;
++    }
++
++    public void clear() {
++        this.count = (short) 0;
++        this.map.clear();
++    }
++}
+diff --git a/src/main/java/ca/spottedleaf/moonrise/patches/block_counting/BlockCountingBitStorage.java b/src/main/java/ca/spottedleaf/moonrise/patches/block_counting/BlockCountingBitStorage.java
+index aef4fc0d3c272febe675d1ac846b88e58b4e7533..7999509d62cbcf0f9e600d1f7c7480c932bd1c47 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/patches/block_counting/BlockCountingBitStorage.java
++++ b/src/main/java/ca/spottedleaf/moonrise/patches/block_counting/BlockCountingBitStorage.java
+@@ -2,9 +2,10 @@ package ca.spottedleaf.moonrise.patches.block_counting;
+ 
+ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+ import it.unimi.dsi.fastutil.ints.IntArrayList;
++import it.unimi.dsi.fastutil.shorts.ShortArrayList;
+ 
+ public interface BlockCountingBitStorage {
+ 
+-    public Int2ObjectOpenHashMap<IntArrayList> moonrise$countEntries();
++    public Int2ObjectOpenHashMap<ShortArrayList> moonrise$countEntries(); // Moonrise - block counting optimisations
+ 
+ }
+diff --git a/src/main/java/ca/spottedleaf/moonrise/patches/block_counting/BlockCountingChunkSection.java b/src/main/java/ca/spottedleaf/moonrise/patches/block_counting/BlockCountingChunkSection.java
+index a08ddb0598d44368af5b6bace971ee31edf9919e..326114473df6db690e9ced6f8749cbfd0cc17610 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/patches/block_counting/BlockCountingChunkSection.java
++++ b/src/main/java/ca/spottedleaf/moonrise/patches/block_counting/BlockCountingChunkSection.java
+@@ -1,11 +1,11 @@
+ package ca.spottedleaf.moonrise.patches.block_counting;
+ 
+-import ca.spottedleaf.moonrise.common.list.IBlockDataList;
++import ca.spottedleaf.moonrise.common.list.ShortList;
+ 
+ public interface BlockCountingChunkSection {
+ 
+-    public int moonrise$getSpecialCollidingBlocks();
++    public boolean moonrise$hasSpecialCollidingBlocks(); // Moonrise - block counting optimisations
+ 
+-    public IBlockDataList moonrise$getTickingBlockList();
++    public ShortList moonrise$getTickingBlockList(); // Moonrise - block counting optimisations
+ 
+ }
+diff --git a/src/main/java/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java b/src/main/java/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
+index 6a3f1d5362b29db321d6c03d0f5ab5e6c915a02d..fd86a5f34cc280caf62634639b427791ab899d0f 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
++++ b/src/main/java/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
+@@ -1656,7 +1656,7 @@ public final class CollisionUtil {
+                         continue;
+                     }
+ 
+-                    final boolean hasSpecial = ((ca.spottedleaf.moonrise.patches.block_counting.BlockCountingChunkSection)section).moonrise$getSpecialCollidingBlocks() != 0;
++                    final boolean hasSpecial = ((ca.spottedleaf.moonrise.patches.block_counting.BlockCountingChunkSection)section).moonrise$hasSpecialCollidingBlocks(); // Moonrise - block counting optimisations
+                     final int sectionAdjust = !hasSpecial ? 1 : 0;
+ 
+                     final net.minecraft.world.level.chunk.PalettedContainer<net.minecraft.world.level.block.state.BlockState> blocks = section.states;
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 991859906cf1278663ba75bf0992f002e056b244..ee0403cf2d6c088fa02a68432bb599094bc473f1 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -841,10 +841,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ca.spottedleaf.
+                 continue;
+             }
+ 
+-            final ca.spottedleaf.moonrise.common.list.IBlockDataList tickList = ((ca.spottedleaf.moonrise.patches.block_counting.BlockCountingChunkSection)section).moonrise$getTickingBlockList();
+-            if (tickList.size() == 0) {
+-                continue;
+-            }
++            final ca.spottedleaf.moonrise.common.list.ShortList tickList = ((ca.spottedleaf.moonrise.patches.block_counting.BlockCountingChunkSection) section).moonrise$getTickingBlockList(); // Moonrise - block counting optimisations
+ 
+             for (int i = 0; i < tickSpeed; ++i) {
+                 final int tickingBlocks = tickList.size();
+@@ -855,15 +852,13 @@ public class ServerLevel extends Level implements WorldGenLevel, ca.spottedleaf.
+                     continue;
+                 }
+ 
+-                final long raw = tickList.getRaw(index);
+-                final int location = ca.spottedleaf.moonrise.common.list.IBlockDataList.getLocationFromRaw(raw);
+-                final int randomX = (location & 15);
+-                final int randomY = ((location >>> (4 + 4)) & 255);
+-                final int randomZ = ((location >>> 4) & 15);
+-                final BlockState state = states.get(randomX | (randomZ << 4) | (randomY << 8));
++                // Moonrise start - block counting optimisations
++                final int location = (int) tickList.getRaw(index) & 0xFFFF;
++                final BlockState state = states.get(location);
++                // Moonrise end - block counting optimisations
+ 
+                 // do not use a mutable pos, as some random tick implementations store the input without calling immutable()!
+-                final BlockPos pos = new BlockPos(randomX | offsetX, randomY | offsetY, randomZ | offsetZ);
++                final BlockPos pos = new BlockPos((location & 15) | offsetX, ((location >>> (4 + 4)) & 15) | offsetY, ((location >>> 4) & 15) | offsetZ); // Moonrise - block counting optimisations
+ 
+                 state.randomTick((ServerLevel)(Object)this, pos, random);
+                 if (tickFluids) {
+diff --git a/src/main/java/net/minecraft/util/BitStorage.java b/src/main/java/net/minecraft/util/BitStorage.java
+index f852d2c0c0e37df78dbea28e183aee3572978dee..2d5bc7320cd933668a8dde1cb2e7e66b6a0c7ade 100644
+--- a/src/main/java/net/minecraft/util/BitStorage.java
++++ b/src/main/java/net/minecraft/util/BitStorage.java
+@@ -24,16 +24,18 @@ public interface BitStorage extends ca.spottedleaf.moonrise.patches.block_counti
+ 
+     // Paper start - block counting
+     // provide default impl in case mods implement this...
++    // Moonrise start - block counting optimisations
+     @Override
+-    public default it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.ints.IntArrayList> moonrise$countEntries() {
+-        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.ints.IntArrayList> ret = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>();
++    public default it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> moonrise$countEntries() {
++        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> ret = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>();
+ 
+         final int size = this.getSize();
+         for (int index = 0; index < size; ++index) {
+             final int paletteIdx = this.get(index);
+             ret.computeIfAbsent(paletteIdx, (final int key) -> {
+-                return new it.unimi.dsi.fastutil.ints.IntArrayList();
+-            }).add(index);
++                return new it.unimi.dsi.fastutil.shorts.ShortArrayList();
++            }).add((short) index);
++            // Moonrise end - block counting optimisations
+         }
+ 
+         return ret;
+diff --git a/src/main/java/net/minecraft/util/SimpleBitStorage.java b/src/main/java/net/minecraft/util/SimpleBitStorage.java
+index 397aaa8beb4256404921df8799eb66f12aecf602..d11fad2a92fc39e9918b0000e737fcbfbe56a50c 100644
+--- a/src/main/java/net/minecraft/util/SimpleBitStorage.java
++++ b/src/main/java/net/minecraft/util/SimpleBitStorage.java
+@@ -408,14 +408,14 @@ public class SimpleBitStorage implements BitStorage {
+ 
+     // Paper start - block counting
+     @Override
+-    public final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.ints.IntArrayList> moonrise$countEntries() {
++    public final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> moonrise$countEntries() { // Moonrise - block counting optimisations
+         final int valuesPerLong = this.valuesPerLong;
+         final int bits = this.bits;
+         final long mask = this.mask;
+         final int size = this.size;
+ 
+         // we may be backed by global palette, so limit bits for init capacity
+-        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.ints.IntArrayList> ret = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(
++        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> ret = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>( // Moonrise - block counting optimisations
+             1 << Math.min(6, bits)
+         );
+ 
+@@ -428,8 +428,10 @@ public class SimpleBitStorage implements BitStorage {
+                 value >>= bits;
+ 
+                 ret.computeIfAbsent(paletteIdx, (final int key) -> {
+-                    return new it.unimi.dsi.fastutil.ints.IntArrayList();
+-                }).add(index);
++                    // Moonrise start - block counting optimisations
++                    return new it.unimi.dsi.fastutil.shorts.ShortArrayList();
++                }).add((short) index);
++                // Moonrise end - block counting optimisations
+ 
+                 ++li;
+                 ++index;
+diff --git a/src/main/java/net/minecraft/util/ZeroBitStorage.java b/src/main/java/net/minecraft/util/ZeroBitStorage.java
+index b02a0d9c71550d39aad08ed0932043531b661305..e2c7c9ed8bf4dc2eb10fbed59c518a2a596a0e82 100644
+--- a/src/main/java/net/minecraft/util/ZeroBitStorage.java
++++ b/src/main/java/net/minecraft/util/ZeroBitStorage.java
+@@ -64,20 +64,22 @@ public class ZeroBitStorage implements BitStorage {
+     }
+ 
+     // Paper start - block counting
++    // Moonrise start - block counting optimisations
+     @Override
+-    public final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.ints.IntArrayList> moonrise$countEntries() {
++    public final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> moonrise$countEntries() {
+         final int size = this.size;
+ 
+-        final int[] raw = new int[size];
++        final short[] raw = new short[size];
+         for (int i = 0; i < size; ++i) {
+-            raw[i] = i;
++            raw[i] = (short) i;
+         }
+ 
+-        final it.unimi.dsi.fastutil.ints.IntArrayList coordinates = it.unimi.dsi.fastutil.ints.IntArrayList.wrap(raw, size);
++        final it.unimi.dsi.fastutil.shorts.ShortArrayList coordinates = it.unimi.dsi.fastutil.shorts.ShortArrayList.wrap(raw, size);
+ 
+-        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.ints.IntArrayList> ret = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(1);
++        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> ret = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(1);
+         ret.put(0, coordinates);
+         return ret;
++        // Moonrise end - block counting optimisations
+     }
+     // Paper end - block counting
+ 
+diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
+index 33747ef8211066155cd70ce2818862cf3e79db53..5b54d956486cec3c39824b15e37bf090798c5047 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
++++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
+@@ -28,23 +28,29 @@ public class LevelChunkSection implements ca.spottedleaf.moonrise.patches.block_
+     public short fluidStateCount; // Gale - Airplane - reduce entity fluid lookups if no fluids
+ 
+     // Paper start - block counting
+-    private static final it.unimi.dsi.fastutil.ints.IntArrayList FULL_LIST = new it.unimi.dsi.fastutil.ints.IntArrayList(16*16*16);
++    private static final it.unimi.dsi.fastutil.shorts.ShortArrayList FULL_LIST = new it.unimi.dsi.fastutil.shorts.ShortArrayList(16 * 16 * 16); // Moonrise - block counting optimisations
+     static {
+-        for (int i = 0; i < (16*16*16); ++i) {
++        for (short i = 0; i < (16 * 16 * 16); ++i) { // Moonrise - block counting optimisations
+             FULL_LIST.add(i);
+         }
+     }
+ 
+-    private int specialCollidingBlocks;
+-    private final ca.spottedleaf.moonrise.common.list.IBlockDataList tickingBlocks = new ca.spottedleaf.moonrise.common.list.IBlockDataList();
++    // Moonrise start - block counting optimisations
++    private boolean isClient;
++    private static final short CLIENT_FORCED_SPECIAL_COLLIDING_BLOCKS = (short) 9999;
++    private short specialCollidingBlocks;
++    private final ca.spottedleaf.moonrise.common.list.ShortList tickingBlocks = new ca.spottedleaf.moonrise.common.list.ShortList();
++    // Moonrise end - block counting optimisations
+ 
+     @Override
+-    public final int moonrise$getSpecialCollidingBlocks() {
+-        return this.specialCollidingBlocks;
++    // Moonrise start - block counting optimisations
++    public final boolean moonrise$hasSpecialCollidingBlocks() {
++        return this.specialCollidingBlocks != 0;
+     }
++    // Moonrise end - block counting optimisations
+ 
+     @Override
+-    public final ca.spottedleaf.moonrise.common.list.IBlockDataList moonrise$getTickingBlockList() {
++    public final ca.spottedleaf.moonrise.common.list.ShortList moonrise$getTickingBlockList() { // Moonrise - block counting optimisations
+         return this.tickingBlocks;
+     }
+     // Paper end - block counting
+@@ -84,6 +90,45 @@ public class LevelChunkSection implements ca.spottedleaf.moonrise.patches.block_
+         return this.setBlockState(x, y, z, state, true);
+     }
+ 
++    // Moonrise start - block counting optimisations
++    private void updateBlockCallback(final int x, final int y, final int z, final BlockState newState,
++                                     final BlockState oldState) {
++        if (oldState == newState) {
++            return;
++        }
++
++        if (this.isClient) {
++            if (ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.isSpecialCollidingBlock(newState)) {
++                this.specialCollidingBlocks = CLIENT_FORCED_SPECIAL_COLLIDING_BLOCKS;
++            }
++            return;
++        }
++
++        final boolean isSpecialOld = ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.isSpecialCollidingBlock(oldState);
++        final boolean isSpecialNew = ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.isSpecialCollidingBlock(newState);
++        if (isSpecialOld != isSpecialNew) {
++            if (isSpecialOld) {
++                --this.specialCollidingBlocks;
++            } else {
++                ++this.specialCollidingBlocks;
++            }
++        }
++
++        final boolean oldTicking = oldState.isRandomlyTicking();
++        final boolean newTicking = newState.isRandomlyTicking();
++        if (oldTicking != newTicking) {
++            final ca.spottedleaf.moonrise.common.list.ShortList tickingBlocks = this.tickingBlocks;
++            final short position = (short) (x | (z << 4) | (y << (4 + 4)));
++
++            if (oldTicking) {
++                tickingBlocks.remove(position);
++            } else {
++                tickingBlocks.add(position);
++            }
++        }
++    }
++    // Moonrise end - block counting optimisations
++
+     public BlockState setBlockState(int x, int y, int z, BlockState state, boolean lock) {
+         BlockState iblockdata1;
+ 
+@@ -103,7 +148,7 @@ public class LevelChunkSection implements ca.spottedleaf.moonrise.patches.block_
+             }
+         }
+ 
+-        if (!fluid.isEmpty()) {
++        if (!!fluid.isRandomlyTicking()) { // Moonrise - block counting optimisations
+             --this.tickingFluidCount;
+             --this.fluidStateCount; // Gale - Airplane - reduce entity fluid lookups if no fluids
+         }
+@@ -115,26 +160,12 @@ public class LevelChunkSection implements ca.spottedleaf.moonrise.patches.block_
+             }
+         }
+ 
+-        if (!fluid1.isEmpty()) {
++        if (!!fluid1.isRandomlyTicking()) { // Moonrise - block counting optimisations
+             ++this.tickingFluidCount;
+             ++this.fluidStateCount; // Gale - Airplane - reduce entity fluid lookups if no fluids
+         }
+ 
+-        // Paper start - block counting
+-        if (ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.isSpecialCollidingBlock(iblockdata1)) {
+-            --this.specialCollidingBlocks;
+-        }
+-        if (ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.isSpecialCollidingBlock(state)) {
+-            ++this.specialCollidingBlocks;
+-        }
+-
+-        if (iblockdata1.isRandomlyTicking()) {
+-            this.tickingBlocks.remove(x, y, z);
+-        }
+-        if (state.isRandomlyTicking()) {
+-            this.tickingBlocks.add(x, y, z, state);
+-        }
+-        // Paper end - block counting
++        this.updateBlockCallback(x, y, z, state, iblockdata1); // Moonrise - block counting optimisations
+ 
+         return iblockdata1;
+     }
+@@ -158,10 +189,12 @@ public class LevelChunkSection implements ca.spottedleaf.moonrise.patches.block_
+     public void recalcBlockCounts() {
+         // Paper start - block counting
+         // reset, then recalculate
+-        this.nonEmptyBlockCount = (short)0;
+-        this.tickingBlockCount = (short)0;
+-        this.tickingFluidCount = (short)0;
+-        this.specialCollidingBlocks = (short)0;
++        // Moonrise start - block counting optimisations
++        this.nonEmptyBlockCount = (short) 0;
++        this.tickingBlockCount = (short) 0;
++        this.tickingFluidCount = (short) 0;
++        this.specialCollidingBlocks = (short) 0;
++        // Moonrise end - block counting optimisations
+         this.tickingBlocks.clear();
+ 
+         if (this.maybeHas((final BlockState state) -> !state.isAir())) {
+@@ -170,18 +203,20 @@ public class LevelChunkSection implements ca.spottedleaf.moonrise.patches.block_
+             final int paletteSize = palette.getSize();
+             final net.minecraft.util.BitStorage storage = data.storage();
+ 
+-            final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.ints.IntArrayList> counts;
++            final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> counts; // Moonrise - block counting optimisations
+             if (paletteSize == 1) {
+                 counts = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(1);
+                 counts.put(0, FULL_LIST);
+             } else {
+-                counts = ((ca.spottedleaf.moonrise.patches.block_counting.BlockCountingBitStorage)storage).moonrise$countEntries();
++                counts = ((ca.spottedleaf.moonrise.patches.block_counting.BlockCountingBitStorage) storage).moonrise$countEntries(); // Moonrise - block counting optimisations
+             }
+ 
+-            for (final java.util.Iterator<it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry<it.unimi.dsi.fastutil.ints.IntArrayList>> iterator = counts.int2ObjectEntrySet().fastIterator(); iterator.hasNext();) {
+-                final it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry<it.unimi.dsi.fastutil.ints.IntArrayList> entry = iterator.next();
++            // Moonrise start - block counting optimisations
++            for (final java.util.Iterator<it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry<it.unimi.dsi.fastutil.shorts.ShortArrayList>> iterator = counts.int2ObjectEntrySet().fastIterator(); iterator.hasNext(); ) {
++                final it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry<it.unimi.dsi.fastutil.shorts.ShortArrayList> entry = iterator.next();
+                 final int paletteIdx = entry.getIntKey();
+-                final it.unimi.dsi.fastutil.ints.IntArrayList coordinates = entry.getValue();
++                final it.unimi.dsi.fastutil.shorts.ShortArrayList coordinates = entry.getValue();
++                // Moonrise end - block counting optimisations
+                 final int paletteCount = coordinates.size();
+ 
+                 final BlockState state = palette.valueFor(paletteIdx);
+@@ -191,25 +226,32 @@ public class LevelChunkSection implements ca.spottedleaf.moonrise.patches.block_
+                 }
+ 
+                 if (ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.isSpecialCollidingBlock(state)) {
+-                    this.specialCollidingBlocks += paletteCount;
++                    this.specialCollidingBlocks += (short) paletteCount; // Moonrise - block counting optimisations
+                 }
+-                this.nonEmptyBlockCount += paletteCount;
++                this.nonEmptyBlockCount += (short) paletteCount; // Moonrise - block counting optimisations
+                 if (state.isRandomlyTicking()) {
+-                    this.tickingBlockCount += paletteCount;
+-                    final int[] raw = coordinates.elements();
++                    // Moonrise start - block counting optimisations
++                    this.tickingBlockCount += (short) paletteCount;
++                    final short[] raw = coordinates.elements();
++                    final int rawLen = raw.length;
++
++                    final ca.spottedleaf.moonrise.common.list.ShortList tickingBlocks = this.tickingBlocks;
++
++                    tickingBlocks.setMinCapacity(Math.min((rawLen + tickingBlocks.size()) * 3 / 2, 16 * 16 * 16));
++                    // Moonrise end - block counting optimisations
+ 
+                     java.util.Objects.checkFromToIndex(0, paletteCount, raw.length);
+                     for (int i = 0; i < paletteCount; ++i) {
+-                        this.tickingBlocks.add(raw[i], state);
++                        tickingBlocks.add(raw[i]); // Moonrise - block counting optimisations
+                     }
+                 }
+ 
+                 final FluidState fluid = state.getFluidState();
+ 
+                 if (!fluid.isEmpty()) {
+-                    //this.nonEmptyBlockCount += count; // fix vanilla bug: make non empty block count correct
++                    //this.nonEmptyBlockCount += count; // fix vanilla bug: make non-empty block count correct // Moonrise - block counting optimisations
+                     if (fluid.isRandomlyTicking()) {
+-                        this.tickingFluidCount += paletteCount;
++                        this.tickingFluidCount += (short) paletteCount; // Moonrise - block counting optimisations
+                     }
+                     this.fluidStateCount++; // Gale - Airplane - reduce entity fluid lookups if no fluids
+                 }
+@@ -233,7 +275,11 @@ public class LevelChunkSection implements ca.spottedleaf.moonrise.patches.block_
+ 
+         datapaletteblock.read(buf);
+         this.biomes = datapaletteblock;
+-        this.recalcBlockCounts(); // Paper - block counting
++        // Moonrise start - block counting optimisations
++        this.isClient = true;
++        // force has special colliding blocks to be true
++        this.specialCollidingBlocks = this.nonEmptyBlockCount != (short) 0 && this.maybeHas(ca.spottedleaf.moonrise.patches.collisions.CollisionUtil::isSpecialCollidingBlock) ? CLIENT_FORCED_SPECIAL_COLLIDING_BLOCKS : (short) 0;
++        // Moonrise end - block counting optimisations
+     }
+ 
+     public void readBiomes(FriendlyByteBuf buf) {

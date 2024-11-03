@@ -20,7 +20,7 @@ index fca917561944017e032ea39ffb22cbd2c89b9f51..b4a51c54eb6a93d107a45fb01c9a3c9f
      // Paper end - Affects Spawning API
  
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Zombie.java b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
-index 7836f6142f1066d7f59724929ff7d8a2074bdfed..4b21a70ce040320eb8b1db9aa2de22bfafe4c3bb 100644
+index 49c37853a0c26cef749a8a5ef4130554c0319ad9..776e0295f0ba38157cabdc7ab5d0a3f845bad158 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Zombie.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
 @@ -392,7 +392,7 @@ public class Zombie extends Monster {

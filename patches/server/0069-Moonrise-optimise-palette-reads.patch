@@ -1,0 +1,364 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Thu, 24 Oct 2024 08:20:45 -0700
+Subject: [PATCH] Moonrise: optimise palette reads
+
+Original license: GPLv3
+Original project:
+- https://github.com/Tuinity/Moonrise
+- https://github.com/PaperMC/Paper
+
+This patch is based on the following mixin:
+"ca/spottedleaf/moonrise/mixin/fast_palette/CrudeIncrementalIntIdentityHashBiMapMixin.java"
+"ca/spottedleaf/moonrise/mixin/fast_palette/HashMapPaletteMixin.java"
+"ca/spottedleaf/moonrise/mixin/fast_palette/LinearPaletteMixin.java"
+"ca/spottedleaf/moonrise/mixin/fast_palette/PaletteMixin.java"
+"ca/spottedleaf/moonrise/mixin/fast_palette/PalettedContainerMixin.java"
+"ca/spottedleaf/moonrise/mixin/fast_palette/SingleValuePaletteMixin.java"
+
+Replace palette read with optimised version
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/patches/fast_palette/FastPalette.java b/src/main/java/ca/spottedleaf/moonrise/patches/fast_palette/FastPalette.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4a7abd239a9c59aa98947e7993962d75e9051902
+--- /dev/null
++++ b/src/main/java/ca/spottedleaf/moonrise/patches/fast_palette/FastPalette.java
+@@ -0,0 +1,9 @@
++package ca.spottedleaf.moonrise.patches.fast_palette;
++
++public interface FastPalette<T> {
++
++    public default T[] moonrise$getRawPalette(final FastPaletteData<T> src) {
++        return null;
++    }
++
++}
+diff --git a/src/main/java/ca/spottedleaf/moonrise/patches/fast_palette/FastPaletteData.java b/src/main/java/ca/spottedleaf/moonrise/patches/fast_palette/FastPaletteData.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4503f3495846a7d7ed082b9e24636044e4fbccd1
+--- /dev/null
++++ b/src/main/java/ca/spottedleaf/moonrise/patches/fast_palette/FastPaletteData.java
+@@ -0,0 +1,9 @@
++package ca.spottedleaf.moonrise.patches.fast_palette;
++
++public interface FastPaletteData<T> {
++
++    public T[] moonrise$getPalette();
++
++    public void moonrise$setPalette(final T[] palette);
++
++}
+diff --git a/src/main/java/net/minecraft/util/CrudeIncrementalIntIdentityHashBiMap.java b/src/main/java/net/minecraft/util/CrudeIncrementalIntIdentityHashBiMap.java
+index 61dee55417bc802e25b9ba2f271d32d8c12844a9..5794ce906fd562f84f09f45ebb6d742dbc3ff3df 100644
+--- a/src/main/java/net/minecraft/util/CrudeIncrementalIntIdentityHashBiMap.java
++++ b/src/main/java/net/minecraft/util/CrudeIncrementalIntIdentityHashBiMap.java
+@@ -7,7 +7,7 @@ import java.util.Iterator;
+ import javax.annotation.Nullable;
+ import net.minecraft.core.IdMap;
+ 
+-public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
++public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K>, ca.spottedleaf.moonrise.patches.fast_palette.FastPalette<K> { // Moonrise - optimise palette reads
+     private static final int NOT_FOUND = -1;
+     private static final Object EMPTY_SLOT = null;
+     private static final float LOADFACTOR = 0.8F;
+@@ -17,6 +17,16 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
+     private int nextId;
+     private int size;
+ 
++    // Moonrise start - optimise palette reads
++    private ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<K> reference;
++
++    @Override
++    public final K[] moonrise$getRawPalette(final ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<K> src) {
++        this.reference = src;
++        return this.byId;
++    }
++    // Moonrise end - optimise palette reads
++
+     private CrudeIncrementalIntIdentityHashBiMap(int size) {
+         this.keys = (K[])(new Object[size]);
+         this.values = new int[size];
+@@ -88,6 +98,12 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
+         this.byId = crudeIncrementalIntIdentityHashBiMap.byId;
+         this.nextId = crudeIncrementalIntIdentityHashBiMap.nextId;
+         this.size = crudeIncrementalIntIdentityHashBiMap.size;
++        // Moonrise start - optimise palette reads
++        final ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<K> ref = this.reference;
++        if (ref != null) {
++            ref.moonrise$setPalette(this.byId);
++        }
++        // Moonrise end - optimise palette reads
+     }
+ 
+     public void addMapping(K value, int id) {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/HashMapPalette.java b/src/main/java/net/minecraft/world/level/chunk/HashMapPalette.java
+index c5e1040c239874dcf20b79472bf690ee7f0a9e5f..02b97e22fd9a122cc8f1628ef3205e87145a89fb 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/HashMapPalette.java
++++ b/src/main/java/net/minecraft/world/level/chunk/HashMapPalette.java
+@@ -8,12 +8,19 @@ import net.minecraft.network.FriendlyByteBuf;
+ import net.minecraft.network.VarInt;
+ import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
+ 
+-public class HashMapPalette<T> implements Palette<T> {
++public class HashMapPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.patches.fast_palette.FastPalette<T> { // Moonrise - optimise palette reads
+     private final IdMap<T> registry;
+     private final CrudeIncrementalIntIdentityHashBiMap<T> values;
+     private final PaletteResize<T> resizeHandler;
+     private final int bits;
+ 
++    // Moonrise start - optimise palette reads
++    @Override
++    public final T[] moonrise$getRawPalette(final ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<T> container) {
++        return ((ca.spottedleaf.moonrise.patches.fast_palette.FastPalette<T>) this.values).moonrise$getRawPalette(container);
++    }
++    // Moonrise end - optimise palette reads
++
+     public HashMapPalette(IdMap<T> idList, int bits, PaletteResize<T> listener, List<T> entries) {
+         this(idList, bits, listener);
+         entries.forEach(this.values::add);
+diff --git a/src/main/java/net/minecraft/world/level/chunk/LinearPalette.java b/src/main/java/net/minecraft/world/level/chunk/LinearPalette.java
+index f4c3f2a49b8d023b8ef67529eba30cf31467d8bf..e070b9d805b86c0cf08804d1b14e580ab9986d7d 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/LinearPalette.java
++++ b/src/main/java/net/minecraft/world/level/chunk/LinearPalette.java
+@@ -7,13 +7,20 @@ import net.minecraft.network.FriendlyByteBuf;
+ import net.minecraft.network.VarInt;
+ import org.apache.commons.lang3.Validate;
+ 
+-public class LinearPalette<T> implements Palette<T> {
++public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.patches.fast_palette.FastPalette<T> { // Moonrise - optimise palette reads
+     private final IdMap<T> registry;
+     private final T[] values;
+     private final PaletteResize<T> resizeHandler;
+     private final int bits;
+     private int size;
+ 
++    // Moonrise start - optimise palette reads
++    @Override
++    public final T[] moonrise$getRawPalette(final ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<T> container) {
++        return this.values;
++    }
++    // Moonrise end - optimise palette reads
++
+     private LinearPalette(IdMap<T> idList, int bits, PaletteResize<T> listener, List<T> list) {
+         this.registry = idList;
+         this.values = (T[])(new Object[1 << bits]);
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Palette.java b/src/main/java/net/minecraft/world/level/chunk/Palette.java
+index e379f39cc6e03723a5323d8392b4c10bfde65115..91b16f0df26daa45f5a30eb36bdc9adac794779a 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Palette.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Palette.java
+@@ -5,7 +5,7 @@ import java.util.function.Predicate;
+ import net.minecraft.core.IdMap;
+ import net.minecraft.network.FriendlyByteBuf;
+ 
+-public interface Palette<T> {
++public interface Palette<T> extends ca.spottedleaf.moonrise.patches.fast_palette.FastPalette<T> { // Moonrise - optimise palette reads
+     int idFor(T object);
+ 
+     boolean maybeHas(Predicate<T> predicate);
+diff --git a/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java b/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
+index 21e33bb69c58c99ddc497f57b77561f19ed19c37..38298a20daaef2dfe6d3939bffb7660ac406a786 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
++++ b/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
+@@ -58,6 +58,33 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+         // this.threadingDetector.checkAndUnlock(); // Paper - disable this
+     }
+ 
++    // Moonrise start - optimise palette reads
++    private void updateData(final PalettedContainer.Data<T> data) {
++        if (data != null) {
++            ((ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<T>) (Object) data).moonrise$setPalette(
++                    ((ca.spottedleaf.moonrise.patches.fast_palette.FastPalette<T>) data.palette).moonrise$getRawPalette((ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<T>) (Object) data)
++            );
++        }
++    }
++
++    private T readPaletteSlow(final PalettedContainer.Data<T> data, final int paletteIdx) {
++        return data.palette.valueFor(paletteIdx);
++    }
++
++    private T readPalette(final PalettedContainer.Data<T> data, final int paletteIdx) {
++        final T[] palette = ((ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<T>) (Object) data).moonrise$getPalette();
++        if (palette == null) {
++            return this.readPaletteSlow(data, paletteIdx);
++        }
++
++        final T ret = palette[paletteIdx];
++        if (ret == null) {
++            throw new IllegalArgumentException("Palette index out of bounds");
++        }
++        return ret;
++    }
++    // Moonrise end - optimise palette reads
++
+     // Paper start - Anti-Xray - Add preset values
+     @Deprecated @io.papermc.paper.annotation.DoNotUse public static <T> Codec<PalettedContainer<T>> codecRW(IdMap<T> idList, Codec<T> entryCodec, PalettedContainer.Strategy paletteProvider, T defaultValue) { return PalettedContainer.codecRW(idList, entryCodec, paletteProvider, defaultValue, null); }
+     public static <T> Codec<PalettedContainer<T>> codecRW(IdMap<T> idList, Codec<T> entryCodec, PalettedContainer.Strategy paletteProvider, T defaultValue, T @org.jetbrains.annotations.Nullable [] presetValues) {
+@@ -130,6 +157,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+             }
+         }
+         // Paper end
++        this.updateData(this.data); // Moonrise - optimise palette reads
+     }
+ 
+     // Paper start - Anti-Xray - Add preset values
+@@ -139,6 +167,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+         this.registry = idList;
+         this.strategy = paletteProvider;
+         this.data = data;
++        this.updateData(this.data); // Moonrise - optimise palette reads
+     }
+ 
+     // Paper start - Anti-Xray - Add preset values
+@@ -150,6 +179,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+         this.registry = idList;
+         this.data = this.createOrReuseData(null, 0);
+         this.data.palette.idFor(object);
++        this.updateData(this.data); // Moonrise - optimise palette reads
+     }
+ 
+     private PalettedContainer.Data<T> createOrReuseData(@Nullable PalettedContainer.Data<T> previousData, int bits) {
+@@ -176,6 +206,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+         data2.copyFrom(data.palette, data.storage);
+         this.data = data2;
+         this.addPresetValues();
++        this.updateData(this.data); // Moonrise - optimise palette reads
+         return object == null ? -1 : data2.palette.idFor(object);
+         // Paper end
+     }
+@@ -208,9 +239,12 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+     }
+ 
+     private synchronized T getAndSet(int index, T value) { // Paper - synchronize
+-        int i = this.data.palette.idFor(value);
+-        int j = this.data.storage.getAndSet(index, i);
+-        return this.data.palette.valueFor(j);
++        // Moonrise start - optimise palette reads
++        final int paletteIdx = this.data.palette.idFor(value);
++        final PalettedContainer.Data<T> data = this.data;
++        final int prev = data.storage.getAndSet(index, paletteIdx);
++        return this.readPalette(data, prev);
++        // Moonrise end - optimise palette reads
+     }
+ 
+     public void set(int x, int y, int z, T value) {
+@@ -234,8 +268,10 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+     }
+ 
+     public T get(int index) { // Paper - public
+-        PalettedContainer.Data<T> data = this.data;
+-        return data.palette.valueFor(data.storage.get(index));
++        // Moonrise start - optimise palette reads
++        final PalettedContainer.Data<T> data = this.data;
++        return this.readPalette(data, data.storage.get(index));
++        // Moonrise end - optimise palette reads
+     }
+ 
+     @Override
+@@ -256,6 +292,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+             buf.readLongArray(data.storage.getRaw());
+             this.data = data;
+             this.addPresetValues(); // Paper - Anti-Xray - Add preset values (inefficient, but this isn't used by the server)
++            this.updateData(this.data); // Moonrise - optimise palette reads
+         } finally {
+             this.release();
+         }
+@@ -451,7 +488,44 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
+         void accept(T object, int count);
+     }
+ 
+-    static record Data<T>(PalettedContainer.Configuration<T> configuration, BitStorage storage, Palette<T> palette) {
++    // Moonrise start - optimise palette reads
++    public static final class Data<T> implements ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<T> {
++
++        private final PalettedContainer.Configuration<T> configuration;
++        private final BitStorage storage;
++        private final Palette<T> palette;
++
++        private T[] moonrise$palette;
++
++        public Data(final PalettedContainer.Configuration<T> configuration, final BitStorage storage, final Palette<T> palette) {
++            this.configuration = configuration;
++            this.storage = storage;
++            this.palette = palette;
++        }
++
++        public PalettedContainer.Configuration<T> configuration() {
++            return this.configuration;
++        }
++
++        public BitStorage storage() {
++            return this.storage;
++        }
++
++        public Palette<T> palette() {
++            return this.palette;
++        }
++
++        @Override
++        public final T[] moonrise$getPalette() {
++            return this.moonrise$palette;
++        }
++
++        @Override
++        public final void moonrise$setPalette(final T[] palette) {
++            this.moonrise$palette = palette;
++        }
++
++        // Moonrise end - optimise palette reads
+         public void copyFrom(Palette<T> palette, BitStorage storage) {
+             for (int i = 0; i < storage.getSize(); i++) {
+                 T object = palette.valueFor(storage.get(i));
+diff --git a/src/main/java/net/minecraft/world/level/chunk/SingleValuePalette.java b/src/main/java/net/minecraft/world/level/chunk/SingleValuePalette.java
+index 24b608cfcd6f39db02e682e5d8162dc4ad9fd6d6..868ebabdcb76f4c61c9fb01e8cc75ab77845f29c 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/SingleValuePalette.java
++++ b/src/main/java/net/minecraft/world/level/chunk/SingleValuePalette.java
+@@ -8,12 +8,24 @@ import net.minecraft.network.FriendlyByteBuf;
+ import net.minecraft.network.VarInt;
+ import org.apache.commons.lang3.Validate;
+ 
+-public class SingleValuePalette<T> implements Palette<T> {
++public class SingleValuePalette<T> implements Palette<T>, ca.spottedleaf.moonrise.patches.fast_palette.FastPalette<T> { // Moonrise - optimise palette reads
+     private final IdMap<T> registry;
+     @Nullable
+     private T value;
+     private final PaletteResize<T> resizeHandler;
+ 
++    // Moonrise start - optimise palette reads
++    private T[] rawPalette;
++
++    @Override
++    public final T[] moonrise$getRawPalette(final ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData<T> container) {
++        if (this.rawPalette != null) {
++            return this.rawPalette;
++        }
++        return this.rawPalette = (T[]) new Object[]{this.value};
++    }
++    // Moonrise end - optimise palette reads
++
+     public SingleValuePalette(IdMap<T> idList, PaletteResize<T> listener, List<T> entries) {
+         this.registry = idList;
+         this.resizeHandler = listener;
+@@ -33,6 +45,11 @@ public class SingleValuePalette<T> implements Palette<T> {
+             return this.resizeHandler.onResize(1, object);
+         } else {
+             this.value = object;
++            // Moonrise start - optimise palette reads
++            if (this.rawPalette != null) {
++                this.rawPalette[0] = object;
++            }
++            // Moonrise end - optimise palette reads
+             return 0;
+         }
+     }
+@@ -58,6 +75,11 @@ public class SingleValuePalette<T> implements Palette<T> {
+     @Override
+     public void read(FriendlyByteBuf buf) {
+         this.value = this.registry.byIdOrThrow(buf.readVarInt());
++        // Moonrise start - optimise palette reads
++        if (this.rawPalette != null) {
++            this.rawPalette[0] = this.value;
++        }
++        // Moonrise end - optimise palette reads
+     }
+ 
+     @Override

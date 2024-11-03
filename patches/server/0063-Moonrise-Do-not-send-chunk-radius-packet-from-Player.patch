@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Mon, 2 Sep 2024 16:36:20 -0700
+Subject: [PATCH] Moonrise: Do not send chunk radius packet from
+ PlayerList#setViewDistance
+
+Original license: GPLv3
+Original project: https://github.com/Tuinity/Moonrise
+
+https://github.com/Tuinity/Moonrise/commit/ae12fd4f7bff3d6917394db71a35624d176c47a7
+
+The underlying player chunk loader will do this for us. This fixes
+sending possibly the wrong view distance.
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java b/src/main/java/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+index a608f57ebca98eda88ad749d0aad021678be54f9..1f301caa36212c85b06a33c714cb1050c449fdba 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
++++ b/src/main/java/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+@@ -864,7 +864,7 @@ public final class RegionizedPlayerChunkLoader {
+             final int clientViewDistance = getClientViewDistance(this.player);
+             final int sendViewDistance = getSendViewDistance(loadViewDistance, clientViewDistance, playerDistances.sendViewDistance, worldDistances.sendViewDistance);
+ 
+-            // TODO check PlayerList diff in paper chunk system patch
++            // Moonrise - Do not send chunk radius packet from PlayerList#setViewDistance
+             // send view distances
+             this.player.connection.send(this.updateClientChunkRadius(sendViewDistance));
+             this.player.connection.send(this.updateClientSimulationDistance(tickViewDistance));
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 7d3dec682ca469a4e3f3f9bcd4120e040e6a8737..9ba3c4dc0285d1edcfc5d03de88bf9789b37b30b 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -1721,7 +1721,7 @@ public abstract class PlayerList {
+ 
+     public void setViewDistance(int viewDistance) {
+         this.viewDistance = viewDistance;
+-        this.broadcastAll(new ClientboundSetChunkCacheRadiusPacket(viewDistance));
++        //this.broadcastAll(new ClientboundSetChunkCacheRadiusPacket(viewDistance)); // Moonrise - Do not send chunk radius packet from PlayerList#setViewDistance
+         Iterator iterator = this.server.getAllLevels().iterator();
+ 
+         while (iterator.hasNext()) {

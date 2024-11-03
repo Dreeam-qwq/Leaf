@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Thu, 28 Jun 2018 22:13:44 -0400
+Subject: [PATCH] EMC: Default don't use blockstate snapshots
+
+Original license: MIT
+Original project: https://github.com/starlis/empirecraft
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index ac11f18690434922179b61ffcc3036dea025b0cb..72d30afa4c03aa82329f321a3a3ddd507cf94502 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -331,7 +331,7 @@ public class CraftBlock implements Block {
+ 
+     @Override
+     public BlockState getState() {
+-        return CraftBlockStates.getBlockState(this);
++        return CraftBlockStates.getBlockState(this, org.dreeam.leaf.config.modules.opt.TileEntitySnapshotCreation.enabled); // Leaf - EMC - default to not use snapshots
+     }
+ 
+     // Paper start
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockStates.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockStates.java
+index b7ff7af2513204b151340538d50a65c850bdb75f..836fe576a0250a3b002e91b8587935f3e83e5fd6 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockStates.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockStates.java
+@@ -236,7 +236,7 @@ public final class CraftBlockStates {
+ 
+     public static BlockState getBlockState(Block block) {
+         // Paper start
+-        return CraftBlockStates.getBlockState(block, true);
++        return CraftBlockStates.getBlockState(block, org.dreeam.leaf.config.modules.opt.TileEntitySnapshotCreation.enabled); // Leaf - default to not use snapshots
+     }
+     public static BlockState getBlockState(Block block, boolean useSnapshot) {
+         // Paper end

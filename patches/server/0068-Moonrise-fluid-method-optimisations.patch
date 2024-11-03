@@ -1,0 +1,325 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Thu, 24 Oct 2024 08:20:45 -0700
+Subject: [PATCH] Moonrise: fluid method optimisations
+
+Original license: GPLv3
+Original project:
+- https://github.com/Tuinity/Moonrise
+- https://github.com/PaperMC/Paper
+
+This patch is based on the following mixin:
+"ca/spottedleaf/moonrise/mixin/fluid/FlowingFluidMixin.java"
+"ca/spottedleaf/moonrise/mixin/fluid/FluidStateMixin.java"
+"ca/spottedleaf/moonrise/mixin/fluid/MappedRegistryMixin.java"
+
+Use cached result to avoid indirection
+
+For FlowingFluid#canPassThroughWall, try to avoid going to the cache for simple cases; additionally use better caching strategy
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/patches/fluid/FluidFluidState.java b/src/main/java/ca/spottedleaf/moonrise/patches/fluid/FluidFluidState.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..107c97089354edd35f330582f5e0c8a18e792a6e
+--- /dev/null
++++ b/src/main/java/ca/spottedleaf/moonrise/patches/fluid/FluidFluidState.java
+@@ -0,0 +1,5 @@
++package ca.spottedleaf.moonrise.patches.fluid;
++
++public interface FluidFluidState {
++    public void moonrise$initCaches();
++}
+diff --git a/src/main/java/net/minecraft/core/MappedRegistry.java b/src/main/java/net/minecraft/core/MappedRegistry.java
+index f22d22ebcedcc9c20225677844c86a1ad27c4211..92c2c37363fe31147f94f645c49e54ac626951cd 100644
+--- a/src/main/java/net/minecraft/core/MappedRegistry.java
++++ b/src/main/java/net/minecraft/core/MappedRegistry.java
+@@ -78,6 +78,19 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
+     };
+     private final Object tagAdditionLock = new Object();
+ 
++    // Moonrise start - fluid method optimisations
++    private void injectFluidRegister(
++            final ResourceKey<?> resourceKey,
++            final T object
++    ) {
++        if (resourceKey.registryKey() == (Object) net.minecraft.core.registries.Registries.FLUID) {
++            for (final net.minecraft.world.level.material.FluidState possibleState : ((net.minecraft.world.level.material.Fluid) object).getStateDefinition().getPossibleStates()) {
++                ((ca.spottedleaf.moonrise.patches.fluid.FluidFluidState) (Object) possibleState).moonrise$initCaches();
++            }
++        }
++    }
++    // Moonrise end - fluid method optimisations
++
+     public MappedRegistry(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle) {
+         this(key, lifecycle, false);
+     }
+@@ -145,6 +158,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
+         this.toId.put(value, i);
+         this.registrationInfos.put(key, info);
+         this.registryLifecycle = this.registryLifecycle.add(info.lifecycle());
++        this.injectFluidRegister(key, value); // Moonrise - fluid method optimisations
+         return reference;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/material/FlowingFluid.java b/src/main/java/net/minecraft/world/level/material/FlowingFluid.java
+index cd45bfb51294e3510792320e2a159f1c6d554ce1..727b9c93a903d29d67548d34332eeedbdaac1f89 100644
+--- a/src/main/java/net/minecraft/world/level/material/FlowingFluid.java
++++ b/src/main/java/net/minecraft/world/level/material/FlowingFluid.java
+@@ -65,6 +65,48 @@ public abstract class FlowingFluid extends Fluid {
+     // Gale end - Airplane - improve fluid direction caching - use our own cache
+     private final Map<FluidState, VoxelShape> shapes = Maps.newIdentityHashMap();
+ 
++    // Moonrise start - fluid method optimisations
++    private FluidState sourceFalling;
++    private FluidState sourceNotFalling;
++
++    private static final int TOTAL_FLOWING_STATES = FALLING.getPossibleValues().size() * LEVEL.getPossibleValues().size();
++    private static final int MIN_LEVEL = LEVEL.getPossibleValues().stream().sorted().findFirst().get().intValue();
++
++    // index = (falling ? 1 : 0) + level*2
++    private FluidState[] flowingLookUp;
++    private volatile boolean init;
++
++    private static final int COLLISION_OCCLUSION_CACHE_SIZE = 2048;
++    private static final ThreadLocal<ca.spottedleaf.moonrise.patches.collisions.util.FluidOcclusionCacheKey[]> COLLISION_OCCLUSION_CACHE = ThreadLocal.withInitial(() -> new ca.spottedleaf.moonrise.patches.collisions.util.FluidOcclusionCacheKey[COLLISION_OCCLUSION_CACHE_SIZE]);
++
++
++    /**
++     * Due to init order, we need to use callbacks to initialise our state
++     */
++    private void init() {
++        synchronized (this) {
++            if (this.init) {
++                return;
++            }
++            this.flowingLookUp = new FluidState[TOTAL_FLOWING_STATES];
++            final FluidState defaultFlowState = this.getFlowing().defaultFluidState();
++            for (int i = 0; i < TOTAL_FLOWING_STATES; ++i) {
++                final int falling = i & 1;
++                final int level = (i >>> 1) + MIN_LEVEL;
++
++                this.flowingLookUp[i] = defaultFlowState.setValue(FALLING, falling == 1 ? Boolean.TRUE : Boolean.FALSE)
++                        .setValue(LEVEL, Integer.valueOf(level));
++            }
++
++            final FluidState defaultFallState = this.getSource().defaultFluidState();
++            this.sourceFalling = defaultFallState.setValue(FALLING, Boolean.TRUE);
++            this.sourceNotFalling = defaultFallState.setValue(FALLING, Boolean.FALSE);
++
++            this.init = true;
++        }
++    }
++    // Moonrise end - fluid method optimisations
++
+     public FlowingFluid() {}
+ 
+     @Override
+@@ -249,78 +291,65 @@ public abstract class FlowingFluid extends Fluid {
+         }
+     }
+ 
+-    private boolean canPassThroughWall(Direction face, BlockGetter world, BlockPos pos, BlockState state, BlockPos fromPos, BlockState fromState) {
+-        // Gale start - Airplane - improve fluid direction caching - modify to use our cache
+-        /*
+-        Object2ByteLinkedOpenHashMap object2bytelinkedopenhashmap;
+-
+-        if (!state.getBlock().hasDynamicShape() && !fromState.getBlock().hasDynamicShape()) {
+-            object2bytelinkedopenhashmap = (Object2ByteLinkedOpenHashMap) FlowingFluid.OCCLUSION_CACHE.get();
+-        } else {
+-            object2bytelinkedopenhashmap = null;
++    // Moonrise start - fluid method optimisations
++    private static boolean canPassThroughWall(final Direction direction, final BlockGetter level,
++                                              final BlockPos fromPos, final BlockState fromState,
++                                              final BlockPos toPos, final BlockState toState) {
++        if (((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) fromState).moonrise$emptyCollisionShape() & ((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) toState).moonrise$emptyCollisionShape()) {
++            // don't even try to cache simple cases
++            return true;
+         }
+-         */
+-        gg.airplane.structs.FluidDirectionCache<Block.BlockStatePairKey> cache = null;
+-
+-        if (!state.getBlock().hasDynamicShape() && !fromState.getBlock().hasDynamicShape()) {
+-            cache = localFluidDirectionCache.get();
++        if (((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) fromState).moonrise$occludesFullBlock() | ((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) toState).moonrise$occludesFullBlock()) {
++            // don't even try to cache simple cases
++            return false;
+         }
++        final ca.spottedleaf.moonrise.patches.collisions.util.FluidOcclusionCacheKey[] cache = ((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) fromState).moonrise$hasCache() & ((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) toState).moonrise$hasCache() ?
++                COLLISION_OCCLUSION_CACHE.get() : null;
+ 
+-        Block.BlockStatePairKey block_a;
++        final int keyIndex
++                = (((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) fromState).moonrise$uniqueId1() ^ ((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) toState).moonrise$uniqueId2() ^ ((ca.spottedleaf.moonrise.patches.collisions.util.CollisionDirection) (Object) direction).moonrise$uniqueId())
++                & (COLLISION_OCCLUSION_CACHE_SIZE - 1);
+ 
+-        /*
+-        if (object2bytelinkedopenhashmap != null) {
+-            block_a = new Block.BlockStatePairKey(state, fromState, face);
+-            byte b0 = object2bytelinkedopenhashmap.getAndMoveToFirst(block_a);
+-
+-            if (b0 != 127) {
+-                return b0 != 0;
+-            }
+-        } else {
+-            block_a = null;
+-        }
+-         */
+         if (cache != null) {
+-            block_a = new Block.BlockStatePairKey(state, fromState, face);
+-            Boolean flag = cache.getValue(block_a);
+-            if (flag != null) {
+-                return flag;
+-            }
+-        } else {
+-            block_a = null;
+-        }
+-
+-        VoxelShape voxelshape = state.getCollisionShape(world, pos);
+-        VoxelShape voxelshape1 = fromState.getCollisionShape(world, fromPos);
+-        boolean flag = !Shapes.mergedFaceOccludes(voxelshape, voxelshape1, face);
+-
+-        /*
+-        if (object2bytelinkedopenhashmap != null) {
+-            if (object2bytelinkedopenhashmap.size() == 200) {
+-                object2bytelinkedopenhashmap.removeLastByte();
++            final ca.spottedleaf.moonrise.patches.collisions.util.FluidOcclusionCacheKey cached = cache[keyIndex];
++            if (cached != null && cached.first() == fromState && cached.second() == toState && cached.direction() == direction) {
++                return cached.result();
+             }
+-
+-            object2bytelinkedopenhashmap.putAndMoveToFirst(block_a, (byte) (flag ? 1 : 0));
+         }
+-         */
++        final VoxelShape shape1 = fromState.getCollisionShape(level, fromPos);
++        final VoxelShape shape2 = toState.getCollisionShape(level, toPos);
++        final boolean result = !Shapes.mergedFaceOccludes(shape1, shape2, direction);
+         if (cache != null) {
+-            cache.putValue(block_a, flag);
++            // we can afford to replace in-use keys more often due to the excessive caching the collision patch does in mergedFaceOccludes
++            cache[keyIndex] = new ca.spottedleaf.moonrise.patches.collisions.util.FluidOcclusionCacheKey(fromState, toState, direction, result);
+         }
+-        // Gale end - Airplane - improve fluid direction caching - modify to use our cache
+ 
+-        return flag;
++        return result;
+     }
++    // Moonrise end - fluid method optimisations
+ 
+     public abstract Fluid getFlowing();
+ 
+     public FluidState getFlowing(int level, boolean falling) {
+-        return (FluidState) ((FluidState) this.getFlowing().defaultFluidState().setValue(FlowingFluid.LEVEL, level)).setValue(FlowingFluid.FALLING, falling);
++        // Moonrise start - fluid method optimisations
++        final int amount = level;
++        if (!this.init) {
++            this.init();
++        }
++        final int index = (falling ? 1 : 0) | ((amount - MIN_LEVEL) << 1);
++        return this.flowingLookUp[index];
++        // Moonrise end - fluid method optimisations
+     }
+ 
+     public abstract Fluid getSource();
+ 
+     public FluidState getSource(boolean falling) {
+-        return (FluidState) this.getSource().defaultFluidState().setValue(FlowingFluid.FALLING, falling);
++        // Moonrise start - fluid method optimisations
++        if (!this.init) {
++            this.init();
++        }
++        return falling ? this.sourceFalling : this.sourceNotFalling;
++        // Moonrise end - fluid method optimisations
+     }
+ 
+     protected abstract boolean canConvertToSource(Level world);
+diff --git a/src/main/java/net/minecraft/world/level/material/FluidState.java b/src/main/java/net/minecraft/world/level/material/FluidState.java
+index 14bb12d2a0066e8b020f2e0e670a7a5c74633623..49e07b51e7a516d71abc1976069be2d8b523c83c 100644
+--- a/src/main/java/net/minecraft/world/level/material/FluidState.java
++++ b/src/main/java/net/minecraft/world/level/material/FluidState.java
+@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.properties.Property;
+ import net.minecraft.world.phys.Vec3;
+ import net.minecraft.world.phys.shapes.VoxelShape;
+ 
+-public final class FluidState extends StateHolder<Fluid, FluidState> {
++public final class FluidState extends StateHolder<Fluid, FluidState> implements ca.spottedleaf.moonrise.patches.fluid.FluidFluidState { // Moonrise - fluid method optimisations
+     public static final Codec<FluidState> CODEC = codec(BuiltInRegistries.FLUID.byNameCodec(), Fluid::defaultFluidState).stable();
+     public static final int AMOUNT_MAX = 9;
+     public static final int AMOUNT_FULL = 8;
+@@ -32,20 +32,38 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
+         this.isEmpty = fluid.isEmpty(); // Paper - Perf: moved from isEmpty()
+     }
+ 
++    // Moonrise start - fluid method optimisations
++    private int amount;
++    //private boolean isEmpty;
++    private boolean isSource;
++    private float ownHeight;
++    private boolean isRandomlyTicking;
++    private BlockState legacyBlock;
++
++    @Override
++    public final void moonrise$initCaches() {
++        this.amount = this.getType().getAmount((FluidState) (Object) this);
++        //this.isEmpty = this.getType().isEmpty();
++        this.isSource = this.getType().isSource((FluidState) (Object) this);
++        this.ownHeight = this.getType().getOwnHeight((FluidState) (Object) this);
++        this.isRandomlyTicking = this.getType().isRandomlyTicking();
++    }
++    // Moonrise end - fluid method optimisations
++
+     public Fluid getType() {
+         return this.owner;
+     }
+ 
+     public boolean isSource() {
+-        return this.getType().isSource(this);
++        return this.isSource; // Moonrise - fluid method optimisations
+     }
+ 
+     public boolean isSourceOfType(Fluid fluid) {
+-        return this.owner == fluid && this.owner.isSource(this);
++        return this.isSource && this.owner == fluid;  // Moonrise - fluid method optimisations
+     }
+ 
+     public boolean isEmpty() {
+-        return this.isEmpty; // Paper - Perf: moved into constructor
++        return this.isEmpty; // Moonrise - Perf: moved into constructor
+     }
+ 
+     public float getHeight(BlockGetter world, BlockPos pos) {
+@@ -53,11 +71,11 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
+     }
+ 
+     public float getOwnHeight() {
+-        return this.getType().getOwnHeight(this);
++        return this.ownHeight; // Moonrise - fluid method optimisations
+     }
+ 
+     public int getAmount() {
+-        return this.getType().getAmount(this);
++        return this.amount; // Moonrise - fluid method optimisations
+     }
+ 
+     public boolean shouldRenderBackwardUpFace(BlockGetter world, BlockPos pos) {
+@@ -83,7 +101,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
+     }
+ 
+     public boolean isRandomlyTicking() {
+-        return this.getType().isRandomlyTicking();
++        return this.isRandomlyTicking; // Moonrise - fluid method optimisations
+     }
+ 
+     public void randomTick(Level world, BlockPos pos, RandomSource random) {
+@@ -95,7 +113,12 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
+     }
+ 
+     public BlockState createLegacyBlock() {
+-        return this.getType().createLegacyBlock(this);
++        // Moonrise start - fluid method optimisations
++        if (this.legacyBlock != null) {
++            return this.legacyBlock;
++        }
++        return this.legacyBlock = this.getType().createLegacyBlock((FluidState) (Object) this);
++        // Moonrise end - fluid method optimisations
+     }
+ 
+     @Nullable
