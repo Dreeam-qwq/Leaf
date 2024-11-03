@@ -23,7 +23,7 @@ But it is still recommending to use those packet based, virtual entity
 based NPC plugins, e.g. ZNPC Plus, Adyeshach, Fancy NPC, etc.
 
 diff --git a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
-index e42677bb004201efe1702779a78cc8d0ca05e80f..6676be8304e9415099ed423d3315180cafebd928 100644
+index e42677bb004201efe1702779a78cc8d0ca05e80f..3fa04bad6f5263c626c22ef0a795947391e1e710 100644
 --- a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
 +++ b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
 @@ -42,6 +42,12 @@ class PaperEventManager {
@@ -31,7 +31,7 @@ index e42677bb004201efe1702779a78cc8d0ca05e80f..6676be8304e9415099ed423d3315180c
              throw new IllegalStateException(event.getEventName() + " may only be triggered asynchronously.");
          } else if (!event.isAsynchronous() && !this.server.isPrimaryThread() && !this.server.isStopping()) {
 +            // Leaf start - Multithreaded tracker
-+            if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled) {
++            if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled && Thread.currentThread() instanceof org.dreeam.leaf.async.tracker.MultithreadedTracker.MultithreadedTrackerThread) {
 +                net.minecraft.server.MinecraftServer.getServer().scheduleOnMain(event::callEvent);
 +                return;
 +            }

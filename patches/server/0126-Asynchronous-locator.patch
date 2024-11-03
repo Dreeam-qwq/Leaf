@@ -18,6 +18,23 @@ index 11b7f15755dde766140c29bedca456c80d53293f..749d00449ac3f3c79bfc73a5517ea3a0
          super(run, name);
          this.id = id;
      }
+diff --git a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
+index 3fa04bad6f5263c626c22ef0a795947391e1e710..411bc27324c34e4cad1849512a4531214d7fe9d2 100644
+--- a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
++++ b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
+@@ -48,6 +48,12 @@ class PaperEventManager {
+                 return;
+             }
+             // Leaf end - Multithreaded tracker
++            // Leaf start - Async locator
++            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && Thread.currentThread() instanceof org.dreeam.leaf.async.locate.AsyncLocator.AsyncLocatorThread) {
++                net.minecraft.server.MinecraftServer.getServer().scheduleOnMain(event::callEvent);
++                return;
++            }
++            // Leaf end - Async locator
+             throw new IllegalStateException(event.getEventName() + " may only be triggered synchronously.");
+         }
+         // Leaves start - skip photographer
 diff --git a/src/main/java/net/minecraft/server/commands/LocateCommand.java b/src/main/java/net/minecraft/server/commands/LocateCommand.java
 index 39f5deea47d8f573c3cfec5df431216ee806c32c..51994f272737f8754aac41dc0c55f43f45617519 100644
 --- a/src/main/java/net/minecraft/server/commands/LocateCommand.java
@@ -231,51 +248,6 @@ index d8ce44a180f848f4c9c04967470c4359af979b2f..90abb83a6baa60bbcbedc7d818c3bc9f
                      user.swing(hand, true);
                      return InteractionResultHolder.success(itemstack);
                  }
-diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
-index 00ed0d5ad535faa36111ab28bb0cf1317eb067ec..477aa4f069ab18de2c764f74dc26db52a95d6206 100644
---- a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
-+++ b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
-@@ -132,12 +132,35 @@ public abstract class ChunkGenerator {
-         final List<org.bukkit.generator.structure.Structure> apiStructures = structures.stream().map(Holder::value).map(nms -> org.bukkit.craftbukkit.generator.structure.CraftStructure.minecraftToBukkit(nms)).toList();
-         if (!apiStructures.isEmpty()) {
-             final io.papermc.paper.event.world.StructuresLocateEvent event = new io.papermc.paper.event.world.StructuresLocateEvent(bukkitWorld, origin, apiStructures, radius, skipReferencedStructures);
--            if (!event.callEvent()) {
--                return null;
--            }
--            if (event.getResult() != null) {
--                return Pair.of(io.papermc.paper.util.MCUtil.toBlockPos(event.getResult().pos()), world.registryAccess().registryOrThrow(Registries.STRUCTURE).wrapAsHolder(org.bukkit.craftbukkit.generator.structure.CraftStructure.bukkitToMinecraft(event.getResult().structure())));
-+            // Leaf start - Async locator - Ensure event is called on server thread
-+            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled &&
-+                    Thread.currentThread() instanceof org.dreeam.leaf.async.locate.AsyncLocator.AsyncLocatorThread) {
-+                final java.util.concurrent.atomic.AtomicBoolean shouldReturn = new java.util.concurrent.atomic.AtomicBoolean(false);
-+                CompletableFuture<Pair<BlockPos, Holder<Structure>>> futureEvent = net.minecraft.server.MinecraftServer.getServer().submit(() -> {
-+                    if (!event.callEvent()) {
-+                        shouldReturn.set(true);
-+                        return null;
-+                    }
-+                    if (event.getResult() != null) {
-+                        shouldReturn.set(true);
-+                        return Pair.of(io.papermc.paper.util.MCUtil.toBlockPos(event.getResult().pos()), world.registryAccess().registryOrThrow(Registries.STRUCTURE).wrapAsHolder(org.bukkit.craftbukkit.generator.structure.CraftStructure.bukkitToMinecraft(event.getResult().structure())));
-+                    }
-+                    shouldReturn.set(false);
-+                    return null;
-+                });
-+                Pair<BlockPos, Holder<Structure>> result = futureEvent.join();
-+                if (shouldReturn.get()) {
-+                    return result;
-+                }
-+            } else {
-+                if (!event.callEvent()) {
-+                    return null;
-+                }
-+                if (event.getResult() != null) {
-+                    return Pair.of(io.papermc.paper.util.MCUtil.toBlockPos(event.getResult().pos()), world.registryAccess().registryOrThrow(Registries.STRUCTURE).wrapAsHolder(org.bukkit.craftbukkit.generator.structure.CraftStructure.bukkitToMinecraft(event.getResult().structure())));
-+                }
-             }
-+            // Leaf end - Async locator - Ensure event is called on server thread
-             center = io.papermc.paper.util.MCUtil.toBlockPosition(event.getOrigin());
-             radius = event.getRadius();
-             skipReferencedStructures = event.shouldFindUnexplored();
 diff --git a/src/main/java/org/dreeam/leaf/async/locate/AsyncLocator.java b/src/main/java/org/dreeam/leaf/async/locate/AsyncLocator.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..0eaa9b60ac139db47a028970557c3a84166efc49
