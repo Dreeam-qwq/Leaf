@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Tue, 9 Nov 2077 00:00:00 +0800
+Subject: [PATCH] SparklyPaper Throttle hopper when full
+
+Original project: https://github.com/SparklyPower/SparklyPaper
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+index 99fc84e10a10f3d4eededd6ce7be7700e3c3a8e4..58c7c1db907d6c7a7ff99308260dadf487d79864 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+@@ -443,6 +443,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+             Direction enumdirection = blockEntity.facing.getOpposite();
+ 
+             if (HopperBlockEntity.isFullContainer(iinventory, enumdirection)) {
++                // Leaf start - Throttle hopper when full
++                if (org.dreeam.leaf.config.modules.opt.ThrottleHopperWhenFull.enabled && org.dreeam.leaf.config.modules.opt.ThrottleHopperWhenFull.skipTicks > 0) {
++                    blockEntity.setCooldown(org.dreeam.leaf.config.modules.opt.ThrottleHopperWhenFull.skipTicks);
++                }
++                // Leaf end - Throttle hopper when full
+                 return false;
+             } else {
+                 // Paper start - Perf: Optimize Hoppers
+diff --git a/src/main/java/org/dreeam/leaf/config/modules/opt/ThrottleHopperWhenFull.java b/src/main/java/org/dreeam/leaf/config/modules/opt/ThrottleHopperWhenFull.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..97257fb1db8e54a35b9badb8cf0a2be2e0646e51
+--- /dev/null
++++ b/src/main/java/org/dreeam/leaf/config/modules/opt/ThrottleHopperWhenFull.java
+@@ -0,0 +1,22 @@
++package org.dreeam.leaf.config.modules.opt;
++
++import org.dreeam.leaf.config.ConfigModules;
++import org.dreeam.leaf.config.EnumConfigCategory;
++
++public class ThrottleHopperWhenFull extends ConfigModules {
++
++    public String getBasePath() {
++        return EnumConfigCategory.PERF.getBaseKeyName() + ".throttle-hopper-when-full";
++    }
++
++    public static boolean enabled = false;
++    public static int skipTicks = 0;
++
++    @Override
++    public void onLoaded() {
++        enabled = config.getBoolean(getBasePath() + ".enabled", enabled, """
++                Throttles the hopper if target container is full.""");
++        skipTicks = config.getInt(getBasePath() + ".skip-ticks", skipTicks, """
++                How many ticks to throttle when the Hopper is throttled.""");
++    }
++}

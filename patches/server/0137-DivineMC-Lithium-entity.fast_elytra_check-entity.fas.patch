@@ -11,7 +11,7 @@ Original license: LGPL v3
 Original project: https://github.com/CaffeineMC/lithium-fabric
 
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 241e2598973939b7d19768cd9ca7cd8f3818c053..7ce6ce7212b942a8d6b64c98fab8fe060d813c61 100644
+index 241e2598973939b7d19768cd9ca7cd8f3818c053..ac3ef40aabf08081efd28dd30c0c856d1858c44f 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 @@ -2769,6 +2769,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
