@@ -371,7 +371,7 @@ index 0000000000000000000000000000000000000000..a2e60c43074df560eb01f150bf52b8d0
 +    }
 +}
 diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
-index 0b2f2fbe462ed628ef3d640824d4162e79279089..e469b2782932275caa4bb760eefff82916c47d3a 100644
+index 5242f861834737876f639195dc259666705411e4..e6ef67125f59195104b013de8f69669a8e059a1f 100644
 --- a/src/main/java/org/spigotmc/ActivationRange.java
 +++ b/src/main/java/org/spigotmc/ActivationRange.java
 @@ -38,7 +38,6 @@ import co.aikar.timings.MinecraftTimings;
@@ -382,7 +382,7 @@ index 0b2f2fbe462ed628ef3d640824d4162e79279089..e469b2782932275caa4bb760eefff829
  import org.galemc.gale.configuration.GaleWorldConfiguration;
  
  public class ActivationRange
-@@ -238,6 +237,26 @@ public class ActivationRange
+@@ -238,6 +237,23 @@ public class ActivationRange
                  }
                  // Paper end - Configurable marker ticking
                  ActivationRange.activateEntity(entity);
@@ -394,10 +394,7 @@ index 0b2f2fbe462ed628ef3d640824d4162e79279089..e469b2782932275caa4bb760eefff829
 +                        entity.activatedPriorityReset = true;
 +                        entity.activatedPriority = org.dreeam.leaf.config.modules.opt.DynamicActivationofBrain.maximumActivationPrio;
 +                    }
-+                    net.minecraft.world.phys.Vec3 playerVec = player.position();
-+                    net.minecraft.world.phys.Vec3 entityVec = entity.position();
-+                    double diffX = playerVec.x - entityVec.x, diffY = playerVec.y - entityVec.y, diffZ = playerVec.z - entityVec.z;
-+                    int squaredDistance = (int) (diffX * diffX + diffY * diffY + diffZ * diffZ);
++                    int squaredDistance = (int) player.distanceToSqr(entity);
 +                    entity.activatedPriority = squaredDistance > org.dreeam.leaf.config.modules.opt.DynamicActivationofBrain.startDistanceSquared ?
 +                      Math.max(1, Math.min(squaredDistance >> org.dreeam.leaf.config.modules.opt.DynamicActivationofBrain.activationDistanceMod, entity.activatedPriority)) :
 +                      1;
@@ -409,7 +406,7 @@ index 0b2f2fbe462ed628ef3d640824d4162e79279089..e469b2782932275caa4bb760eefff829
              }
              // Paper end
          }
-@@ -254,12 +273,12 @@ public class ActivationRange
+@@ -254,12 +270,12 @@ public class ActivationRange
          if ( MinecraftServer.currentTick > entity.activatedTick )
          {
              if ( entity.defaultActivationState )
