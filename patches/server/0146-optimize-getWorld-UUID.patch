@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sun, 10 Nov 2024 14:36:18 +0100
+Subject: [PATCH] optimize getWorld(UUID)
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 748501ec2ecbabd695b7ebf5d5650cb96fbfb5cd..0c3f4c27e4f327a43977f53284171028fa140f51 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
+ import javax.imageio.ImageIO;
+ // import jline.console.ConsoleReader;
+ 
++import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+ import net.minecraft.advancements.AdvancementHolder;
+@@ -283,7 +284,7 @@ public final class CraftServer implements Server {
+     private final StructureManager structureManager;
+     protected final DedicatedServer console;
+     protected final DedicatedPlayerList playerList;
+-    private final Map<String, World> worlds = new LinkedHashMap<String, World>();
++    private final Map<String, World> worlds = new Object2ObjectLinkedOpenHashMap<String, World>(); // MultiPaper - optimize getWorld(UUID)
+     private final Object2ObjectMap<UUID, World> worldsByUUID = new Object2ObjectOpenHashMap<>(); // Gale - MultiPaper - CraftBukkit UUID to world map
+     // private final Map<Class<?>, Registry<?>> registries = new HashMap<>(); // Paper - replace with RegistryAccess
+     private YamlConfiguration configuration;
