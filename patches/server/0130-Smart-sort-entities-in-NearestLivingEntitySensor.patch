@@ -11,10 +11,10 @@ This offers a 10~15% performance improvement in average.
 In best situation, this can give an up to 50% improvement.
 
 diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/src/main/java/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-index 5a059e1ec232d82e8e891ae78fea962bec2f878e..a0c8980d03dc240ecca3cf732845df7b7fbca1ad 100644
+index 5a059e1ec232d82e8e891ae78fea962bec2f878e..7cb18a2191a4b520ee81230106045d18faa384ee 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-@@ -12,16 +12,76 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+@@ -12,16 +12,77 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
  import net.minecraft.world.phys.AABB;
  
  public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T> {
@@ -45,9 +45,10 @@ index 5a059e1ec232d82e8e891ae78fea962bec2f878e..a0c8980d03dc240ecca3cf732845df7b
 +        if (entities.length <= 1) {
 +            return entities;
 +        }
++        final Comparator<LivingEntity> comparator = Comparator.comparingDouble(referenceEntity::distanceToSqr);
 +
 +        if (entities.length < BUCKET_SORT_THRESHOLD) {
-+            it.unimi.dsi.fastutil.objects.ObjectArrays.quickSort(entities, Comparator.comparingDouble(referenceEntity::distanceToSqr));
++            it.unimi.dsi.fastutil.objects.ObjectArrays.quickSort(entities, comparator);
 +            return entities;
 +        }
 +
@@ -80,7 +81,7 @@ index 5a059e1ec232d82e8e891ae78fea962bec2f878e..a0c8980d03dc240ecca3cf732845df7b
 +        int currentIndex = 0;
 +        for (List<LivingEntity> bucket : buckets) {
 +            if (!bucket.isEmpty()) {
-+                bucket.sort(Comparator.comparingDouble(referenceEntity::distanceToSqr));
++                bucket.sort(comparator);
 +                for (LivingEntity e : bucket) {
 +                    entities[currentIndex++] = e;
 +                }
