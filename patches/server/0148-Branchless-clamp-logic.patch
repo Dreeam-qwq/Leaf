@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Taiyou06 <kaandindar21@gmail.com>
 Date: Fri, 8 Nov 2024 04:32:35 +0100
-Subject: [PATCH] branchless-clamp-logic
+Subject: [PATCH] Branchless-clamp-logic
 
 
 diff --git a/src/main/java/net/minecraft/util/Mth.java b/src/main/java/net/minecraft/util/Mth.java
