@@ -4,7 +4,7 @@ Date: Thu, 9 Dec 2021 02:18:17 +0800
 Subject: [PATCH] Matter: Secure Seed
 
 TODO - Dreeam:
-Able to write feature seed in existed level.dat
+Able to write feature seed in existed level.dat (Done)
 Update to BLAKE3
 
 Original license: GPLv3
@@ -187,21 +187,22 @@ index 4e56398a6fb8b97199f4c74ebebc1055fb718dcf..505f0ab967b53c100c91971afbf67bdc
              ProfiledDuration profiledDuration = JvmProfiler.INSTANCE.onChunkGenerate(chunk.getPos(), context.level().dimension(), this.targetStatus.getName());
              return this.task.doWork(context, this, staticCache2D, chunk).thenApply(generated -> this.completeChunkGeneration(generated, profiledDuration));
 diff --git a/src/main/java/net/minecraft/world/level/levelgen/WorldOptions.java b/src/main/java/net/minecraft/world/level/levelgen/WorldOptions.java
-index 5ae04ec610a885e2ed73e942879a27fe8640471c..2d11d72d9c5b1674350a3d7f187e3f1209f37902 100644
+index 5ae04ec610a885e2ed73e942879a27fe8640471c..feedaf9c289d592b4d0f8f6295bc34652765cf88 100644
 --- a/src/main/java/net/minecraft/world/level/levelgen/WorldOptions.java
 +++ b/src/main/java/net/minecraft/world/level/levelgen/WorldOptions.java
-@@ -9,8 +9,19 @@ import net.minecraft.util.RandomSource;
+@@ -9,8 +9,20 @@ import net.minecraft.util.RandomSource;
  import org.apache.commons.lang3.StringUtils;
  
  public class WorldOptions {
 +    // Leaf start - Matter - Feature Secure Seed
++    private static final com.google.gson.Gson gson = new com.google.gson.Gson();
 +    private static final boolean isSecureSeedEnabled = org.dreeam.leaf.config.modules.misc.SecureSeed.enabled;
      public static final MapCodec<WorldOptions> CODEC = RecordCodecBuilder.mapCodec(
 -        instance -> instance.group(
 +        instance -> isSecureSeedEnabled
 +            ? instance.group(
 +                    Codec.LONG.fieldOf("seed").stable().forGetter(WorldOptions::seed),
-+                    Codec.LONG_STREAM.fieldOf("feature_seed").stable().forGetter(WorldOptions::featureSeedStream),
++                    Codec.STRING.fieldOf("feature_seed").orElse(gson.toJson(su.plo.matter.Globals.createRandomWorldSeed())).stable().forGetter(WorldOptions::featureSeedSerialize),
 +                    Codec.BOOL.fieldOf("generate_features").orElse(true).stable().forGetter(WorldOptions::generateStructures),
 +                    Codec.BOOL.fieldOf("bonus_chest").orElse(false).stable().forGetter(WorldOptions::generateBonusChest),
 +                    Codec.STRING.lenientOptionalFieldOf("legacy_custom_options").stable().forGetter(generatorOptions -> generatorOptions.legacyCustomOptions)
@@ -211,7 +212,7 @@ index 5ae04ec610a885e2ed73e942879a27fe8640471c..2d11d72d9c5b1674350a3d7f187e3f12
                      Codec.LONG.fieldOf("seed").stable().forGetter(WorldOptions::seed),
                      Codec.BOOL.fieldOf("generate_features").orElse(true).stable().forGetter(WorldOptions::generateStructures),
                      Codec.BOOL.fieldOf("bonus_chest").orElse(false).stable().forGetter(WorldOptions::generateBonusChest),
-@@ -18,18 +29,35 @@ public class WorldOptions {
+@@ -18,18 +30,35 @@ public class WorldOptions {
                  )
                  .apply(instance, instance.stable(WorldOptions::new))
      );
@@ -244,12 +245,12 @@ index 5ae04ec610a885e2ed73e942879a27fe8640471c..2d11d72d9c5b1674350a3d7f187e3f12
 +                : new WorldOptions(randomSeed(), true, false);
 +    }
 +
-+    private WorldOptions(long seed, java.util.stream.LongStream featureSeed, boolean generateStructures, boolean bonusChest, Optional<String> legacyCustomOptions) {
-+        this(seed, featureSeed.toArray(), generateStructures, bonusChest, legacyCustomOptions);
++    private WorldOptions(long seed, String featureSeedJson, boolean generateStructures, boolean bonusChest, Optional<String> legacyCustomOptions) {
++        this(seed, gson.fromJson(featureSeedJson, long[].class), generateStructures, bonusChest, legacyCustomOptions);
      }
  
      private WorldOptions(long seed, boolean generateStructures, boolean bonusChest, Optional<String> legacyCustomOptions) {
-@@ -39,10 +67,26 @@ public class WorldOptions {
+@@ -39,10 +68,26 @@ public class WorldOptions {
          this.legacyCustomOptions = legacyCustomOptions;
      }
  
@@ -268,15 +269,15 @@ index 5ae04ec610a885e2ed73e942879a27fe8640471c..2d11d72d9c5b1674350a3d7f187e3f12
 +        return this.featureSeed;
 +    }
 +
-+    public java.util.stream.LongStream featureSeedStream() {
-+        return java.util.stream.LongStream.of(this.featureSeed);
++    public String featureSeedSerialize() {
++        return gson.toJson(this.featureSeed);
 +    }
 +    // Leaf end - Matter - Feature Secure Seed
 +
      public boolean generateStructures() {
          return this.generateStructures;
      }
-@@ -55,17 +99,25 @@ public class WorldOptions {
+@@ -55,17 +100,25 @@ public class WorldOptions {
          return this.legacyCustomOptions.isPresent();
      }
  
@@ -468,10 +469,10 @@ index 3521b22d8fee6d4b2e901c989e59e5197c01ca80..748501ec2ecbabd695b7ebf5d5650cb9
              DedicatedServerProperties.WorldDimensionData properties = new DedicatedServerProperties.WorldDimensionData(GsonHelper.parse((creator.generatorSettings().isEmpty()) ? "{}" : creator.generatorSettings()), creator.type().name().toLowerCase(Locale.ROOT));
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/SecureSeed.java b/src/main/java/org/dreeam/leaf/config/modules/misc/SecureSeed.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e2eb46cdec10fb3c563eede6f8540768bb6da544
+index 0000000000000000000000000000000000000000..0bbf188fbded9d67d2c07e5ee38f1af1a4619921
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/SecureSeed.java
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,22 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -489,9 +490,7 @@ index 0000000000000000000000000000000000000000..e2eb46cdec10fb3c563eede6f8540768
 +    public void onLoaded() {
 +        config.addComment(getBasePath(), """
 +                Once you enable secure seed, all ores and structures are generated with 1024-bit seed
-+                instead of using 64-bit seed in vanilla, made seed cracker become impossible.
-+                WARNING! You need to backup your server and prepare a new world if you want to enable it,
-+                at least for now.""");
++                instead of using 64-bit seed in vanilla, made seed cracker become impossible.""");
 +
 +        enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
 +    }
