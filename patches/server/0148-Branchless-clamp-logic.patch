@@ -5,10 +5,10 @@ Subject: [PATCH] Branchless-clamp-logic
 
 
 diff --git a/src/main/java/net/minecraft/util/Mth.java b/src/main/java/net/minecraft/util/Mth.java
-index ac359e7237ff6256045ee47ca287d9315900dc0e..dd79fd5331f706eb440ce96c4061ae434017967e 100644
+index 1bd2529cf4b06daa82d8f4ba1e5d42e55beeefcb..706440f523a21f3b0b60311fc5ed8acbf210a0c4 100644
 --- a/src/main/java/net/minecraft/util/Mth.java
 +++ b/src/main/java/net/minecraft/util/Mth.java
-@@ -87,7 +87,10 @@ public class Mth {
+@@ -86,7 +86,10 @@ public class Mth {
      }
  
      public static int clamp(int value, int min, int max) {

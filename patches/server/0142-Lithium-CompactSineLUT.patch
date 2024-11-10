@@ -5,38 +5,39 @@ Subject: [PATCH] Lithium-CompactSineLUT
 
 
 diff --git a/src/main/java/net/minecraft/util/Mth.java b/src/main/java/net/minecraft/util/Mth.java
-index cb8cde3c1b65329f92b7c78e529e128f5a408fd6..ac359e7237ff6256045ee47ca287d9315900dc0e 100644
+index cb8cde3c1b65329f92b7c78e529e128f5a408fd6..1bd2529cf4b06daa82d8f4ba1e5d42e55beeefcb 100644
 --- a/src/main/java/net/minecraft/util/Mth.java
 +++ b/src/main/java/net/minecraft/util/Mth.java
-@@ -35,6 +35,7 @@ public class Mth {
+@@ -29,7 +29,7 @@ public class Mth {
+     public static final Vector3f Y_AXIS = new Vector3f(0.0F, 1.0F, 0.0F);
+     public static final Vector3f X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
+     public static final Vector3f Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
+-    private static final float[] SIN = Util.make(new float[65536], sineTable -> {
++    public static final float[] SIN = Util.make(new float[65536], sineTable -> { // Leaf - private -> public
+         for (int ix = 0; ix < sineTable.length; ix++) {
+             sineTable[ix] = (float)Math.sin((double)ix * Math.PI * 2.0 / 65536.0);
          }
-     });
-     private static final RandomSource RANDOM = RandomSource.createThreadSafe();
-+    public static float[] getSinTable() { return SIN; } // Mirai - lithium: CompactSineLUT
-     private static final int[] MULTIPLY_DE_BRUIJN_BIT_POSITION = new int[]{
-         0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-     };
-@@ -46,11 +47,11 @@ public class Mth {
+@@ -46,11 +46,11 @@ public class Mth {
      private static final double[] COS_TAB = new double[257];
  
      public static float sin(float value) {
 -        return SIN[(int)(value * 10430.378F) & 65535];
-+        return org.dreeam.leaf.math.CompactSineLUT.sin(value); // Mirai - lithium: CompactSineLUT
++        return org.dreeam.leaf.util.math.CompactSineLUT.sin(value); // Mirai - lithium: CompactSineLUT
      }
  
      public static float cos(float value) {
 -        return SIN[(int)(value * 10430.378F + 16384.0F) & 65535];
-+        return org.dreeam.leaf.math.CompactSineLUT.cos(value); // Mirai - lithium: CompactSineLUT
++        return org.dreeam.leaf.util.math.CompactSineLUT.cos(value); // Mirai - lithium: CompactSineLUT
      }
  
      public static float sqrt(float value) {
-diff --git a/src/main/java/org/dreeam/leaf/math/CompactSineLUT.java b/src/main/java/org/dreeam/leaf/math/CompactSineLUT.java
+diff --git a/src/main/java/org/dreeam/leaf/util/math/CompactSineLUT.java b/src/main/java/org/dreeam/leaf/util/math/CompactSineLUT.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e07833e77f65eb1b250879580c481cea51c840a8
+index 0000000000000000000000000000000000000000..9e25469953bdf7e5689e9243c66733f1276d6b6d
 --- /dev/null
-+++ b/src/main/java/org/dreeam/leaf/math/CompactSineLUT.java
++++ b/src/main/java/org/dreeam/leaf/util/math/CompactSineLUT.java
 @@ -0,0 +1,90 @@
-+package org.dreeam.leaf.math;
++package org.dreeam.leaf.util.math;
 +
 +import net.minecraft.util.Mth;
 +
@@ -70,7 +71,7 @@ index 0000000000000000000000000000000000000000..e07833e77f65eb1b250879580c481cea
 +    private static final float SINE_TABLE_MIDPOINT;
 +
 +    static {
-+        final float[] SINE_TABLE = Mth.getSinTable();
++        final float[] SINE_TABLE = Mth.SIN;
 +        // Copy the sine table, covering to raw int bits
 +        for (int i = 0; i < SINE_TABLE_INT.length; i++) {
 +            SINE_TABLE_INT[i] = Float.floatToRawIntBits(SINE_TABLE[i]);

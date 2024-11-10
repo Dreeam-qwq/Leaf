@@ -5,7 +5,7 @@ Subject: [PATCH] Lithium-HashedList
 
 
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index a40aec3a8adf39a94d62b776e845cfc193084bbb..0bf7ecc7fd0e349bd26351fa3f35ef8a3c93839d 100644
+index a40aec3a8adf39a94d62b776e845cfc193084bbb..29af019bf3626dc50a0be084de48623698a27235 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -114,9 +114,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
@@ -13,20 +13,20 @@ index a40aec3a8adf39a94d62b776e845cfc193084bbb..0bf7ecc7fd0e349bd26351fa3f35ef8a
      public static final int MAX_ENTITY_SPAWN_Y = 20000000;
      public static final int MIN_ENTITY_SPAWN_Y = -20000000;
 -    public final List<TickingBlockEntity> blockEntityTickers = Lists.newArrayList(); // Paper - public
-+    public final List<TickingBlockEntity> blockEntityTickers = org.dreeam.leaf.hashedlist.HashedList.wrapper(Lists.newArrayList()); // Paper - public // Jettpack - lithium: hashed_list
++    public final List<TickingBlockEntity> blockEntityTickers = org.dreeam.leaf.util.HashedList.wrapper(Lists.newArrayList()); // Paper - public // Jettpack - lithium: hashed_list
      protected final NeighborUpdater neighborUpdater;
 -    private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
-+    private final List<TickingBlockEntity> pendingBlockEntityTickers = org.dreeam.leaf.hashedlist.HashedList.wrapper(Lists.newArrayList()); // Jettpack - lithium: hashed_list
++    private final List<TickingBlockEntity> pendingBlockEntityTickers = org.dreeam.leaf.util.HashedList.wrapper(Lists.newArrayList()); // Jettpack - lithium: hashed_list
      private boolean tickingBlockEntities;
      public final Thread thread;
      private final boolean isDebug;
-diff --git a/src/main/java/org/dreeam/leaf/hashedlist/HashedList.java b/src/main/java/org/dreeam/leaf/hashedlist/HashedList.java
+diff --git a/src/main/java/org/dreeam/leaf/util/HashedList.java b/src/main/java/org/dreeam/leaf/util/HashedList.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..bba89360de0b572516df60548d699e0f5b925121
+index 0000000000000000000000000000000000000000..01b44f4a0273824aa346de8a5f19ba0d00669c54
 --- /dev/null
-+++ b/src/main/java/org/dreeam/leaf/hashedlist/HashedList.java
++++ b/src/main/java/org/dreeam/leaf/util/HashedList.java
 @@ -0,0 +1,280 @@
-+package org.dreeam.leaf.hashedlist;
++package org.dreeam.leaf.util;
 +
 +import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 +import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
