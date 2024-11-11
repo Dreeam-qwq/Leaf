@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Tue, 9 Nov 2077 00:00:00 +0800
+Subject: [PATCH] Remove stream in PlacedFeature
+
+Stream operation in PlacedFeature take much time generating features,
+replace them with for loop uwu
+Before: 3684ms
+After: 673ms
+
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/placement/PlacedFeature.java b/src/main/java/net/minecraft/world/level/levelgen/placement/PlacedFeature.java
+index 43ef3fdd7af5883f4846b253d76e06da0f31729e..422e9ed66052c67dab674ee548b1471307a991f5 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/placement/PlacedFeature.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/placement/PlacedFeature.java
+@@ -41,19 +41,25 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<Placem
+     }
+ 
+     private boolean placeWithContext(PlacementContext context, RandomSource random, BlockPos pos) {
+-        Stream<BlockPos> stream = Stream.of(pos);
++        // Leaf start - Remove stream in PlacedFeature
++        List<BlockPos> positions = java.util.Collections.singletonList(pos);
+ 
+         for (PlacementModifier placementModifier : this.placement) {
+-            stream = stream.flatMap(posx -> placementModifier.getPositions(context, random, posx));
++            List<BlockPos> newPositions = new java.util.ArrayList<>();
++            for (BlockPos posx : positions) {
++                placementModifier.getPositions(context, random, posx).forEach(newPositions::add);
++            }
++            positions = newPositions;
+         }
+ 
+         ConfiguredFeature<?, ?> configuredFeature = this.feature.value();
+         MutableBoolean mutableBoolean = new MutableBoolean();
+-        stream.forEach(placedPos -> {
++        for (BlockPos placedPos : positions) {
+             if (configuredFeature.place(context.getLevel(), context.generator(), random, placedPos)) {
+                 mutableBoolean.setTrue();
+             }
+-        });
++        }
++        // Leaf end - Remove stream in PlacedFeature
+         return mutableBoolean.isTrue();
+     }
+ 
