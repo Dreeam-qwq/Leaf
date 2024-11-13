@@ -66,10 +66,10 @@ index a6b6e5ea191c0e2cd7a2e4f01b89d8af40a83c1b..713fced29fbd819ee6f151c7f3e462f5
                  ChunkGeneratorStructureState.LOGGER.debug("Calculation for {} took {}s", structureSetEntry, d2);
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/opt/FasterStructureGenFutureSequencing.java b/src/main/java/org/dreeam/leaf/config/modules/opt/FasterStructureGenFutureSequencing.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..44e1e25cc0de1d9de6ba9b66ec7502cd91f92c7b
+index 0000000000000000000000000000000000000000..97a730047491c4ada75963185bb8b2e6f56c56a2
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/opt/FasterStructureGenFutureSequencing.java
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,21 @@
 +package org.dreeam.leaf.config.modules.opt;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -86,6 +86,8 @@ index 0000000000000000000000000000000000000000..44e1e25cc0de1d9de6ba9b66ec7502cd
 +    @Override
 +    public void onLoaded() {
 +        enabled = config.getBoolean(getBasePath() + ".faster-structure-gen-future-sequencing", enabled,
-+                "May cause the inconsistent order of future compose tasks.");
++                config.pickStringRegionBased(
++                        "May cause the inconsistent order of future compose tasks.",
++                        "更快的结构生成任务分段."));
 +    }
 +}
