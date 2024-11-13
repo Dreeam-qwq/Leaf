@@ -21,7 +21,7 @@ index b83be9bbb9f348da83c0fd1ecc7f65c8a58b45b9..5b3844f92caf2962be58e911f98a26e6
 +    // Leaf end - PMC - Don't save falling block entity
  }
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/opt/DontSaveEntity.java b/src/main/java/org/dreeam/leaf/config/modules/opt/DontSaveEntity.java
-index 1788d587215397b32c21815778cd1d0fe39e1f2b..f4af7ccf4e8bbdb803fb17de57bd523ea8ff7ef4 100644
+index 43c9fcc5a27d523d00656e058c46c34f36da8b63..28dc5e191a26a4783d9e8c18b2653b9ed3238a88 100644
 --- a/src/main/java/org/dreeam/leaf/config/modules/opt/DontSaveEntity.java
 +++ b/src/main/java/org/dreeam/leaf/config/modules/opt/DontSaveEntity.java
 @@ -10,6 +10,7 @@ public class DontSaveEntity extends ConfigModules {
@@ -32,10 +32,10 @@ index 1788d587215397b32c21815778cd1d0fe39e1f2b..f4af7ccf4e8bbdb803fb17de57bd523e
  
      @Override
      public void onLoaded() {
-@@ -18,5 +19,6 @@ public class DontSaveEntity extends ConfigModules {
-                 Useful for redstone/technical servers, can prevent machines from being exploded by TNT,
-                 when player disconnected caused by Internet issue.
-                 """);
+@@ -22,5 +23,6 @@ public class DontSaveEntity extends ConfigModules {
+                 """
+                 区块卸载时不保存掉落的方块和激活的 TNT,
+                 可以避免在玩家掉线时机器被炸毁."""));
 +        dontSaveFallingBlock = config.getBoolean(getBasePath() + ".dont-save-falling-block", dontSaveFallingBlock);
      }
  }
