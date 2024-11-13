@@ -173,10 +173,10 @@ index 3ac1446ed791e06e2bbf226b925890ac4d1a16de..2cdfd22baf31df99e2c2b1d114c47cb8
  
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/network/ChatMessageSignature.java b/src/main/java/org/dreeam/leaf/config/modules/network/ChatMessageSignature.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b3050d65ec5cc86e497e698e4a70f03ae27f175b
+index 0000000000000000000000000000000000000000..096969e2c3089e6b4f7332c06bf8a45a7dbe610b
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/network/ChatMessageSignature.java
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,25 @@
 +package org.dreeam.leaf.config.modules.network;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -192,11 +192,13 @@ index 0000000000000000000000000000000000000000..b3050d65ec5cc86e497e698e4a70f03a
 +
 +    @Override
 +    public void onLoaded() {
-+        enabled = config.getBoolean(getBasePath() + ".chat-message-signature", enabled, """
++        enabled = config.getBoolean(getBasePath() + ".chat-message-signature", enabled, config.pickStringRegionBased("""
 +                Whether or not enable chat message signature,
 +                disable will prevent players to report chat messages.
 +                And also disables the popup when joining a server without
 +                'secure chat', such as offline-mode servers.
-+                """);
++                """,
++                """
++                是否启用聊天签名, 禁用后玩家无法进行聊天举报."""));
 +    }
 +}
