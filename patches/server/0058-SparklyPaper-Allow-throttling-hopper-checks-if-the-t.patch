@@ -24,10 +24,10 @@ index 67425f4270c0745fc962c6ffb90e98bb4362d261..989e0f049805a734d6aa18434dd2a3b2
                  // Paper start - Perf: Optimize Hoppers
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/opt/ThrottleHopperWhenFull.java b/src/main/java/org/dreeam/leaf/config/modules/opt/ThrottleHopperWhenFull.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..97257fb1db8e54a35b9badb8cf0a2be2e0646e51
+index 0000000000000000000000000000000000000000..3facc08ed627a710a1cf26c67abfbfa1b380fe44
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/opt/ThrottleHopperWhenFull.java
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,26 @@
 +package org.dreeam.leaf.config.modules.opt;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -44,9 +44,13 @@ index 0000000000000000000000000000000000000000..97257fb1db8e54a35b9badb8cf0a2be2
 +
 +    @Override
 +    public void onLoaded() {
-+        enabled = config.getBoolean(getBasePath() + ".enabled", enabled, """
-+                Throttles the hopper if target container is full.""");
-+        skipTicks = config.getInt(getBasePath() + ".skip-ticks", skipTicks, """
-+                How many ticks to throttle when the Hopper is throttled.""");
++        enabled = config.getBoolean(getBasePath() + ".enabled", enabled, config.pickStringRegionBased("""
++                Throttles the hopper if target container is full.""",
++                """
++                是否在目标容器已满时阻塞漏斗."""));
++        skipTicks = config.getInt(getBasePath() + ".skip-ticks", skipTicks, config.pickStringRegionBased("""
++                How many ticks to throttle when the Hopper is throttled.""",
++                """
++                每次阻塞多少 tick."""));
 +    }
 +}
