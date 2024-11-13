@@ -19,10 +19,10 @@ index a6d6e3ad434420223178f813953d9c53db26034a..2445d549fbf972620f2cc13860f82656
      public ChatDecorator getChatDecorator() {
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/opt/VT4ChatExecutor.java b/src/main/java/org/dreeam/leaf/config/modules/opt/VT4ChatExecutor.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a00f559076f5efbaf72217c4a889f246fc5f60d4
+index 0000000000000000000000000000000000000000..964c20331661774b4d8866f9eef50e60dbf3069b
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/opt/VT4ChatExecutor.java
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,21 @@
 +package org.dreeam.leaf.config.modules.opt;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -39,6 +39,8 @@ index 0000000000000000000000000000000000000000..a00f559076f5efbaf72217c4a889f246
 +    @Override
 +    public void onLoaded() {
 +        enabled = config.getBoolean(getBasePath() + ".use-virtual-thread-for-async-chat-executor", enabled,
-+                "Use the new Virtual Thread introduced in JDK 21 for Async Chat Executor.");
++                config.pickStringRegionBased(
++                        "Use the new Virtual Thread introduced in JDK 21 for Async Chat Executor.",
++                        "是否为异步聊天线程使用虚拟线程."));
 +    }
 +}
