@@ -210,7 +210,7 @@ index 4270b771ff15d398b4788cb2fe27236989077614..97a87083f651434e51a9176009230e09
  }
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/opt/EnableCachedMTBEntityTypeConvert.java b/src/main/java/org/dreeam/leaf/config/modules/opt/EnableCachedMTBEntityTypeConvert.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..62014d6d2652539cb403ae5d9e44ed689d7fc694
+index 0000000000000000000000000000000000000000..68ec35730c4d50602c85a502bc25d6a7cbc4a45b
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/opt/EnableCachedMTBEntityTypeConvert.java
 @@ -0,0 +1,21 @@
@@ -232,6 +232,6 @@ index 0000000000000000000000000000000000000000..62014d6d2652539cb403ae5d9e44ed68
 +        enabled = config.getBoolean(getBasePath() + ".enable-cached-minecraft-to-bukkit-entitytype-convert", enabled, config.pickStringRegionBased("""
 +                Whether to cache expensive CraftEntityType#minecraftToBukkit call.""",
 +                """
-+                是否缓存Minecraft到Bukkit的实体类型转换"""));
++                是否缓存Minecraft到Bukkit的实体类型转换."""));
 +    }
 +}
