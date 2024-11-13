@@ -423,7 +423,7 @@ index 0000000000000000000000000000000000000000..fdbdf3f6a5071ce629d2881e861075db
 +}
 diff --git a/src/main/java/org/dreeam/leaf/config/LeafGlobalConfig.java b/src/main/java/org/dreeam/leaf/config/LeafGlobalConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9ea7467d6464161f855a2f41325d4b25114031eb
+index 0000000000000000000000000000000000000000..c5eea2397ddda83329b82fce875b9ac33911ef96
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/LeafGlobalConfig.java
 @@ -0,0 +1,134 @@
@@ -440,7 +440,7 @@ index 0000000000000000000000000000000000000000..9ea7467d6464161f855a2f41325d4b25
 +public class LeafGlobalConfig {
 +
 +    protected static ConfigFile configFile;
-+    private static final String CURRENT_REGION = Locale.getDefault().getCountry().toUpperCase(Locale.ROOT); // It will be in uppercase by case, just make sure
++    private static final String CURRENT_REGION = Locale.getDefault().getCountry().toUpperCase(Locale.ROOT); // It will be in uppercase by default, just make sure
 +    protected static final boolean isCN = CURRENT_REGION.equals("CN");
 +
 +    public LeafGlobalConfig(boolean init) throws Exception {
