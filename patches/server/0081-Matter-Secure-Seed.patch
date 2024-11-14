@@ -472,10 +472,10 @@ index c566f8f47918ea841659060661794315c690cf4c..9bfa1d398fb52835e738ff48daf006b4
              DedicatedServerProperties.WorldDimensionData properties = new DedicatedServerProperties.WorldDimensionData(GsonHelper.parse((creator.generatorSettings().isEmpty()) ? "{}" : creator.generatorSettings()), creator.type().name().toLowerCase(Locale.ROOT));
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/SecureSeed.java b/src/main/java/org/dreeam/leaf/config/modules/misc/SecureSeed.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0bbf188fbded9d67d2c07e5ee38f1af1a4619921
+index 0000000000000000000000000000000000000000..eb509447851b301e5e69c8ada9f8b268861e2fe3
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/SecureSeed.java
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,24 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -491,9 +491,11 @@ index 0000000000000000000000000000000000000000..0bbf188fbded9d67d2c07e5ee38f1af1
 +
 +    @Override
 +    public void onLoaded() {
-+        config.addComment(getBasePath(), """
++        config.addCommentRegionBased(getBasePath(), """
 +                Once you enable secure seed, all ores and structures are generated with 1024-bit seed
-+                instead of using 64-bit seed in vanilla, made seed cracker become impossible.""");
++                instead of using 64-bit seed in vanilla, made seed cracker become impossible.""",
++                """
++                安全种子开启后, 所有矿物与结构都将使用1024位的种子进行生成, 无法被破解.""");
 +
 +        enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
 +    }

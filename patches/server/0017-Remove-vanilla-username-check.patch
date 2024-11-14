@@ -46,10 +46,10 @@ index f58dec12326734c61f4bc2298a87fb38f1ac1dc4..66eff9ddee09f44935df6d8ed3eb2494
      }
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveVanillaUsernameCheck.java b/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveVanillaUsernameCheck.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ecae8c5d114b2d0510b61c78e3fc705b61f6d126
+index 0000000000000000000000000000000000000000..f094806fdc4f98924aab69b5dffb3a3ffbc2e21d
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveVanillaUsernameCheck.java
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,23 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -65,8 +65,11 @@ index 0000000000000000000000000000000000000000..ecae8c5d114b2d0510b61c78e3fc705b
 +
 +    @Override
 +    public void onLoaded() {
-+        enabled = config.getBoolean(getBasePath(), enabled, """
-+                Remove Vanilla username check
-+                allowing all characters as username""");
++        enabled = config.getBoolean(getBasePath(), enabled, config.pickStringRegionBased("""
++                Remove Vanilla username check,
++                allowing all characters as username.""",
++                """
++                移除原版的用户名验证,
++                让所有字符均可作为玩家名."""));
 +    }
 +}

@@ -217,10 +217,10 @@ index fdbdf3f6a5071ce629d2881e861075dbeef11b42..41b24849b6601cdf89ee6cb4125a7127
  
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/SentryDSN.java b/src/main/java/org/dreeam/leaf/config/modules/misc/SentryDSN.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b37aa469c0e1d1b18c1f43a364e00276ce8652e0
+index 0000000000000000000000000000000000000000..0234fc0d3054d8348da49a8006ec99d6d09114fe
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/SentryDSN.java
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,43 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import org.apache.logging.log4j.Level;
@@ -241,17 +241,23 @@ index 0000000000000000000000000000000000000000..b37aa469c0e1d1b18c1f43a364e00276
 +    @Override
 +    public void onLoaded() {
 +        String sentryEnvironment = System.getenv("SENTRY_DSN");
-+        String sentryConfig = config.getString(sentryDsnConfigPath = getBasePath() + ".dsn", sentryDsn, """
++        String sentryConfig = config.getString(sentryDsnConfigPath = getBasePath() + ".dsn", sentryDsn, config.pickStringRegionBased("""
 +                Sentry DSN for improved error logging, leave blank to disable,
-+                Obtain from https://sentry.io/""");
++                Obtain from https://sentry.io/""",
++                """
++                Sentry DSN (出现严重错误时将发送至配置的Sentry DSN地址) (留空关闭)"""));
 +
 +        sentryDsn = sentryEnvironment == null
 +                ? sentryConfig
 +                : sentryEnvironment;
-+        logLevel = config.getString(getBasePath() + ".log-level", logLevel, """
-+                Logs with a level higher than or equal to this level will be recorded""");
-+        onlyLogThrown = config.getBoolean(getBasePath() + ".only-log-thrown", onlyLogThrown, """
-+                Only log with a Throwable will be recorded after enabling this""");
++        logLevel = config.getString(getBasePath() + ".log-level", logLevel, config.pickStringRegionBased("""
++                Logs with a level higher than or equal to this level will be recorded.""",
++                """
++                大于等于该等级的日志会被记录."""));
++        onlyLogThrown = config.getBoolean(getBasePath() + ".only-log-thrown", onlyLogThrown, config.pickStringRegionBased("""
++                Only log with a Throwable will be recorded after enabling this.""",
++                """
++                是否仅记录带有 Throwable 的日志."""));
 +
 +        if (sentryDsn != null && !sentryDsn.isBlank()) {
 +            gg.pufferfish.pufferfish.sentry.SentryManager.init(Level.getLevel(logLevel));

@@ -19,10 +19,10 @@ index c9a1c071780351b584ad8e071ddc26f9a27e5964..b17defc83411c3528cae1930136e771c
          }
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveChangeNonEditableSignWarning.java b/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveChangeNonEditableSignWarning.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..07f1cdbdd2dcbbbe33e4049a61799f47774f083e
+index 0000000000000000000000000000000000000000..2f24d3e101e4e7517ca1927dcfef85d2e5b034b3
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveChangeNonEditableSignWarning.java
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,22 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -39,6 +39,9 @@ index 0000000000000000000000000000000000000000..07f1cdbdd2dcbbbe33e4049a61799f47
 +    @Override
 +    public void onLoaded() {
 +        enabled = config.getBoolean(getBasePath() + ".remove-change-non-editable-sign-warning", enabled,
-+                "Enable to prevent console spam.");
++                config.pickStringRegionBased(
++                        "Enable to prevent console spam.",
++                        "移除修改无法编辑的告示牌时输出的警告."
++                ));
 +    }
 +}

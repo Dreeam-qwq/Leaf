@@ -19,10 +19,10 @@ index a1e39d4476e932da3d4e0c363ce22eb5be2b8e6c..e4911a420c81a371142f556584cc05a4
                  this.connection.disconnect(chatmessage);
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveSpigotCheckBungee.java b/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveSpigotCheckBungee.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..18672fc1415fdc4d8021e5dcd5aa19739500f7fa
+index 0000000000000000000000000000000000000000..f7dad48d09759db5254dc7dbcef64f801a0a1546
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveSpigotCheckBungee.java
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,22 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -38,8 +38,10 @@ index 0000000000000000000000000000000000000000..18672fc1415fdc4d8021e5dcd5aa1973
 +
 +    @Override
 +    public void onLoaded() {
-+        enabled = config.getBoolean(getBasePath(), enabled, """
++        enabled = config.getBoolean(getBasePath(), enabled, config.pickStringRegionBased("""
 +                Enable player enter backend server through proxy
-+                without backend server enabling its bungee mode""");
++                without backend server enabling its bungee mode.""",
++                """
++                使服务器无需打开 bungee 模式即可让玩家加入后端服务器."""));
 +    }
 +}
