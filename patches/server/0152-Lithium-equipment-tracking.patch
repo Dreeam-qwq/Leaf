@@ -315,7 +315,7 @@ index 22da75d8197de29a150c9eade7994deecae53a10..aa8a5938984d6860deb67a36f85c83d9
      public boolean equals(Object object) {
          if (this == object) {
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 9de85972ba32fd2373f70f708aa1bfc6067e6e1c..3ae75230a4250665df7a72aff1d84317b81fc077 100644
+index 9de85972ba32fd2373f70f708aa1bfc6067e6e1c..0e68d854955aea1068d4a605bca701f0a0e2f297 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 @@ -157,7 +157,7 @@ import org.bukkit.event.entity.EntityTeleportEvent;
@@ -371,7 +371,7 @@ index 9de85972ba32fd2373f70f708aa1bfc6067e6e1c..3ae75230a4250665df7a72aff1d84317
          Map<EquipmentSlot, ItemStack> map = null;
          EquipmentSlot[] aenumitemslot = EquipmentSlot.VALUES; // Gale - JettPack - reduce array allocations
          int i = aenumitemslot.length;
-@@ -4848,6 +4855,80 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -4848,6 +4855,79 @@ public abstract class LivingEntity extends Entity implements Attackable {
          flag = true;
          return flag;
      }
@@ -419,8 +419,7 @@ index 9de85972ba32fd2373f70f708aa1bfc6067e6e1c..3ae75230a4250665df7a72aff1d84317
 +    @Override
 +    public void notifyCount(ItemStack publisher, int zero, int newCount) {
 +        if (newCount == 0) {
-+            //noinspection unchecked
-+            ((net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<ItemStack>) (Object) publisher).unsubscribeWithData(this, zero);
++            publisher.unsubscribeWithData(this, zero);
 +        }
 +
 +        this.onEquipmentReplaced(publisher, ItemStack.EMPTY);
@@ -442,10 +441,10 @@ index 9de85972ba32fd2373f70f708aa1bfc6067e6e1c..3ae75230a4250665df7a72aff1d84317
 +        }
 +
 +        if (!oldStack.isEmpty()) {
-+            ((net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<ItemStack>) oldStack).unsubscribeWithData(this, 0);
++            oldStack.unsubscribeWithData(this, 0);
 +        }
 +        if (!newStack.isEmpty()) {
-+            ((net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<ItemStack>) newStack).subscribe(this, 0);
++            newStack.subscribe(this, 0);
 +        }
 +    }
 +    // Leaf end - Lithium entity equipment tracking
@@ -599,7 +598,7 @@ index 3bb46ed871fd56bbbe52cfd2575f9e853e03cd73..6d73ae2a453feeae0aea67bb555c64a0
 +    // Leaf end - Lithium equipment tracking
  }
 diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
-index 933b7519da5330ea8acd05c337201f52cab12c3c..b4fc8fcfb7994705a4307d9b0731bcd55f81d1fd 100644
+index 933b7519da5330ea8acd05c337201f52cab12c3c..e5579b15f305fb216dadd8023c16178a342b4add 100644
 --- a/src/main/java/net/minecraft/world/item/ItemStack.java
 +++ b/src/main/java/net/minecraft/world/item/ItemStack.java
 @@ -120,7 +120,7 @@ import org.bukkit.event.player.PlayerItemDamageEvent;
@@ -623,7 +622,7 @@ index 933b7519da5330ea8acd05c337201f52cab12c3c..b4fc8fcfb7994705a4307d9b0731bcd5
  
      private static DataResult<ItemStack> validateStrict(ItemStack stack) {
          DataResult<Unit> dataresult = ItemStack.validateComponents(stack.getComponents());
-@@ -1368,6 +1373,23 @@ public final class ItemStack implements DataComponentHolder {
+@@ -1368,6 +1373,21 @@ public final class ItemStack implements DataComponentHolder {
      }
  
      public void setCount(int count) {
@@ -633,9 +632,7 @@ index 933b7519da5330ea8acd05c337201f52cab12c3c..b4fc8fcfb7994705a4307d9b0731bcd5
 +                countChangeSubscriber.notifyCount(this, this.subscriberData, count);
 +            }
 +            if (count == 0) {
-+                //Safe because ComponentMapImplMixin implements the interface
-+                //noinspection unchecked
-+                ((net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<PatchedDataComponentMap>) (Object) this.components).unsubscribe(this);
++                this.components.unsubscribe(this);
 +                if (this.subscriber != null) {
 +                    this.subscriber.forceUnsubscribe(this, this.subscriberData);
 +                    this.subscriber = null;
@@ -647,7 +644,7 @@ index 933b7519da5330ea8acd05c337201f52cab12c3c..b4fc8fcfb7994705a4307d9b0731bcd5
          this.count = count;
      }
  
-@@ -1423,4 +1445,91 @@ public final class ItemStack implements DataComponentHolder {
+@@ -1423,4 +1443,87 @@ public final class ItemStack implements DataComponentHolder {
      public boolean canBeHurtBy(DamageSource source) {
          return !this.has(DataComponents.FIRE_RESISTANT) || !source.is(DamageTypeTags.IS_FIRE);
      }
@@ -681,8 +678,7 @@ index 933b7519da5330ea8acd05c337201f52cab12c3c..b4fc8fcfb7994705a4307d9b0731bcd5
 +        this.subscriber = net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber.without(this.subscriber, subscriber);
 +
 +        if (this.subscriber == null) {
-+            //noinspection unchecked
-+            ((net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<PatchedDataComponentMap>) (Object) this.components).unsubscribe(this);
++            this.components.unsubscribe(this);
 +        }
 +        return retval;
 +    }
@@ -697,8 +693,7 @@ index 933b7519da5330ea8acd05c337201f52cab12c3c..b4fc8fcfb7994705a4307d9b0731bcd5
 +        this.subscriber = net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber.without(this.subscriber, subscriber, subscriberData, true);
 +
 +        if (this.subscriber == null) {
-+            //noinspection unchecked
-+            ((net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<PatchedDataComponentMap>) (Object) this.components).unsubscribe(this);
++            this.components.unsubscribe(this);
 +        }
 +    }
 +
@@ -733,9 +728,7 @@ index 933b7519da5330ea8acd05c337201f52cab12c3c..b4fc8fcfb7994705a4307d9b0731bcd5
 +    }
 +
 +    private void startTrackingChanges() {
-+        //Safe because ComponentMapImplMixin
-+        //noinspection unchecked
-+        ((net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<PatchedDataComponentMap>) (Object) this.components).subscribe(this, 0);
++        this.components.subscribe(this, 0);
 +    }
 +    // Leaf end - Lithium equipment tracking
  }
