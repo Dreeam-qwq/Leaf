@@ -58,10 +58,10 @@ index 885c6b8c82d46f8e21eb648441dba10c3f3a99f6..7b494af5736c2036d4810f304eb238b5
                          GameProfile gameprofile = profileresult.profile();
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/Cache.java b/src/main/java/org/dreeam/leaf/config/modules/misc/Cache.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b0a5bfbebb3ad1598ba4164a8f2635862d3e424c
+index 0000000000000000000000000000000000000000..ca342af5e5b305fe9f8ecb88d06af63426f11f87
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/Cache.java
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,29 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -78,11 +78,16 @@ index 0000000000000000000000000000000000000000..b0a5bfbebb3ad1598ba4164a8f263586
 +
 +    @Override
 +    public void onLoaded() {
-+        cachePlayerProfileResult = config.getBoolean(getBasePath() + ".cache-player-profile-result", cachePlayerProfileResult, """
++        cachePlayerProfileResult = config.getBoolean(getBasePath() + ".cache-player-profile-result", cachePlayerProfileResult, config.pickStringRegionBased("""
 +                Cache the player profile result on they first join.
-+                It's useful if Mojang's verification server is down.
-+                """);
++                It's useful if Mojang's verification server is down.""",
++                """
++                玩家首次加入时缓存 PlayerProfile.
++                正版验证服务器宕机时非常有用."""));
 +        cachePlayerProfileResultTimeout = config.getInt(getBasePath() + ".cache-player-profile-result-timeout", cachePlayerProfileResultTimeout,
-+                "The timeout of the cache. Unit: Minutes.");
++                config.pickStringRegionBased(
++                        "The timeout of the cache. Unit: Minutes.",
++                        "缓存过期时间. 单位: 分钟."
++                        ));
 +    }
 +}
