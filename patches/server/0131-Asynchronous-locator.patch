@@ -418,10 +418,10 @@ index 0000000000000000000000000000000000000000..0eaa9b60ac139db47a028970557c3a84
 \ No newline at end of file
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/async/AsyncLocator.java b/src/main/java/org/dreeam/leaf/config/modules/async/AsyncLocator.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..33bf0155cac0776457f124f7815b7e9ecc2ef8da
+index 0000000000000000000000000000000000000000..0a2e562af7f7b08f6e95702f26f97f2c6f6aeb02
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/async/AsyncLocator.java
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,37 @@
 +package org.dreeam.leaf.config.modules.async;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -439,11 +439,13 @@ index 0000000000000000000000000000000000000000..33bf0155cac0776457f124f7815b7e9e
 +
 +    @Override
 +    public void onLoaded() {
-+        config.addComment(getBasePath(), """
-+                ***Experimental feature, report any bugs you encounter!***
++        config.addCommentRegionBased(getBasePath(), """
 +                Whether or not asynchronous locator should be enabled.
 +                This offloads structure locating to other threads.
-+                Only for locate command, dolphin treasure finding and eye of ender currently.""");
++                Only for locate command, dolphin treasure finding and eye of ender currently.""",
++                """
++                是否启用异步结构搜索.
++                目前可用于 /locate 指令, 海豚寻宝和末影之眼.""");
 +        enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
 +        asyncLocatorThreads = config.getInt(getBasePath() + ".threads", asyncLocatorThreads);
 +
