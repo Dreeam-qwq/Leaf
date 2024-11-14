@@ -135,10 +135,10 @@ index 91eea05a68d0ace8678fc5071e67cedb18a4386b..64d22c2be510ad759bcd6fe192d1ea8c
          com.mojang.brigadier.CommandDispatcher<CommandSourceStack> com_mojang_brigadier_commanddispatcher = (new Commands(Commands.CommandSelection.ALL, commandbuildcontext)).getDispatcher();
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/UnknownCommandMessage.java b/src/main/java/org/dreeam/leaf/config/modules/misc/UnknownCommandMessage.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d54e1aee7421129b25b7a4ce8027816d76e3c368
+index 0000000000000000000000000000000000000000..66fbab025b1eae951d5318e3d11df5dd2cc85854
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/UnknownCommandMessage.java
-@@ -0,0 +1,21 @@
+@@ -0,0 +1,23 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -154,10 +154,12 @@ index 0000000000000000000000000000000000000000..d54e1aee7421129b25b7a4ce8027816d
 +
 +    @Override
 +    public void onLoaded() {
-+        unknownCommandMessage = config.getString(getBasePath() + ".unknown-command", unknownCommandMessage, """
++        unknownCommandMessage = config.getString(getBasePath() + ".unknown-command", unknownCommandMessage, config.pickStringRegionBased("""
 +                Unknown command message, using MiniMessage format, set to "default" to use vanilla message,
-+                placeholder: <detail>, shows detail of the unknown command information.
-+                """);
++                placeholder: <detail>, shows detail of the unknown command information.""",
++                """
++                发送未知命令时的消息, 使用 MiniMessage 格式, 设置为 "default" 使用原版消息.
++                变量: <detail>, 显示未知命令详细信息."""));
 +    }
 +}
 diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java

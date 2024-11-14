@@ -67,10 +67,10 @@ index 2cdfd22baf31df99e2c2b1d114c47cb88569538f..8e3bbc7a0cf2a3e5999738c0f764544f
  }
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/ConnectionMessage.java b/src/main/java/org/dreeam/leaf/config/modules/misc/ConnectionMessage.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d05c123143ff623ce45c351a487e10ba52c92a61
+index 0000000000000000000000000000000000000000..0d4628373cd142990c10eb793d82c2acbdd05248
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/ConnectionMessage.java
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,36 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -89,11 +89,16 @@ index 0000000000000000000000000000000000000000..d05c123143ff623ce45c351a487e10ba
 +
 +    @Override
 +    public void onLoaded() {
-+        config.addComment(getBasePath(), """
++        config.addCommentRegionBased(getBasePath(), """
 +                Connection message, using MiniMessage format, set to "default" to use vanilla join message.
 +                available placeholders:
 +                %player_name% - player name
-+                %player_displayname% - player display name""");
++                %player_displayname% - player display name""",
++                """
++                自定义加入 & 退出消息 (MiniMessage 格式), 设置为 'default' 将使用原版消息.
++                可用的内置变量:
++                %player_name% - 玩家名称
++                %player_displayname% - 玩家显示名称""");
 +
 +        joinEnabled = config.getBoolean(getBasePath() + ".join.enabled", joinEnabled);
 +        joinMessage = config.getString(getBasePath() + ".join.message", joinMessage, "Join message of player");
