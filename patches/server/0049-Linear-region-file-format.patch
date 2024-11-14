@@ -332,10 +332,10 @@ index 54f7aa95cfbcf39bb86ad1b4eb0f9ff2f8526030..7c4b81e97562bb158478c70dae082526
                  } catch (final IOException ex) {
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/RegionFormatConfig.java b/src/main/java/org/dreeam/leaf/config/modules/misc/RegionFormatConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..528eadb302bbb0de583edf69752162254d202f15
+index 0000000000000000000000000000000000000000..7f95e17544b762ad4674315e53fcff8e80105cb8
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/RegionFormatConfig.java
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,62 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import com.mojang.logging.LogUtils;
@@ -363,17 +363,24 @@ index 0000000000000000000000000000000000000000..528eadb302bbb0de583edf6975216225
 +
 +    @Override
 +    public void onLoaded() {
-+        config.addComment(getBasePath(), """
++        config.addCommentRegionBased(getBasePath(), """
 +                Linear is a region file format that uses ZSTD compression instead of
 +                ZLIB.
 +                This format saves about 50% of disk space.
 +                Read Documentation before using: https://github.com/xymb-endcrystalme/LinearRegionFileFormatTools
 +                Disclaimer: This is an experimental feature, there is potential risk to lose chunk data.
-+                So backup your server before switching to Linear.
-+                """);
++                So backup your server before switching to Linear.""",
++                """
++                Linear 是一种使用 ZSTD 压缩而非 ZLIB 的区域文件格式.
++                该格式可节省约 50% 的磁盘空间.
++                使用前请阅读文档: https://github.com/xymb-endcrystalme/LinearRegionFileFormatTools
++                免责声明: 实验性功能,有可能导致区块数据丢失.
++                切换到Linear前请备份服务器.""");
 +
 +        regionFormatTypeName = config.getString(getBasePath() + ".region-format", regionFormatTypeName,
-+                "Available region formats: MCA, LINEAR");
++                config.pickStringRegionBased(
++                        "Available region formats: MCA, LINEAR",
++                        "可用格式: MCA, LINEAR"));
 +        linearCompressionLevel = config.getInt(getBasePath() + ".linear-compress-level", linearCompressionLevel);
 +        throwOnUnknownExtension = config().getBoolean(getBasePath() + ".throw-on-unknown-extension-detected", throwOnUnknownExtension);
 +        linearFlushFrequency = config.getInt(getBasePath() + ".flush-interval-seconds", linearFlushFrequency);
