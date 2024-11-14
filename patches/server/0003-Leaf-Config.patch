@@ -423,10 +423,10 @@ index 0000000000000000000000000000000000000000..fdbdf3f6a5071ce629d2881e861075db
 +}
 diff --git a/src/main/java/org/dreeam/leaf/config/LeafGlobalConfig.java b/src/main/java/org/dreeam/leaf/config/LeafGlobalConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c5eea2397ddda83329b82fce875b9ac33911ef96
+index 0000000000000000000000000000000000000000..794bc822d987ee2bb69b953ea70ae3ee08124ac5
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/LeafGlobalConfig.java
-@@ -0,0 +1,134 @@
+@@ -0,0 +1,137 @@
 +package org.dreeam.leaf.config;
 +
 +import io.github.thatsmusic99.configurationmaster.api.ConfigFile;
@@ -446,11 +446,14 @@ index 0000000000000000000000000000000000000000..c5eea2397ddda83329b82fce875b9ac3
 +    public LeafGlobalConfig(boolean init) throws Exception {
 +            configFile = ConfigFile.loadConfig(new File(LeafConfig.I_CONFIG_FOLDER, LeafConfig.I_GLOBAL_CONFIG_FILE));
 +            configFile.set("config-version", 3.0);
-+            configFile.addComments("config-version", """
++            configFile.addComments("config-version", pickStringRegionBased("""
 +                    Leaf Config
-+                    Github Repo: https://github.com/Winds-Studio/Leaf
-+                    Discord: https://discord.com/invite/gfgAwdSEuM
-+                    QQ Group: 619278377""");
++                    GitHub Repo: https://github.com/Winds-Studio/Leaf
++                    Discord: https://discord.com/invite/gfgAwdSEuM""",
++                    """
++                    Leaf Config
++                    GitHub Repo: https://github.com/Winds-Studio/Leaf
++                    QQ Group: 619278377"""));
 +
 +            // Pre-structure to force order
 +            structureConfig();
