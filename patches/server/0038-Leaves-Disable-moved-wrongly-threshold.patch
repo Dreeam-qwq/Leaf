@@ -48,10 +48,10 @@ index 0abef2fd45d384583272a183bae42df5cbacfcec..39428db6c83527c085f4dcb012b4da29
                                      toX, toY, toZ, toYaw, toPitch, true);
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/gameplay/DisableMovedWronglyThreshold.java b/src/main/java/org/dreeam/leaf/config/modules/gameplay/DisableMovedWronglyThreshold.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..6643345144c8a11cedb2de0fac512013f7f4d705
+index 0000000000000000000000000000000000000000..14ed289c91a99d6fd7d12462a7bde506e2ecbedc
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/gameplay/DisableMovedWronglyThreshold.java
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,22 @@
 +package org.dreeam.leaf.config.modules.gameplay;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -68,6 +68,9 @@ index 0000000000000000000000000000000000000000..6643345144c8a11cedb2de0fac512013
 +    @Override
 +    public void onLoaded() {
 +        enabled = config.getBoolean(getBasePath() + ".disable-moved-wrongly-threshold", enabled,
-+                "Disable moved quickly/wrongly checks");
++                config.pickStringRegionBased(
++                        "Disable moved quickly/wrongly checks.",
++                        "关闭 moved wrongly/too quickly! 警告."
++                ));
 +    }
 +}

@@ -25,10 +25,10 @@ index adf4732e57927810d34bf37fb3e9d2dc7b7977d5..def145674389e1e942a69ae4bdf11b5a
                      this.player.resetLastActionTime();
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/gameplay/ConfigurableMaxUseItemDistance.java b/src/main/java/org/dreeam/leaf/config/modules/gameplay/ConfigurableMaxUseItemDistance.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..aef8135fe44330a2459f06ebc10816f1ed83ac7e
+index 0000000000000000000000000000000000000000..b1ae10cec5638f65320327ba6bfe112fd25cae8c
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/gameplay/ConfigurableMaxUseItemDistance.java
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,28 @@
 +package org.dreeam.leaf.config.modules.gameplay;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -44,11 +44,16 @@ index 0000000000000000000000000000000000000000..aef8135fe44330a2459f06ebc10816f1
 +
 +    @Override
 +    public void onLoaded() {
-+        maxUseItemDistance = config.getDouble(getBasePath() + ".max-use-item-distance", maxUseItemDistance, """
++        maxUseItemDistance = config.getDouble(getBasePath() + ".max-use-item-distance", maxUseItemDistance, config.pickStringRegionBased("""
 +                The max distance of UseItem for players.
 +                Set to -1 to disable max-distance-check.
 +                NOTE: if set to -1 to disable the check,
 +                players are able to use some packet modules of hack clients,
-+                and NoCom Exploit!!""");
++                and NoCom Exploit!!""",
++                """
++                玩家 UseItem 的最大距离.
++                设置为 -1 来禁用最大距离检测.
++                注意: 禁用此项后,
++                玩家可以使用作弊客户端的部分发包模块和 NoCom 漏洞!!"""));
 +    }
 +}

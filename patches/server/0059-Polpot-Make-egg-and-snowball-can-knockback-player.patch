@@ -43,10 +43,10 @@ index dbd60cc8c39f5d2d4c77e2de4f2567e7fa456cd2..94baa609e49db229b03592c3fddb388b
      @Override
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/gameplay/Knockback.java b/src/main/java/org/dreeam/leaf/config/modules/gameplay/Knockback.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..35e8a9568cd37f4ed75d10a38beea996c8729388
+index 0000000000000000000000000000000000000000..7b434158818834450ea43611e2ab5636917bb938
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/gameplay/Knockback.java
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,28 @@
 +package org.dreeam.leaf.config.modules.gameplay;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -64,8 +64,14 @@ index 0000000000000000000000000000000000000000..35e8a9568cd37f4ed75d10a38beea996
 +    @Override
 +    public void onLoaded() {
 +        snowballCanKnockback = config.getBoolean(getBasePath() + ".snowball-knockback-players", snowballCanKnockback,
-+                "Make snowball can knockback players");
++                config.pickStringRegionBased(
++                        "Make snowball can knockback players.",
++                        "使雪球可以击退玩家."
++                        ));
 +        eggCanKnockback = config.getBoolean(getBasePath() + ".egg-knockback-players", eggCanKnockback,
-+                "Make egg can knockback players");
++                config.pickStringRegionBased(
++                        "Make egg can knockback players.",
++                        "使鸡蛋可以击退玩家."
++                        ));
 +    }
 +}

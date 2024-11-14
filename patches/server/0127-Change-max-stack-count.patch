@@ -116,10 +116,10 @@ index 4901f0d89ae2472bce7f242d9529236674f5d134..127f41511cdcaacc00e0f128c20339f3
  }
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/gameplay/MaxItemsStackCount.java b/src/main/java/org/dreeam/leaf/config/modules/gameplay/MaxItemsStackCount.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4a895897111454dc3558aa491b9d81cf610b5bbf
+index 0000000000000000000000000000000000000000..434a938cb1e2ac906783be2507fa7846f2f013a2
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/gameplay/MaxItemsStackCount.java
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,27 @@
 +package org.dreeam.leaf.config.modules.gameplay;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -136,7 +136,9 @@ index 0000000000000000000000000000000000000000..4a895897111454dc3558aa491b9d81cf
 +
 +    @Override
 +    public void onLoaded() {
-+        config.addComment(getBasePath(), "Don't touch this unless you know what you are doing!");
++        config.addCommentRegionBased(getBasePath(),
++                "Don't touch this unless you know what you are doing!",
++                "不要动该项, 除非你知道自己在做什么!");
 +
 +        maxItemStackCount = config.getInt(getBasePath() + ".max-dropped-items-stack-count", maxItemStackCount);
 +        maxContainerDestroyCount = config.getInt(getBasePath() + ".max-container-destroy-count", maxContainerDestroyCount);

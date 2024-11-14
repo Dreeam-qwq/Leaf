@@ -34,10 +34,10 @@ index 8e3bbc7a0cf2a3e5999738c0f764544f5e64ef4a..a7fadf66ff2935c6a3751f2121b0e1a8
          }
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/fixes/DontPlacePlayerIfFull.java b/src/main/java/org/dreeam/leaf/config/modules/fixes/DontPlacePlayerIfFull.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8ca0c6ef982fa45891e67430c729eb1c92235853
+index 0000000000000000000000000000000000000000..ae21bcac9d57b760d751d25f2bdb746e4bd636f1
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/fixes/DontPlacePlayerIfFull.java
-@@ -0,0 +1,21 @@
+@@ -0,0 +1,25 @@
 +package org.dreeam.leaf.config.modules.fixes;
 +
 +import org.dreeam.leaf.config.ConfigModules;
@@ -53,9 +53,13 @@ index 0000000000000000000000000000000000000000..8ca0c6ef982fa45891e67430c729eb1c
 +
 +    @Override
 +    public void onLoaded() {
-+        enabled = config.getBoolean(getBasePath() + ".dont-place-player-if-server-full", enabled, """
++        enabled = config.getBoolean(getBasePath() + ".dont-place-player-if-server-full", enabled, config.pickStringRegionBased("""
 +                Don't let player join server if the server is full.
 +                If enable this, you should use 'purpur.joinfullserver' permission instead of
-+                PlayerLoginEvent#allow to let player join full server.""");
++                PlayerLoginEvent#allow to let player join full server.""",
++                """
++                服务器已满时禁止玩家加入.
++                开启后需使用权限 'purpur.joinfullserver' 而不是
++                PlayerLoginEvent#allow 让玩家进入已满的服务器."""));
 +    }
 +}
