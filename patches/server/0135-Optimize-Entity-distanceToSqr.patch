@@ -4,11 +4,11 @@ Date: Fri, 29 Oct 2077 00:00:00 +0800
 Subject: [PATCH] Optimize Entity distanceToSqr
 
 This patch optimizes Entity#distanceToSqr call by using Math#fma which is around 1.2x to 4x faster than original method,
-avoids multiple casting in Entity#distanceTo, using Math#hypot instead of Mojang's Mth#sqrt. Additionally, this patch makes
+avoids multiple casting in Entity#distanceTo, using Math#sqrt directly instead of Mojang's Mth#sqrt. Additionally, this patch makes
 these methods more able to be inlined by the JIT compiler.
 
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 08a3714c530fb375ee729e91965c65efb9e6e3d2..976d72b611011cccf4b4efadc9772ce1c68ef5ee 100644
+index 08a3714c530fb375ee729e91965c65efb9e6e3d2..9d449ccee6cb7ae9e3438fae0d4c278acceda898 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -2368,33 +2368,41 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
@@ -28,7 +28,7 @@ index 08a3714c530fb375ee729e91965c65efb9e6e3d2..976d72b611011cccf4b4efadc9772ce1
 +        // Leaf end - Optimize distanceTo - Avoid casting
  
 -        return Mth.sqrt(f * f + f1 * f1 + f2 * f2);
-+        return (float) Math.hypot(dx, Math.hypot(dy, dz)); // Leaf - Use Math#hypot instead of Mojang's Mth#sqrt
++        return (float) Math.sqrt(dx * dx + dy * dy + dz * dz); // Leaf - Use Math#sqrt instead of Mojang's Mth#sqrt - only cast once
      }
 +    // Leaf end - Optimize distanceTo - inlining
  

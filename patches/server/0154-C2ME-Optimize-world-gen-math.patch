@@ -1,0 +1,91 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Tue, 9 Nov 2077 00:00:00 +0800
+Subject: [PATCH] C2ME: Optimize world gen math
+
+
+diff --git a/src/main/java/net/minecraft/world/level/ChunkPos.java b/src/main/java/net/minecraft/world/level/ChunkPos.java
+index fa58eeec2b652f0fa251eedf11cfabde5fd3198b..4976627098381f70b10c7370529bb5000bc5626f 100644
+--- a/src/main/java/net/minecraft/world/level/ChunkPos.java
++++ b/src/main/java/net/minecraft/world/level/ChunkPos.java
+@@ -84,7 +84,12 @@ public class ChunkPos {
+ 
+     @Override
+     public boolean equals(Object object) {
+-        return this == object || object instanceof ChunkPos chunkPos && this.x == chunkPos.x && this.z == chunkPos.z;
++        // Leaf start - Use standard equals
++        if (object == this) return true;
++        if (object == null || object.getClass() != this.getClass()) return false;
++        ChunkPos thatPos = (ChunkPos) object;
++        return this.x == thatPos.x && this.z == thatPos.z;
++        // Leaf end - Use standard equals
+     }
+ 
+     public int getMiddleBlockX() {
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/Beardifier.java b/src/main/java/net/minecraft/world/level/levelgen/Beardifier.java
+index ca93a97256350789ca56f910862c9d717ca7670b..3a1a5257e1a98cc1d520f407bb1f8c745cadd3df 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/Beardifier.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/Beardifier.java
+@@ -132,8 +132,14 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
+     }
+ 
+     private static double getBuryContribution(double x, double y, double z) {
+-        double d = Mth.length(x, y, z);
+-        return Mth.clampedMap(d, 0.0, 6.0, 1.0, 0.0);
++        // Leaf start - Optimize method for beardifier
++        double d = Math.sqrt(x * x + y * y + z * z);
++        if (d > 6.0) {
++            return 0.0;
++        } else {
++            return 1.0 - d / 6.0;
++        }
++        // Leaf end - Optimize method for beardifier
+     }
+ 
+     private static double getBeardContribution(int x, int y, int z, int yy) {
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java b/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+index c991da3d975e07f3e1e59d5b2e91ed629ea608e6..0562eaf84ae31448acf98e94d8730d392ac2e074 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+@@ -43,7 +43,6 @@ import net.minecraft.world.level.chunk.ChunkAccess;
+ import net.minecraft.world.level.chunk.ChunkGenerator;
+ import net.minecraft.world.level.chunk.LevelChunkSection;
+ import net.minecraft.world.level.chunk.ProtoChunk;
+-import net.minecraft.world.level.dimension.DimensionType;
+ import net.minecraft.world.level.levelgen.blending.Blender;
+ import net.minecraft.world.level.levelgen.carver.CarvingContext;
+ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+@@ -76,14 +75,13 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
+     }
+ 
+     private static Aquifer.FluidPicker createFluidPicker(NoiseGeneratorSettings settings) {
++        // Leaf start - Optimize world gen
+         Aquifer.FluidStatus aquifer_b = new Aquifer.FluidStatus(-54, Blocks.LAVA.defaultBlockState());
+         int i = settings.seaLevel();
+         Aquifer.FluidStatus aquifer_b1 = new Aquifer.FluidStatus(i, settings.defaultFluid());
+-        Aquifer.FluidStatus aquifer_b2 = new Aquifer.FluidStatus(DimensionType.MIN_Y * 2, Blocks.AIR.defaultBlockState());
+-
+-        return (j, k, l) -> {
+-            return k < Math.min(-54, i) ? aquifer_b : aquifer_b1;
+-        };
++        final int min = Math.min(-54, i);
++        return (j, k, l) -> k < min ? aquifer_b : aquifer_b1;
++        // Leaf end - Optimize world gen
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/synth/PerlinNoise.java b/src/main/java/net/minecraft/world/level/levelgen/synth/PerlinNoise.java
+index 022dda9dded1bd96dcaf377b1d1a9711ea9c49e7..1b0c92f3c20a4edc85a976a0eec620d0a96b5bba 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/synth/PerlinNoise.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/synth/PerlinNoise.java
+@@ -215,7 +215,9 @@ public class PerlinNoise {
+     }
+ 
+     public static double wrap(double value) {
+-        return value - (double)Mth.lfloor(value / 3.3554432E7 + 0.5) * 3.3554432E7;
++        // Leaf start - Avoid casting
++        return value - Math.floor(value / 3.3554432E7 + 0.5) * 3.3554432E7;
++        // Leaf end - Avoid casting
+     }
+ 
+     protected int firstOctave() {
