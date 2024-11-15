@@ -3,6 +3,10 @@ From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 Date: Tue, 9 Nov 2077 00:00:00 +0800
 Subject: [PATCH] C2ME: Optimize world gen math
 
+Original license: MIT
+Original project: https://github.com/RelativityMC/C2ME-fabric
+
+Co-authored-by: Taiyou06 <kaandindar21@gmail.com>
 
 diff --git a/src/main/java/net/minecraft/world/level/ChunkPos.java b/src/main/java/net/minecraft/world/level/ChunkPos.java
 index fa58eeec2b652f0fa251eedf11cfabde5fd3198b..4976627098381f70b10c7370529bb5000bc5626f 100644
