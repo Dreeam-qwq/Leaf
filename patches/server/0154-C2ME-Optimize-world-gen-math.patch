@@ -3,8 +3,12 @@ From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 Date: Tue, 9 Nov 2077 00:00:00 +0800
 Subject: [PATCH] C2ME: Optimize world gen math
 
-Original license: MIT
-Original project: https://github.com/RelativityMC/C2ME-fabric
+This patch is based on following mixins:
+* "com/ishland/c2me/opts/math/mixin/MixinChunkPos.java"
+* "com/ishland/c2me/opts/worldgen/vanilla/mixin/aquifer/MixinNoiseChunkGenerator.java"
+
+As part of: C2ME-fabric (https://github.com/RelativityMC/C2ME-fabric)
+Licensed under: MIT
 
 Co-authored-by: Taiyou06 <kaandindar21@gmail.com>
 
