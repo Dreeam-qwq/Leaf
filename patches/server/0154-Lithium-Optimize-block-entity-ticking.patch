@@ -1,0 +1,275 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Tue, 9 Nov 2077 00:00:00 +0800
+Subject: [PATCH] Lithium: Optimize block entity ticking
+
+This patch is based on the following mixins:
+* "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/WrappedBlockEntityTickInvokerAccessor.java"
+* "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/hopper/HopperBlockEntityMixin.java"
+By: 2No2Name <2No2Name@web.de>
+As part of: Lithium (https://github.com/CaffeineMC/lithium-fabric)
+Licensed under: LGPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
+
+diff --git a/src/main/java/net/caffeinemc/mods/lithium/common/block/entity/SleepUntilTimeBlockEntityTickInvoker.java b/src/main/java/net/caffeinemc/mods/lithium/common/block/entity/SleepUntilTimeBlockEntityTickInvoker.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..0cc1026eedcb25a5b022c451e01f5170236b716a
+--- /dev/null
++++ b/src/main/java/net/caffeinemc/mods/lithium/common/block/entity/SleepUntilTimeBlockEntityTickInvoker.java
+@@ -0,0 +1,36 @@
++package net.caffeinemc.mods.lithium.common.block.entity;
++
++import net.minecraft.core.BlockPos;
++import net.minecraft.world.level.block.entity.BlockEntity;
++import net.minecraft.world.level.block.entity.BlockEntityType;
++import net.minecraft.world.level.block.entity.TickingBlockEntity;
++
++public record SleepUntilTimeBlockEntityTickInvoker(BlockEntity sleepingBlockEntity, long sleepUntilTickExclusive,
++                                                   TickingBlockEntity delegate) implements TickingBlockEntity {
++
++    @Override
++    public void tick() {
++        //noinspection ConstantConditions
++        long tickTime = this.sleepingBlockEntity.getLevel().getGameTime();
++        if (tickTime >= this.sleepUntilTickExclusive) {
++            ((SleepingBlockEntity) this.sleepingBlockEntity).setTicker(this.delegate);
++            this.delegate.tick();
++        }
++    }
++
++    @Override
++    public boolean isRemoved() {
++        return this.sleepingBlockEntity.isRemoved();
++    }
++
++    @Override
++    public BlockPos getPos() {
++        return this.sleepingBlockEntity.getBlockPos();
++    }
++
++    @Override
++    public String getType() {
++        //noinspection ConstantConditions
++        return BlockEntityType.getKey(this.sleepingBlockEntity.getType()).toString();
++    }
++}
+\ No newline at end of file
+diff --git a/src/main/java/net/caffeinemc/mods/lithium/common/block/entity/SleepingBlockEntity.java b/src/main/java/net/caffeinemc/mods/lithium/common/block/entity/SleepingBlockEntity.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..8fe5a5233b54309cfa9794925c65a2aae6965801
+--- /dev/null
++++ b/src/main/java/net/caffeinemc/mods/lithium/common/block/entity/SleepingBlockEntity.java
+@@ -0,0 +1,81 @@
++package net.caffeinemc.mods.lithium.common.block.entity;
++
++import net.minecraft.core.BlockPos;
++import net.minecraft.world.level.Level;
++import net.minecraft.world.level.block.entity.BlockEntity;
++import net.minecraft.world.level.block.entity.BlockEntityTicker;
++import net.minecraft.world.level.block.entity.TickingBlockEntity;
++import net.minecraft.world.level.chunk.LevelChunk;
++
++public interface SleepingBlockEntity {
++    TickingBlockEntity SLEEPING_BLOCK_ENTITY_TICKER = new TickingBlockEntity() {
++        public void tick() {
++        }
++
++        public boolean isRemoved() {
++            return false;
++        }
++
++        public BlockPos getPos() {
++            return null;
++        }
++
++        public String getType() {
++            return "<lithium_sleeping>";
++        }
++    };
++
++    LevelChunk.RebindableTickingBlockEntityWrapper lithium$getTickWrapper();
++
++    void lithium$setTickWrapper(LevelChunk.RebindableTickingBlockEntityWrapper tickWrapper);
++
++    TickingBlockEntity lithium$getSleepingTicker();
++
++    void lithium$setSleepingTicker(TickingBlockEntity sleepingTicker);
++
++    default boolean lithium$startSleeping() {
++        if (this.isSleeping()) {
++            return false;
++        }
++
++        LevelChunk.RebindableTickingBlockEntityWrapper tickWrapper = this.lithium$getTickWrapper();
++        if (tickWrapper == null) {
++            return false;
++        }
++        this.lithium$setSleepingTicker(tickWrapper.getTicker());
++        tickWrapper.rebind(SleepingBlockEntity.SLEEPING_BLOCK_ENTITY_TICKER);
++        return true;
++    }
++
++    default void sleepOnlyCurrentTick() {
++        TickingBlockEntity sleepingTicker = this.lithium$getSleepingTicker();
++        LevelChunk.RebindableTickingBlockEntityWrapper tickWrapper = this.lithium$getTickWrapper();
++        if (sleepingTicker == null) {
++            sleepingTicker = tickWrapper.getTicker();
++        }
++        Level world = ((BlockEntity) this).getLevel();
++        tickWrapper.rebind(new SleepUntilTimeBlockEntityTickInvoker((BlockEntity) this, world.getGameTime() + 1, sleepingTicker));
++        this.lithium$setSleepingTicker(null);
++    }
++
++    default void wakeUpNow() {
++        TickingBlockEntity sleepingTicker = this.lithium$getSleepingTicker();
++        if (sleepingTicker == null) {
++            return;
++        }
++        this.setTicker(sleepingTicker);
++        this.lithium$setSleepingTicker(null);
++    }
++
++    default void setTicker(TickingBlockEntity delegate) {
++        LevelChunk.RebindableTickingBlockEntityWrapper tickWrapper = this.lithium$getTickWrapper();
++        if (tickWrapper == null) {
++            return;
++        }
++        tickWrapper.rebind(delegate);
++    }
++
++    default boolean isSleeping() {
++        return this.lithium$getSleepingTicker() != null;
++    }
++}
+\ No newline at end of file
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+index 989e0f049805a734d6aa18434dd2a3b2d6c2ace1..ffa4015d69be228e2a2063d1714e292b6c1ad3a9 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+@@ -42,7 +42,7 @@ import org.bukkit.event.inventory.InventoryPickupItemEvent;
+ import org.bukkit.inventory.Inventory;
+ // CraftBukkit end
+ 
+-public class HopperBlockEntity extends RandomizableContainerBlockEntity implements Hopper {
++public class HopperBlockEntity extends RandomizableContainerBlockEntity implements Hopper, net.caffeinemc.mods.lithium.common.block.entity.SleepingBlockEntity { // Leaf - Lithium: block entity ticking optimization
+ 
+     public static final int MOVE_ITEM_SPEED = 8;
+     public static final int HOPPER_CONTAINER_SIZE = 5;
+@@ -51,6 +51,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+     public int cooldownTime;
+     private long tickedGameTime;
+     private Direction facing;
++    // Leaf start - Lithium: block entity ticking optimization
++    @Nullable private net.minecraft.world.level.chunk.LevelChunk.RebindableTickingBlockEntityWrapper tickWrapper;
++    @Nullable private TickingBlockEntity sleepingTicker;
++    // Leaf end - Lithium: block entity ticking optimization
+ 
+     // CraftBukkit start - add fields and methods
+     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
+@@ -216,6 +220,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+                 }
+             }
+ 
++            // Leaf start - Lithium: block entity ticking optimization
++            if (!blockEntity.isOnCooldown() &&
++                    !blockEntity.isSleeping() &&
++                    !state.getValue(HopperBlock.ENABLED)) {
++                blockEntity.lithium$startSleeping();
++            }
++            // Leaf end - Lithium: block entity ticking optimization
+             return false;
+         }
+     }
+@@ -933,6 +944,17 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+     }
+ 
+     public void setCooldown(int transferCooldown) {
++        // Leaf start - Lithium: block entity ticking optimization
++        if (transferCooldown == 7) {
++            if (this.tickedGameTime == Long.MAX_VALUE) {
++                this.sleepOnlyCurrentTick();
++            } else {
++                this.wakeUpNow();
++            }
++        } else if (transferCooldown > 0 && this.sleepingTicker != null) {
++            this.wakeUpNow();
++        }
++        // Leaf end - Lithium: block entity ticking optimization
+         this.cooldownTime = transferCooldown;
+     }
+ 
+@@ -969,4 +991,45 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+     protected AbstractContainerMenu createMenu(int syncId, net.minecraft.world.entity.player.Inventory playerInventory) {
+         return new HopperMenu(syncId, playerInventory, this);
+     }
++    // Leaf start - Lithium: block entity ticking optimization
++    @Override
++    public net.minecraft.world.level.chunk.LevelChunk.RebindableTickingBlockEntityWrapper lithium$getTickWrapper() {
++        return tickWrapper;
++    }
++
++    @Override
++    public void lithium$setTickWrapper(net.minecraft.world.level.chunk.LevelChunk.RebindableTickingBlockEntityWrapper tickWrapper) {
++        this.tickWrapper = tickWrapper;
++        this.lithium$setSleepingTicker(null);
++    }
++
++    @Override
++    public TickingBlockEntity lithium$getSleepingTicker() {
++        return sleepingTicker;
++    }
++
++    @Override
++    public void lithium$setSleepingTicker(TickingBlockEntity sleepingTicker) {
++        this.sleepingTicker = sleepingTicker;
++    }
++
++    @Override
++    public boolean lithium$startSleeping() {
++        if (this.isSleeping()) {
++            return false;
++        }
++
++        net.minecraft.world.level.chunk.LevelChunk.RebindableTickingBlockEntityWrapper tickWrapper = this.lithium$getTickWrapper();
++        if (tickWrapper != null) {
++            this.lithium$setSleepingTicker(tickWrapper.getTicker());
++            tickWrapper.rebind(net.caffeinemc.mods.lithium.common.block.entity.SleepingBlockEntity.SLEEPING_BLOCK_ENTITY_TICKER);
++            // Set the last tick time to max value, so other hoppers transferring into this hopper will set it to 7gt
++            // cooldown. Then when waking up, we make sure to not tick this hopper in the same gametick.
++            // This makes the observable hopper cooldown not be different from vanilla.
++            this.tickedGameTime = Long.MAX_VALUE;
++            return true;
++        }
++        return false;
++    }
++    // Leaf end - Lithium: block entity ticking optimization
+ }
+diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
+index 61d6f80af62fcc48c16def1905cc57c417fe90a4..0d2f4c6f9c7cca8eba09a28c29d770749b99260e 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
+@@ -999,7 +999,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+         private EntityCreationType() {}
+     }
+ 
+-    private class RebindableTickingBlockEntityWrapper implements TickingBlockEntity {
++    public class RebindableTickingBlockEntityWrapper implements TickingBlockEntity { // Leaf - private -> public
+ 
+         private TickingBlockEntity ticker;
+         private BlockPos cachedPos; // Leaf - Cache tile entity position
+@@ -1009,7 +1009,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+             this.cachedPos = this.ticker.getPos(); // Leaf - Cache tile entity position
+         }
+ 
+-        void rebind(TickingBlockEntity wrapped) {
++        public void rebind(TickingBlockEntity wrapped) { // Leaf - package-private -> public
+             this.ticker = wrapped;
+             this.cachedPos = this.ticker.getPos(); // Leaf - Cache tile entity position
+         }
+@@ -1037,6 +1037,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+         public String toString() {
+             return String.valueOf(this.ticker) + " <wrapped>";
+         }
++        public TickingBlockEntity getTicker() { return this.ticker; } // Leaf - getter
+     }
+ 
+     private class BoundTickingBlockEntity<T extends BlockEntity> implements TickingBlockEntity {
