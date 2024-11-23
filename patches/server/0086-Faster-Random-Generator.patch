@@ -59,6 +59,94 @@ index 08a3714c530fb375ee729e91965c65efb9e6e3d2..886ecb74c289cd5afcdcc346eb733219
      private static final class RandomRandomSource extends java.util.Random implements net.minecraft.world.level.levelgen.BitRandomSource {
          private boolean locked = false;
  
+diff --git a/src/main/java/net/minecraft/world/level/biome/Biome.java b/src/main/java/net/minecraft/world/level/biome/Biome.java
+index 90c165c890a2d998e3b0af9b4310e3995ede6f64..0417fbdaf6847bba389f439ba924f6fd4e85238b 100644
+--- a/src/main/java/net/minecraft/world/level/biome/Biome.java
++++ b/src/main/java/net/minecraft/world/level/biome/Biome.java
+@@ -50,14 +50,14 @@ public final class Biome {
+     );
+     public static final Codec<Holder<Biome>> CODEC = RegistryFileCodec.create(Registries.BIOME, DIRECT_CODEC);
+     public static final Codec<HolderSet<Biome>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.BIOME, DIRECT_CODEC);
+-    private static final PerlinSimplexNoise TEMPERATURE_NOISE = new PerlinSimplexNoise(new WorldgenRandom(new LegacyRandomSource(1234L)), ImmutableList.of(0));
++    private static final PerlinSimplexNoise TEMPERATURE_NOISE = new PerlinSimplexNoise(new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(1234L) : new LegacyRandomSource(1234L)), ImmutableList.of(0)); // Leaf - Faster random generator
+     static final PerlinSimplexNoise FROZEN_TEMPERATURE_NOISE = new PerlinSimplexNoise(
+-        new WorldgenRandom(new LegacyRandomSource(3456L)), ImmutableList.of(-2, -1, 0)
++        new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(3456L) : new LegacyRandomSource(3456L)), ImmutableList.of(-2, -1, 0) // Leaf - Faster random generator
+     );
+     @Deprecated(
+         forRemoval = true
+     )
+-    public static final PerlinSimplexNoise BIOME_INFO_NOISE = new PerlinSimplexNoise(new WorldgenRandom(new LegacyRandomSource(2345L)), ImmutableList.of(0));
++    public static final PerlinSimplexNoise BIOME_INFO_NOISE = new PerlinSimplexNoise(new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(2345L) : new LegacyRandomSource(2345L)), ImmutableList.of(0)); // Leaf - Faster random generator
+     private static final int TEMPERATURE_CACHE_SIZE = 1024;
+     public final Biome.ClimateSettings climateSettings;
+     private final BiomeGenerationSettings generationSettings;
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
+index 00ed0d5ad535faa36111ab28bb0cf1317eb067ec..46e7a1f2d8eac6ad55e760f40bb83dd79c61756b 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
+@@ -347,7 +347,7 @@ public abstract class ChunkGenerator {
+             // Leaf start - Matter - Feature Secure Seed
+             WorldgenRandom seededrandom = org.dreeam.leaf.config.modules.misc.SecureSeed.enabled
+                     ? new su.plo.matter.WorldgenCryptoRandom(blockposition.getX(), blockposition.getZ(), su.plo.matter.Globals.Salt.UNDEFINED, 0)
+-                    : new WorldgenRandom(new XoroshiroRandomSource(RandomSupport.generateUniqueSeed()));
++                    : new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(RandomSupport.generateUniqueSeed()) : new XoroshiroRandomSource(RandomSupport.generateUniqueSeed())); // Leaf - Faster random generator
+             // Leaf end - Matter - Feature Secure Seed
+             long i = seededrandom.setDecorationSeed(generatoraccessseed.getSeed(), blockposition.getX(), blockposition.getZ());
+             Set<Holder<Biome>> set = new ObjectArraySet();
+@@ -494,7 +494,7 @@ public abstract class ChunkGenerator {
+             int x = ichunkaccess.getPos().x;
+             int z = ichunkaccess.getPos().z;
+             for (org.bukkit.generator.BlockPopulator populator : world.getPopulators()) {
+-                WorldgenRandom seededrandom = new WorldgenRandom(new net.minecraft.world.level.levelgen.LegacyRandomSource(generatoraccessseed.getSeed()));
++                WorldgenRandom seededrandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(generatoraccessseed.getSeed()) : new net.minecraft.world.level.levelgen.LegacyRandomSource(generatoraccessseed.getSeed())); // Leaf - Faster random generator
+                 seededrandom.setDecorationSeed(generatoraccessseed.getSeed(), x, z);
+                 populator.populate(world, new org.bukkit.craftbukkit.util.RandomSourceWrapper.RandomWrapper(seededrandom), x, z, limitedRegion);
+             }
+@@ -594,7 +594,7 @@ public abstract class ChunkGenerator {
+                                 chunkcoordintpair.x, chunkcoordintpair.z, su.plo.matter.Globals.Salt.GENERATE_FEATURE, 0
+                         );
+                     } else {
+-                        seededrandom = new WorldgenRandom(new LegacyRandomSource(0L));
++                        seededrandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(0L) : new LegacyRandomSource(0L)); // Leaf - Faster random generator
+ 
+                         seededrandom.setLargeFeatureSeed(placementCalculator.getLevelSeed(), chunkcoordintpair.x, chunkcoordintpair.z);
+                     }
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/DensityFunctions.java b/src/main/java/net/minecraft/world/level/levelgen/DensityFunctions.java
+index ac8447e20531ad59d5e26c6db541d6e844d56c0f..14532e2759730e73899a7ce7a3e25e890e7fc2c2 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/DensityFunctions.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/DensityFunctions.java
+@@ -521,7 +521,7 @@ public final class DensityFunctions {
+         // Paper end - Perf: Optimize end generation
+ 
+         public EndIslandDensityFunction(long seed) {
+-            RandomSource randomSource = new LegacyRandomSource(seed);
++            RandomSource randomSource = org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(seed) : new LegacyRandomSource(seed); // Leaf - Faster random generator
+             randomSource.consumeCount(17292);
+             this.islandNoise = new SimplexNoise(randomSource);
+         }
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java b/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+index c991da3d975e07f3e1e59d5b2e91ed629ea608e6..98e15b763a38f90ebfd525707fd71a627d07d9fa 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+@@ -232,7 +232,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
+         BiomeManager biomemanager1 = biomeAccess.withDifferentSource((j, k, l) -> {
+             return this.biomeSource.getNoiseBiome(j, k, l, noiseConfig.sampler());
+         });
+-        WorldgenRandom seededrandom = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
++        WorldgenRandom seededrandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(RandomSupport.generateUniqueSeed()) : new LegacyRandomSource(RandomSupport.generateUniqueSeed())); // Leaf - Faster random generator
+         boolean flag = true;
+         ChunkPos chunkcoordintpair = chunk.getPos();
+         NoiseChunk noisechunk = chunk.getOrCreateNoiseChunk((ichunkaccess1) -> {
+@@ -427,7 +427,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
+         if (!((NoiseGeneratorSettings) this.settings.value()).disableMobGeneration()) {
+             ChunkPos chunkcoordintpair = region.getCenter();
+             Holder<Biome> holder = region.getBiome(chunkcoordintpair.getWorldPosition().atY(region.getMaxBuildHeight() - 1));
+-            WorldgenRandom seededrandom = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
++            WorldgenRandom seededrandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(RandomSupport.generateUniqueSeed()) : new LegacyRandomSource(RandomSupport.generateUniqueSeed())); // Leaf - Faster random generator
+ 
+             seededrandom.setDecorationSeed(region.getSeed(), chunkcoordintpair.getMinBlockX(), chunkcoordintpair.getMinBlockZ());
+             NaturalSpawner.spawnMobsForChunkGeneration(region, holder, chunkcoordintpair, seededrandom);
 diff --git a/src/main/java/net/minecraft/world/level/levelgen/WorldgenRandom.java b/src/main/java/net/minecraft/world/level/levelgen/WorldgenRandom.java
 index c6efe6faf68c7a7b1df344e2e527aa7e44bfacb8..fe89e7b7c4267ee2969d1505f83cba1ac17cb13e 100644
 --- a/src/main/java/net/minecraft/world/level/levelgen/WorldgenRandom.java
@@ -75,17 +163,176 @@ index c6efe6faf68c7a7b1df344e2e527aa7e44bfacb8..fe89e7b7c4267ee2969d1505f83cba1a
      }
  
      public static enum Algorithm {
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/blending/Blender.java b/src/main/java/net/minecraft/world/level/levelgen/blending/Blender.java
+index 45f6f74bcae3e3f27809d2ff3973b98edb169f0f..e9f6637ba733cab56484ff301b289acb5847ffdf 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/blending/Blender.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/blending/Blender.java
+@@ -51,7 +51,7 @@ public class Blender {
+             return biomeSupplier;
+         }
+     };
+-    private static final NormalNoise SHIFT_NOISE = NormalNoise.create(new XoroshiroRandomSource(42L), NoiseData.DEFAULT_SHIFT);
++    private static final NormalNoise SHIFT_NOISE = NormalNoise.create(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(42L) : new XoroshiroRandomSource(42L), NoiseData.DEFAULT_SHIFT); // Leaf - Faster random generator
+     private static final int HEIGHT_BLENDING_RANGE_CELLS = QuartPos.fromSection(7) - 1;
+     private static final int HEIGHT_BLENDING_RANGE_CHUNKS = QuartPos.toSection(HEIGHT_BLENDING_RANGE_CELLS + 3);
+     private static final int DENSITY_BLENDING_RANGE_CELLS = 2;
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/GeodeFeature.java b/src/main/java/net/minecraft/world/level/levelgen/feature/GeodeFeature.java
+index fecbce25736dab20e8459cb3b1c636fa7f7eab6b..21c5a9e0f02d26bee99c1ee1adeede36bc648098 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/GeodeFeature.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/GeodeFeature.java
+@@ -45,7 +45,7 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
+         // Leaf start - Matter - Feature Secure Seed
+         WorldgenRandom worldgenRandom = org.dreeam.leaf.config.modules.misc.SecureSeed.enabled
+                 ? new su.plo.matter.WorldgenCryptoRandom(0, 0, su.plo.matter.Globals.Salt.GEODE_FEATURE, 0)
+-                : new WorldgenRandom(new LegacyRandomSource(worldGenLevel.getSeed()));
++                : new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(worldGenLevel.getSeed()) : new LegacyRandomSource(worldGenLevel.getSeed())); // Leaf - Faster random generator
+         // Leaf end - Matter - Feature Secure Seed
+         NormalNoise normalNoise = NormalNoise.create(worldgenRandom, -4, 1.0);
+         List<BlockPos> list2 = Lists.newLinkedList();
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/stateproviders/DualNoiseProvider.java b/src/main/java/net/minecraft/world/level/levelgen/feature/stateproviders/DualNoiseProvider.java
+index c7eabcbf9132c5dac1e376332f563d8912447b03..5f75d7fab18a390cb52d3b7f5b3c883ac8941cdc 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/stateproviders/DualNoiseProvider.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/stateproviders/DualNoiseProvider.java
+@@ -43,7 +43,7 @@ public class DualNoiseProvider extends NoiseProvider {
+         this.variety = variety;
+         this.slowNoiseParameters = slowNoiseParameters;
+         this.slowScale = slowScale;
+-        this.slowNoise = NormalNoise.create(new WorldgenRandom(new LegacyRandomSource(seed)), slowNoiseParameters);
++        this.slowNoise = NormalNoise.create(new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(seed) : new LegacyRandomSource(seed)), slowNoiseParameters); // Leaf - Faster random generator
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/stateproviders/NoiseBasedStateProvider.java b/src/main/java/net/minecraft/world/level/levelgen/feature/stateproviders/NoiseBasedStateProvider.java
+index 990457fb23d22c3b8732d70da54ac5aaed8221db..f233bc42d59b0399343ed7847d93f12ff243bc57 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/stateproviders/NoiseBasedStateProvider.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/stateproviders/NoiseBasedStateProvider.java
+@@ -28,7 +28,7 @@ public abstract class NoiseBasedStateProvider extends BlockStateProvider {
+         this.seed = seed;
+         this.parameters = noiseParameters;
+         this.scale = scale;
+-        this.noise = NormalNoise.create(new WorldgenRandom(new LegacyRandomSource(seed)), noiseParameters);
++        this.noise = NormalNoise.create(new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(seed) : new LegacyRandomSource(seed)), noiseParameters); // Leaf - Faster random generator
+     }
+ 
+     protected double getNoiseValue(BlockPos pos, double scale) {
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java b/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java
+index 10e39fcdce7c205a695b9c1b8c3551b07a64cfa0..a6969d1c8bb6f8cb0149940c32d5ba503e4f04b4 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java
+@@ -241,7 +241,7 @@ public abstract class Structure {
+             }
+             // Leaf end - Matter - Feature Secure Seed
+ 
+-            WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(0L));
++            WorldgenRandom worldgenRandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(seed) : new LegacyRandomSource(0L));
+             worldgenRandom.setLargeFeatureSeed(seed, chunkPos.x, chunkPos.z);
+             return worldgenRandom;
+         }
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/structure/placement/RandomSpreadStructurePlacement.java b/src/main/java/net/minecraft/world/level/levelgen/structure/placement/RandomSpreadStructurePlacement.java
+index 5ae511a5a178b0202e6a60cb882fca37a2a92fd4..793ed471706fabf2e358196146f0f23a383bee80 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/structure/placement/RandomSpreadStructurePlacement.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/structure/placement/RandomSpreadStructurePlacement.java
+@@ -78,7 +78,7 @@ public class RandomSpreadStructurePlacement extends StructurePlacement {
+                     i, j, su.plo.matter.Globals.Salt.POTENTIONAL_FEATURE, this.salt
+             );
+         } else {
+-            worldgenRandom = new WorldgenRandom(new LegacyRandomSource(0L));
++            worldgenRandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(0L) : new LegacyRandomSource(0L)); // Leaf - Faster random generator
+             worldgenRandom.setLargeFeatureWithSalt(seed, i, j, this.salt());
+         }
+         // Leaf end - Matter - Feature Secure Seed
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/structure/placement/StructurePlacement.java b/src/main/java/net/minecraft/world/level/levelgen/structure/placement/StructurePlacement.java
+index d97bb945f59dc7d8da1374fda5beee0d6d0f0f5d..3c7e9a78d4c1f3d475c74fd80a3f1b0a53c74069 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/structure/placement/StructurePlacement.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/structure/placement/StructurePlacement.java
+@@ -125,7 +125,7 @@ public abstract class StructurePlacement {
+                     chunkX, chunkZ, su.plo.matter.Globals.Salt.UNDEFINED, salt
+             );
+         } else {
+-            worldgenRandom = new WorldgenRandom(new LegacyRandomSource(0L));
++            worldgenRandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(0L) : new LegacyRandomSource(0L)); // Leaf - Faster random generator
+             worldgenRandom.setLargeFeatureWithSalt(seed, salt, chunkX, chunkZ);
+         }
+         // Leaf end - Matter - Feature Secure Seed
+@@ -134,7 +134,7 @@ public abstract class StructurePlacement {
+     }
+ 
+     private static boolean legacyProbabilityReducerWithDouble(long seed, int salt, int chunkX, int chunkZ, float frequency, @org.jetbrains.annotations.Nullable Integer saltOverride) { // Paper - Add missing structure set seed configs
+-        WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(0L));
++        WorldgenRandom worldgenRandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(0L) : new LegacyRandomSource(0L)); // Leaf - Faster random generator
+         if (saltOverride == null) { // Paper - Add missing structure set seed configs
+         worldgenRandom.setLargeFeatureSeed(seed, chunkX, chunkZ);
+         // Paper start - Add missing structure set seed configs
+@@ -146,7 +146,7 @@ public abstract class StructurePlacement {
+     }
+ 
+     private static boolean legacyArbitrarySaltProbabilityReducer(long seed, int salt, int chunkX, int chunkZ, float frequency, @org.jetbrains.annotations.Nullable Integer saltOverride) { // Paper - Add missing structure set seed configs
+-        WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(0L));
++        WorldgenRandom worldgenRandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(0L) : new LegacyRandomSource(0L)); // Leaf - Faster random generator
+         worldgenRandom.setLargeFeatureWithSalt(seed, chunkX, chunkZ, saltOverride != null ? saltOverride : HIGHLY_ARBITRARY_RANDOM_SALT); // Paper - Add missing structure set seed configs
+         return worldgenRandom.nextFloat() < frequency;
+     }
+@@ -154,7 +154,7 @@ public abstract class StructurePlacement {
+     private static boolean legacyPillagerOutpostReducer(long seed, int salt, int chunkX, int chunkZ, float frequency, @org.jetbrains.annotations.Nullable Integer saltOverride) { // Paper - Add missing structure set seed configs; ignore here
+         int i = chunkX >> 4;
+         int j = chunkZ >> 4;
+-        WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(0L));
++        WorldgenRandom worldgenRandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(0L) : new LegacyRandomSource(0L)); // Leaf - Faster random generator
+         worldgenRandom.setSeed((long)(i ^ j << 4) ^ seed);
+         worldgenRandom.nextInt();
+         return worldgenRandom.nextInt((int)(1.0F / frequency)) == 0;
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/structure/structures/OceanMonumentStructure.java b/src/main/java/net/minecraft/world/level/levelgen/structure/structures/OceanMonumentStructure.java
+index 9693641e4129458d94f78a487d66d27fe35cd94e..d7e2cd4659d1841e058983365ef0afda807721a7 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/structure/structures/OceanMonumentStructure.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/structure/structures/OceanMonumentStructure.java
+@@ -55,7 +55,7 @@ public class OceanMonumentStructure extends Structure {
+         if (pieces.isEmpty()) {
+             return pieces;
+         } else {
+-            WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
++            WorldgenRandom worldgenRandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(RandomSupport.generateUniqueSeed()) : new LegacyRandomSource(RandomSupport.generateUniqueSeed())); // Leaf - Faster random generator
+             worldgenRandom.setLargeFeatureSeed(worldSeed, pos.x, pos.z);
+             StructurePiece structurePiece = pieces.pieces().get(0);
+             BoundingBox boundingBox = structurePiece.getBoundingBox();
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/synth/PerlinSimplexNoise.java b/src/main/java/net/minecraft/world/level/levelgen/synth/PerlinSimplexNoise.java
+index 64bddc5c2722f7d2a18c31dc654547907b663710..8644f0069e9632766301c4216156c9269286241b 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/synth/PerlinSimplexNoise.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/synth/PerlinSimplexNoise.java
+@@ -43,7 +43,7 @@ public class PerlinSimplexNoise {
+ 
+                 if (j > 0) {
+                     long n = (long)(simplexNoise.getValue(simplexNoise.xo, simplexNoise.yo, simplexNoise.zo) * 9.223372E18F);
+-                    RandomSource randomSource = new WorldgenRandom(new LegacyRandomSource(n));
++                    RandomSource randomSource = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(n) : new LegacyRandomSource(n)); // Leaf - Faster random generator
+ 
+                     for (int o = l - 1; o >= 0; o--) {
+                         if (o < k && octaves.contains(l - o)) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java b/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
+index cab7ca4218e5903b6a5e518af55457b9a1b5111c..fa9136ceb8867aee1a43aeaa097cbe714e8f3a09 100644
+--- a/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
++++ b/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
+@@ -96,7 +96,7 @@ public class CustomChunkGenerator extends InternalChunkGenerator {
+     }
+ 
+     private static WorldgenRandom getSeededRandom() {
+-        return new WorldgenRandom(new LegacyRandomSource(0));
++        return new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.noiseEnabled() ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(0) : new LegacyRandomSource(0)); // Leaf - Faster random generator
+     }
+ 
+     @Override
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/opt/FastRNG.java b/src/main/java/org/dreeam/leaf/config/modules/opt/FastRNG.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..1c90bcfef92a383ee16f551c5a5bff3e9d013e7f
+index 0000000000000000000000000000000000000000..ac97baf45cbe5c8178cd91f4b5c88431739440b5
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/opt/FastRNG.java
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,71 @@
 +package org.dreeam.leaf.config.modules.opt;
 +
 +import org.dreeam.leaf.config.ConfigModules;
 +import org.dreeam.leaf.config.EnumConfigCategory;
 +import org.dreeam.leaf.config.LeafConfig;
++
++import java.util.random.RandomGeneratorFactory;
 +
 +public class FastRNG extends ConfigModules {
 +
@@ -94,21 +341,31 @@ index 0000000000000000000000000000000000000000..1c90bcfef92a383ee16f551c5a5bff3e
 +    }
 +
 +    public static boolean enabled = false;
++    public static boolean enableForNoise = false;
 +    public static boolean warnForSlimeChunk = true;
 +    public static boolean useLegacyForSlimeChunk = false;
 +
++    public static boolean noiseEnabled() { return enabled && enableForNoise; } // Helper function
 +    @Override
 +    public void onLoaded() {
 +        config.addCommentRegionBased(getBasePath(), """
 +                Use faster random generator? (Up to 100X faster)
 +                Requires a JVM that supports RandomGenerator and the LXM generators.
-+                Some JREs don't support this and will cause a crash.""",
++                Some JREs don't support this.""",
 +                """
 +                是否使用更快的随机生成器? (速度最高可提升至100倍)
-+                需要支持 RandomGenerator 和 LXM 随机生成器的JVM.
-+                一些 JRE 不支持此功能, 会导致崩溃.""");
++                需要支持 RandomGenerator 和 LXM 随机生成器的 JVM.
++                一些 JRE 不支持此功能.""");
 +
 +        enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
++        enableForNoise = config.getBoolean(getBasePath() + ".enable-for-noise", enableForNoise,
++                config.pickStringRegionBased(
++                        """
++                                Enable faster random generator for noise generation.
++                                WARNING: This will affect world generation!!!""",
++                        """
++                                是否为噪声生成启用更快的随机生成器.
++                                警告: 此项会影响世界生成!!!"""));
 +        warnForSlimeChunk = config.getBoolean(getBasePath() + ".warn-for-slime-chunk", warnForSlimeChunk,
 +                config.pickStringRegionBased(
 +                        "Warn if you are not using legacy random source for slime chunk generation.",
@@ -119,6 +376,16 @@ index 0000000000000000000000000000000000000000..1c90bcfef92a383ee16f551c5a5bff3e
 +                to follow vanilla behavior.""",
 +                """
 +                是否使用原版随机生成器来生成史莱姆区块."""));
++
++        if (enabled) {
++            try {
++                RandomGeneratorFactory.of("L64X128MixRandom");
++            } catch (Exception e) {
++                LeafConfig.LOGGER.error("Faster random generator is enabled but LXM is not supported by your JVM, " +
++                        "falling back to legacy random source.");
++                enabled = false;
++            }
++        }
 +
 +        if (enabled && warnForSlimeChunk) {
 +            LeafConfig.LOGGER.warn("You enabled faster random generator, it will offset location of slime chunk");
@@ -132,15 +399,16 @@ index 0000000000000000000000000000000000000000..1c90bcfef92a383ee16f551c5a5bff3e
 +}
 diff --git a/src/main/java/org/dreeam/leaf/util/math/random/L64X128MixRandomSource.java b/src/main/java/org/dreeam/leaf/util/math/random/L64X128MixRandomSource.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7f071129752e3b44e88dc9fc76239ad0a9c564a4
+index 0000000000000000000000000000000000000000..893a8176d903aee84eb0be49fdde0abe0a161c9e
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/util/math/random/L64X128MixRandomSource.java
-@@ -0,0 +1,91 @@
+@@ -0,0 +1,124 @@
 +package org.dreeam.leaf.util.math.random;
 +
++import com.google.common.annotations.VisibleForTesting;
++import net.minecraft.util.Mth;
 +import net.minecraft.util.RandomSource;
 +import net.minecraft.world.level.levelgen.BitRandomSource;
-+import net.minecraft.world.level.levelgen.LegacyRandomSource;
 +import net.minecraft.world.level.levelgen.PositionalRandomFactory;
 +
 +import java.util.concurrent.ThreadLocalRandom;
@@ -177,7 +445,7 @@ index 0000000000000000000000000000000000000000..7f071129752e3b44e88dc9fc76239ad0
 +
 +    @Override
 +    public PositionalRandomFactory forkPositional() {
-+        return new LegacyRandomSource.LegacyPositionalRandomFactory(this.seed);
++        return new L64X128MixRandomPositionalRandomFactory(this.seed);
 +    }
 +
 +    @Override
@@ -190,6 +458,38 @@ index 0000000000000000000000000000000000000000..7f071129752e3b44e88dc9fc76239ad0
 +    public int next(int bits) {
 +        // >>> instead of Mojang's >> fixes MC-239059
 +        return (int) ((seed * MULTIPLIER + INCREMENT & SEED_MASK) >>> INT_BITS - bits);
++    }
++
++    public static class L64X128MixRandomPositionalRandomFactory implements PositionalRandomFactory {
++        private final long seed;
++
++        public L64X128MixRandomPositionalRandomFactory(long seed) {
++            this.seed = seed;
++        }
++
++        @Override
++        public RandomSource at(int x, int y, int z) {
++            long l = Mth.getSeed(x, y, z);
++            long m = l ^ this.seed;
++            return new L64X128MixRandomSource(m);
++        }
++
++        @Override
++        public RandomSource fromHashOf(String seed) {
++            int i = seed.hashCode();
++            return new L64X128MixRandomSource((long)i ^ this.seed);
++        }
++
++        @Override
++        public RandomSource fromSeed(long seed) {
++            return new L64X128MixRandomSource(seed);
++        }
++
++        @VisibleForTesting
++        @Override
++        public void parityConfigString(StringBuilder info) {
++            info.append("L64X128MixRandomPositionalRandomFactory{").append(this.seed).append("}");
++        }
 +    }
 +
 +    @Override
@@ -227,3 +527,16 @@ index 0000000000000000000000000000000000000000..7f071129752e3b44e88dc9fc76239ad0
 +        return randomGenerator.nextGaussian();
 +    }
 +}
+diff --git a/src/main/java/su/plo/matter/WorldgenCryptoRandom.java b/src/main/java/su/plo/matter/WorldgenCryptoRandom.java
+index fab359afe44c573b8b315115810ddefd85b4d22b..25faf7187cc32efaa5ab973631b9de0983237229 100644
+--- a/src/main/java/su/plo/matter/WorldgenCryptoRandom.java
++++ b/src/main/java/su/plo/matter/WorldgenCryptoRandom.java
+@@ -24,7 +24,7 @@ public class WorldgenCryptoRandom extends WorldgenRandom {
+     private final long[] cachedInternalState = new long[16];
+ 
+     public WorldgenCryptoRandom(int x, int z, Globals.Salt typeSalt, long salt) {
+-        super(new LegacyRandomSource(0L));
++        super(org.dreeam.leaf.config.modules.opt.FastRNG.enabled ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(0L) : new LegacyRandomSource(0L));
+         if (typeSalt != null) {
+             this.setSecureSeed(x, z, typeSalt, salt);
+         }
