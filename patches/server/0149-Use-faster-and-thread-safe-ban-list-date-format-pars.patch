@@ -19,7 +19,7 @@ DateTimeFormatter:                      ~13,128ms
 apache commons-lang's FastDateFormat:   ~23,514ms
 
 In the end, DateTimeFormatter is also fastest in three implementations in any ways,
-Wether there is a high frequnently calls or not. And also thread-safe. So there is 
+Wether there is a high frequnently calls or not. And also thread-safe. So there is
 a better solution, why not using it?
 
 diff --git a/src/main/java/net/minecraft/server/players/BanListEntry.java b/src/main/java/net/minecraft/server/players/BanListEntry.java

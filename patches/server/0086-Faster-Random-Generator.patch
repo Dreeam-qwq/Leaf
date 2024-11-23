@@ -1,54 +1,63 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: HaHaWTH <fsjk947@gmail.com>
-Date: Fri, 3 May 2024 01:12:58 +0800
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Tue, 9 Nov 2077 00:00:00 +0800
 Subject: [PATCH] Faster Random Generator
 
+This patch replaces LegacyRandomSource with L64X128MixRandomSource,
+which is around 4 times faster in general, up to 100x faster in benchmark.
 
 diff --git a/src/main/java/net/minecraft/util/RandomSource.java b/src/main/java/net/minecraft/util/RandomSource.java
-index 67d94b649148b3165f09d75d8c9db10db4cc7874..e0fffcaff4ccb8b20a85a68fa73d3076246aad0c 100644
+index 67d94b649148b3165f09d75d8c9db10db4cc7874..f777eca204d0d5a7e165f0c8b9f4b4b6892f19d2 100644
 --- a/src/main/java/net/minecraft/util/RandomSource.java
 +++ b/src/main/java/net/minecraft/util/RandomSource.java
-@@ -6,6 +6,7 @@ import net.minecraft.world.level.levelgen.PositionalRandomFactory;
- import net.minecraft.world.level.levelgen.RandomSupport;
- import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
- import net.minecraft.world.level.levelgen.ThreadSafeLegacyRandomSource;
-+import org.dreeam.leaf.util.math.random.TheFasterRandom;
+@@ -21,18 +21,32 @@ public interface RandomSource {
+     }
+     // Leaf end - Generate random seed faster
  
- public interface RandomSource {
-     @Deprecated
-@@ -23,16 +24,28 @@ public interface RandomSource {
- 
++    // Leaf start - Faster random generator
      @Deprecated
      static RandomSource createThreadSafe() {
 -        return new ThreadSafeLegacyRandomSource(RandomSupport.generateUniqueSeed());
--    }
 +        return org.dreeam.leaf.config.modules.opt.FastRNG.enabled
-+                ? new TheFasterRandom(RandomSupport.generateFasterSeed())
++                ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(RandomSupport.generateFasterSeed())
 +                : new ThreadSafeLegacyRandomSource(RandomSupport.generateUniqueSeed());
-+    } // Leaf - Faster RNG
+     }
  
      static RandomSource create(long seed) {
 -        return new LegacyRandomSource(seed);
 +        return org.dreeam.leaf.config.modules.opt.FastRNG.enabled
-+                ? new TheFasterRandom(seed)
++                ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(seed)
++                : new LegacyRandomSource(seed);
++    }
++
++    static RandomSource createForSlimeChunk(long seed) {
++        return org.dreeam.leaf.config.modules.opt.FastRNG.enabled && !org.dreeam.leaf.config.modules.opt.FastRNG.useLegacyForSlimeChunk
++                ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(seed)
 +                : new LegacyRandomSource(seed);
      }
  
-+    static RandomSource createForSlimeChunk(long seed) {
-+        return org.dreeam.leaf.config.modules.opt.FastRNG.enabled && !org.dreeam.leaf.config.modules.opt.FastRNG.useLegacyForSlimeChunk
-+                ? new TheFasterRandom(seed)
-+                : new LegacyRandomSource(seed);
-+    } // Leaf - Faster RNG
-+
      static RandomSource createNewThreadLocalInstance() {
 -        return new SingleThreadedRandomSource(ThreadLocalRandom.current().nextLong());
--    }
 +        return org.dreeam.leaf.config.modules.opt.FastRNG.enabled
-+                ? new TheFasterRandom(RandomSupport.generateFasterSeed())
++                ? new org.dreeam.leaf.util.math.random.L64X128MixRandomSource(RandomSupport.generateFasterSeed())
 +                : new SingleThreadedRandomSource(ThreadLocalRandom.current().nextLong());
-+    } // Leaf - Faster RNG
+     }
++    // Leaf end - Faster random generator
  
      RandomSource fork();
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 08a3714c530fb375ee729e91965c65efb9e6e3d2..886ecb74c289cd5afcdcc346eb7332197af3f9d9 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -177,7 +177,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     }
+ 
+     // Paper start - Share random for entities to make them more random
+-    public static RandomSource SHARED_RANDOM = new RandomRandomSource();
++    public static RandomSource SHARED_RANDOM = org.dreeam.leaf.config.modules.opt.FastRNG.enabled ? org.dreeam.leaf.util.math.random.L64X128MixRandomSource.SHARED_INSTANCE : new RandomRandomSource(); // Leaf - Faster random generator
+     private static final class RandomRandomSource extends java.util.Random implements net.minecraft.world.level.levelgen.BitRandomSource {
+         private boolean locked = false;
  
 diff --git a/src/main/java/net/minecraft/world/level/levelgen/WorldgenRandom.java b/src/main/java/net/minecraft/world/level/levelgen/WorldgenRandom.java
 index c6efe6faf68c7a7b1df344e2e527aa7e44bfacb8..fe89e7b7c4267ee2969d1505f83cba1ac17cb13e 100644
@@ -121,12 +130,12 @@ index 0000000000000000000000000000000000000000..1c90bcfef92a383ee16f551c5a5bff3e
 +        }
 +    }
 +}
-diff --git a/src/main/java/org/dreeam/leaf/util/math/random/TheFasterRandom.java b/src/main/java/org/dreeam/leaf/util/math/random/TheFasterRandom.java
+diff --git a/src/main/java/org/dreeam/leaf/util/math/random/L64X128MixRandomSource.java b/src/main/java/org/dreeam/leaf/util/math/random/L64X128MixRandomSource.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c13c8e5a2fba4267eb254e75f993bc6a9b861f6e
+index 0000000000000000000000000000000000000000..7f071129752e3b44e88dc9fc76239ad0a9c564a4
 --- /dev/null
-+++ b/src/main/java/org/dreeam/leaf/util/math/random/TheFasterRandom.java
-@@ -0,0 +1,89 @@
++++ b/src/main/java/org/dreeam/leaf/util/math/random/L64X128MixRandomSource.java
+@@ -0,0 +1,91 @@
 +package org.dreeam.leaf.util.math.random;
 +
 +import net.minecraft.util.RandomSource;
@@ -134,11 +143,12 @@ index 0000000000000000000000000000000000000000..c13c8e5a2fba4267eb254e75f993bc6a
 +import net.minecraft.world.level.levelgen.LegacyRandomSource;
 +import net.minecraft.world.level.levelgen.PositionalRandomFactory;
 +
++import java.util.concurrent.ThreadLocalRandom;
 +import java.util.random.RandomGenerator;
 +import java.util.random.RandomGeneratorFactory;
 +
 +
-+public class TheFasterRandom implements BitRandomSource {
++public class L64X128MixRandomSource implements BitRandomSource {
 +    private static final int INT_BITS = 48;
 +    private static final long SEED_MASK = 0xFFFFFFFFFFFFL;
 +    private static final long MULTIPLIER = 25214903917L;
@@ -148,20 +158,21 @@ index 0000000000000000000000000000000000000000..c13c8e5a2fba4267eb254e75f993bc6a
 +
 +    private long seed;
 +    private RandomGenerator.SplittableGenerator randomGenerator;
++    public static final L64X128MixRandomSource SHARED_INSTANCE = new L64X128MixRandomSource(ThreadLocalRandom.current().nextLong());
 +
-+    public TheFasterRandom(long seed) {
++    public L64X128MixRandomSource(long seed) {
 +        this.seed = seed;
 +        this.randomGenerator = RANDOM_GENERATOR_FACTORY.create(seed);
 +    }
 +
-+    public TheFasterRandom(long seed, RandomGenerator.SplittableGenerator randomGenerator) {
++    public L64X128MixRandomSource(long seed, RandomGenerator.SplittableGenerator randomGenerator) {
 +        this.seed = seed;
 +        this.randomGenerator = randomGenerator;
 +    }
 +
 +    @Override
 +    public RandomSource fork() {
-+        return new TheFasterRandom(seed, randomGenerator.split());
++        return new L64X128MixRandomSource(seed, randomGenerator.split());
 +    }
 +
 +    @Override
