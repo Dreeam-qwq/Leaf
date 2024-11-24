@@ -6,6 +6,7 @@ Subject: [PATCH] Lithium: Optimize block entity ticking
 This patch is based on the following mixins:
 * "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/WrappedBlockEntityTickInvokerAccessor.java"
 * "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/hopper/HopperBlockEntityMixin.java"
+* "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/LevelChunkMixin.java"
 By: 2No2Name <2No2Name@web.de>
 As part of: Lithium (https://github.com/CaffeineMC/lithium-fabric)
 Licensed under: LGPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
@@ -244,10 +245,32 @@ index 989e0f049805a734d6aa18434dd2a3b2d6c2ace1..ffa4015d69be228e2a2063d1714e292b
 +    // Leaf end - Lithium: block entity ticking optimization
  }
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index 61d6f80af62fcc48c16def1905cc57c417fe90a4..0d2f4c6f9c7cca8eba09a28c29d770749b99260e 100644
+index 61d6f80af62fcc48c16def1905cc57c417fe90a4..605ebddb6e02939a206917f7a4268797a67dcf67 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-@@ -999,7 +999,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+@@ -967,11 +967,21 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+                 TickingBlockEntity tickingblockentity = this.createTicker(blockEntity, blockentityticker);
+ 
+                 if (chunk_d != null) {
++                    // Leaf start - Lithium: block entity ticking optimization
++                    if (blockEntity instanceof net.caffeinemc.mods.lithium.common.block.entity.SleepingBlockEntity sleepingBlockEntity) {
++                        sleepingBlockEntity.lithium$setTickWrapper(chunk_d);
++                    }
++                    // Leaf end - Lithium: block entity ticking optimization
+                     chunk_d.rebind(tickingblockentity);
+                     return chunk_d;
+                 } else if (this.isInLevel()) {
+                     LevelChunk.RebindableTickingBlockEntityWrapper chunk_d1 = new LevelChunk.RebindableTickingBlockEntityWrapper(this, tickingblockentity);
+ 
++                    // Leaf start - Lithium: block entity ticking optimization
++                    if (blockEntity instanceof net.caffeinemc.mods.lithium.common.block.entity.SleepingBlockEntity sleepingBlockEntity) {
++                        sleepingBlockEntity.lithium$setTickWrapper(chunk_d1);
++                    }
++                    // Leaf end - Lithium: block entity ticking optimization
+                     this.level.addBlockEntityTicker(chunk_d1);
+                     return chunk_d1;
+                 } else {
+@@ -999,7 +1009,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
          private EntityCreationType() {}
      }
  
@@ -256,7 +279,7 @@ index 61d6f80af62fcc48c16def1905cc57c417fe90a4..0d2f4c6f9c7cca8eba09a28c29d77074
  
          private TickingBlockEntity ticker;
          private BlockPos cachedPos; // Leaf - Cache tile entity position
-@@ -1009,7 +1009,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+@@ -1009,7 +1019,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
              this.cachedPos = this.ticker.getPos(); // Leaf - Cache tile entity position
          }
  
@@ -265,7 +288,7 @@ index 61d6f80af62fcc48c16def1905cc57c417fe90a4..0d2f4c6f9c7cca8eba09a28c29d77074
              this.ticker = wrapped;
              this.cachedPos = this.ticker.getPos(); // Leaf - Cache tile entity position
          }
-@@ -1037,6 +1037,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+@@ -1037,6 +1047,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
          public String toString() {
              return String.valueOf(this.ticker) + " <wrapped>";
          }
