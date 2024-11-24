@@ -4,7 +4,7 @@ Date: Tue, 9 Nov 2077 00:00:00 +0800
 Subject: [PATCH] Faster Random Generator
 
 This patch replaces LegacyRandomSource with L64X128MixRandomSource by default,
-which is around 4 times faster in general, up to 100x faster in benchmark.
+which is around 4 times faster in general.
 
 diff --git a/src/main/java/net/minecraft/util/RandomSource.java b/src/main/java/net/minecraft/util/RandomSource.java
 index 67d94b649148b3165f09d75d8c9db10db4cc7874..77b91adf528d1bf66a42a4c6791de40e87c5b26a 100644
@@ -386,7 +386,7 @@ index 0000000000000000000000000000000000000000..d0b40bcde399bf9cadfce5741514812a
 +}
 diff --git a/src/main/java/org/dreeam/leaf/util/math/random/FasterRandomSource.java b/src/main/java/org/dreeam/leaf/util/math/random/FasterRandomSource.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..84d31889ee043957034525a28261f6ff86b374ef
+index 0000000000000000000000000000000000000000..77fe5ab83535156c016a4808969ae76bd6b92288
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/util/math/random/FasterRandomSource.java
 @@ -0,0 +1,127 @@
@@ -426,7 +426,7 @@ index 0000000000000000000000000000000000000000..84d31889ee043957034525a28261f6ff
 +    }
 +
 +    @Override
-+    public RandomSource fork() {
++    public final RandomSource fork() {
 +        if (isSplittableGenerator) {
 +            return new FasterRandomSource(seed, ((RandomGenerator.SplittableGenerator) this.randomGenerator).split());
 +        }
@@ -434,18 +434,18 @@ index 0000000000000000000000000000000000000000..84d31889ee043957034525a28261f6ff
 +    }
 +
 +    @Override
-+    public PositionalRandomFactory forkPositional() {
++    public final PositionalRandomFactory forkPositional() {
 +        return new FasterRandomSourcePositionalRandomFactory(this.seed);
 +    }
 +
 +    @Override
-+    public void setSeed(long seed) {
++    public final void setSeed(long seed) {
 +        this.seed = seed;
 +        this.randomGenerator = RANDOM_GENERATOR_FACTORY.create(seed);
 +    }
 +
 +    @Override
-+    public int next(int bits) {
++    public final int next(int bits) {
 +        // >>> instead of Mojang's >> fixes MC-239059
 +        return (int) ((seed * MULTIPLIER + INCREMENT & SEED_MASK) >>> INT_BITS - bits);
 +    }
@@ -483,37 +483,37 @@ index 0000000000000000000000000000000000000000..84d31889ee043957034525a28261f6ff
 +    }
 +
 +    @Override
-+    public int nextInt() {
++    public final int nextInt() {
 +        return randomGenerator.nextInt();
 +    }
 +
 +    @Override
-+    public int nextInt(int bound) {
++    public final int nextInt(int bound) {
 +        return randomGenerator.nextInt(bound);
 +    }
 +
 +    @Override
-+    public long nextLong() {
++    public final long nextLong() {
 +        return randomGenerator.nextLong();
 +    }
 +
 +    @Override
-+    public boolean nextBoolean() {
++    public final boolean nextBoolean() {
 +        return randomGenerator.nextBoolean();
 +    }
 +
 +    @Override
-+    public float nextFloat() {
++    public final float nextFloat() {
 +        return randomGenerator.nextFloat();
 +    }
 +
 +    @Override
-+    public double nextDouble() {
++    public final double nextDouble() {
 +        return randomGenerator.nextDouble();
 +    }
 +
 +    @Override
-+    public double nextGaussian() {
++    public final double nextGaussian() {
 +        return randomGenerator.nextGaussian();
 +    }
 +}
