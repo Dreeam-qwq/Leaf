@@ -251,10 +251,10 @@ index d8ce44a180f848f4c9c04967470c4359af979b2f..90abb83a6baa60bbcbedc7d818c3bc9f
                  }
 diff --git a/src/main/java/org/dreeam/leaf/async/locate/AsyncLocator.java b/src/main/java/org/dreeam/leaf/async/locate/AsyncLocator.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0eaa9b60ac139db47a028970557c3a84166efc49
+index 0000000000000000000000000000000000000000..fcede5af1f1352a8c8c089993040838d1e7c3042
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/async/locate/AsyncLocator.java
-@@ -0,0 +1,160 @@
+@@ -0,0 +1,164 @@
 +package org.dreeam.leaf.async.locate;
 +
 +import ca.spottedleaf.moonrise.common.util.TickThread;
@@ -293,8 +293,12 @@ index 0000000000000000000000000000000000000000..0eaa9b60ac139db47a028970557c3a84
 +
 +    static {
 +        int threads = org.dreeam.leaf.config.modules.async.AsyncLocator.asyncLocatorThreads;
-+        LOCATING_EXECUTOR_SERVICE = Executors.newFixedThreadPool(
++        LOCATING_EXECUTOR_SERVICE = new ThreadPoolExecutor(
++                1,
 +                threads,
++                org.dreeam.leaf.config.modules.async.AsyncLocator.asyncLocatorKeepalive,
++                TimeUnit.SECONDS,
++                new LinkedBlockingQueue<>(),
 +                new ThreadFactoryBuilder()
 +                        .setThreadFactory(
 +                                r -> new AsyncLocatorThread(r, "Leaf Async Locator Thread") {
@@ -418,7 +422,7 @@ index 0000000000000000000000000000000000000000..0eaa9b60ac139db47a028970557c3a84
 \ No newline at end of file
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/async/AsyncLocator.java b/src/main/java/org/dreeam/leaf/config/modules/async/AsyncLocator.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0a2e562af7f7b08f6e95702f26f97f2c6f6aeb02
+index 0000000000000000000000000000000000000000..0d741e4d6e7a39cf3da0f40816daa0405122a90a
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/async/AsyncLocator.java
 @@ -0,0 +1,37 @@
@@ -436,6 +440,7 @@ index 0000000000000000000000000000000000000000..0a2e562af7f7b08f6e95702f26f97f2c
 +
 +    public static boolean enabled = false;
 +    public static int asyncLocatorThreads = 0;
++    public static int asyncLocatorKeepalive = 60;
 +
 +    @Override
 +    public void onLoaded() {
@@ -448,11 +453,10 @@ index 0000000000000000000000000000000000000000..0a2e562af7f7b08f6e95702f26f97f2c
 +                目前可用于 /locate 指令, 海豚寻宝和末影之眼.""");
 +        enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
 +        asyncLocatorThreads = config.getInt(getBasePath() + ".threads", asyncLocatorThreads);
++        asyncLocatorKeepalive = config.getInt(getBasePath() + ".keepalive", asyncLocatorKeepalive);
 +
-+        if (asyncLocatorThreads < 0)
-+            asyncLocatorThreads = Math.max(Runtime.getRuntime().availableProcessors() + asyncLocatorThreads, 1);
-+        else if (asyncLocatorThreads == 0)
-+            asyncLocatorThreads = Math.max(Runtime.getRuntime().availableProcessors() / 4, 1);
++        if (asyncLocatorThreads <= 0)
++            asyncLocatorThreads = 1;
 +        if (!enabled)
 +            asyncLocatorThreads = 0;
 +        else
