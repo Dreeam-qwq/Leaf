@@ -7,6 +7,8 @@ This patch is based on the following mixins:
 * "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/WrappedBlockEntityTickInvokerAccessor.java"
 * "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/hopper/HopperBlockEntityMixin.java"
 * "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/LevelChunkMixin.java"
+* "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/LevelMixin.java"
+* "net/caffeinemc/mods/lithium/mixin/world/block_entity_ticking/sleeping/ServerLevelMixin.java"
 By: 2No2Name <2No2Name@web.de>
 As part of: Lithium (https://github.com/CaffeineMC/lithium-fabric)
 Licensed under: LGPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
@@ -142,6 +144,32 @@ index 0000000000000000000000000000000000000000..8fe5a5233b54309cfa9794925c65a2aa
 +    }
 +}
 \ No newline at end of file
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 6d8fb4fe9733bd1e83af7f8c148bdb54fa26a14b..35807b05790281db0fbbdb8c0175e283a84b0da3 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -2309,7 +2309,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ca.spottedleaf.
+         while (iterator.hasNext()) {
+             TickingBlockEntity tickingblockentity = (TickingBlockEntity) iterator.next();
+             BlockPos blockposition = tickingblockentity.getPos();
+-
++            if (blockposition == null) blockposition = BlockPos.ZERO; // Leaf - Lithium: block entity ticking optimization - filter null values
+             csvwriter.writeRow(blockposition.getX(), blockposition.getY(), blockposition.getZ(), tickingblockentity.getType());
+         }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
+index 704631730cf7679446a98cea6faeb70eb89c9849..6b5df73bfe5823f4a07667bcc84104ad56612015 100644
+--- a/src/main/java/net/minecraft/world/level/Level.java
++++ b/src/main/java/net/minecraft/world/level/Level.java
+@@ -1509,7 +1509,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+     }
+ 
+     public boolean shouldTickBlocksAt(BlockPos pos) {
+-        return this.shouldTickBlocksAt(ChunkPos.asLong(pos));
++        return pos != null ? this.shouldTickBlocksAt(ChunkPos.asLong(pos)) : false; // Leaf - Lithium: block entity ticking optimization - filter null values
+     }
+ 
+     public Explosion explode(@Nullable Entity entity, double x, double y, double z, float power, Level.ExplosionInteraction explosionSourceType) {
 diff --git a/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 index 989e0f049805a734d6aa18434dd2a3b2d6c2ace1..ffa4015d69be228e2a2063d1714e292b6c1ad3a9 100644
 --- a/src/main/java/net/minecraft/world/level/block/entity/HopperBlockEntity.java
