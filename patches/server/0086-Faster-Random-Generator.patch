@@ -386,12 +386,14 @@ index 0000000000000000000000000000000000000000..d0b40bcde399bf9cadfce5741514812a
 +}
 diff --git a/src/main/java/org/dreeam/leaf/util/math/random/FasterRandomSource.java b/src/main/java/org/dreeam/leaf/util/math/random/FasterRandomSource.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..3a0ecce63c0630968405fc24572fbf1fa8096519
+index 0000000000000000000000000000000000000000..11a7cb3c165bd585c915ae98975061fda1342ce8
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/util/math/random/FasterRandomSource.java
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,138 @@
 +package org.dreeam.leaf.util.math.random;
 +
++import com.github.benmanes.caffeine.cache.Cache;
++import com.github.benmanes.caffeine.cache.Caffeine;
 +import com.google.common.annotations.VisibleForTesting;
 +import net.minecraft.util.Mth;
 +import net.minecraft.util.RandomSource;
@@ -400,6 +402,7 @@ index 0000000000000000000000000000000000000000..3a0ecce63c0630968405fc24572fbf1f
 +import org.dreeam.leaf.config.modules.opt.FastRNG;
 +
 +import java.util.concurrent.ThreadLocalRandom;
++import java.util.concurrent.TimeUnit;
 +import java.util.random.RandomGenerator;
 +import java.util.random.RandomGeneratorFactory;
 +
@@ -411,19 +414,26 @@ index 0000000000000000000000000000000000000000..3a0ecce63c0630968405fc24572fbf1f
 +    private static final long INCREMENT = 11L;
 +    private static final RandomGeneratorFactory<RandomGenerator> RANDOM_GENERATOR_FACTORY = RandomGeneratorFactory.of(FastRNG.randomGenerator);
 +    private static final boolean isSplittableGenerator = RANDOM_GENERATOR_FACTORY.isSplittable();
-+
++    private static final Cache<Long, RandomGenerator> generatorCache = Caffeine.newBuilder()
++            .expireAfterAccess(30L, TimeUnit.SECONDS)
++            .maximumSize(100L)
++            .build();
 +    private long seed;
 +    private RandomGenerator randomGenerator;
 +    public static final FasterRandomSource SHARED_INSTANCE = new FasterRandomSource(ThreadLocalRandom.current().nextLong());
 +
 +    public FasterRandomSource(long seed) {
 +        this.seed = seed;
-+        this.randomGenerator = RANDOM_GENERATOR_FACTORY.create(seed);
++        this.randomGenerator = getOrCreateRandomGenerator(seed);
 +    }
 +
 +    private FasterRandomSource(long seed, RandomGenerator.SplittableGenerator randomGenerator) {
 +        this.seed = seed;
 +        this.randomGenerator = randomGenerator;
++    }
++
++    private RandomGenerator getOrCreateRandomGenerator(long seed) {
++        return generatorCache.get(seed, RANDOM_GENERATOR_FACTORY::create);
 +    }
 +
 +    @Override
@@ -442,7 +452,7 @@ index 0000000000000000000000000000000000000000..3a0ecce63c0630968405fc24572fbf1f
 +    @Override
 +    public void setSeed(long seed) {
 +        this.seed = seed;
-+        this.randomGenerator = RANDOM_GENERATOR_FACTORY.create(seed);
++        this.randomGenerator = getOrCreateRandomGenerator(seed);
 +    }
 +
 +    @Override
