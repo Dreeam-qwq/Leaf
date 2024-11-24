@@ -386,10 +386,10 @@ index 0000000000000000000000000000000000000000..d0b40bcde399bf9cadfce5741514812a
 +}
 diff --git a/src/main/java/org/dreeam/leaf/util/math/random/FasterRandomSource.java b/src/main/java/org/dreeam/leaf/util/math/random/FasterRandomSource.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9ca1266b93a873e58d896be5f50d93f28cf3c04b
+index 0000000000000000000000000000000000000000..3a0ecce63c0630968405fc24572fbf1fa8096519
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/util/math/random/FasterRandomSource.java
-@@ -0,0 +1,119 @@
+@@ -0,0 +1,128 @@
 +package org.dreeam.leaf.util.math.random;
 +
 +import com.google.common.annotations.VisibleForTesting;
@@ -410,6 +410,7 @@ index 0000000000000000000000000000000000000000..9ca1266b93a873e58d896be5f50d93f2
 +    private static final long MULTIPLIER = 25214903917L;
 +    private static final long INCREMENT = 11L;
 +    private static final RandomGeneratorFactory<RandomGenerator> RANDOM_GENERATOR_FACTORY = RandomGeneratorFactory.of(FastRNG.randomGenerator);
++    private static final boolean isSplittableGenerator = RANDOM_GENERATOR_FACTORY.isSplittable();
 +
 +    private long seed;
 +    private RandomGenerator randomGenerator;
@@ -420,8 +421,16 @@ index 0000000000000000000000000000000000000000..9ca1266b93a873e58d896be5f50d93f2
 +        this.randomGenerator = RANDOM_GENERATOR_FACTORY.create(seed);
 +    }
 +
++    private FasterRandomSource(long seed, RandomGenerator.SplittableGenerator randomGenerator) {
++        this.seed = seed;
++        this.randomGenerator = randomGenerator;
++    }
++
 +    @Override
 +    public RandomSource fork() {
++        if (isSplittableGenerator) {
++            return new FasterRandomSource(seed, ((RandomGenerator.SplittableGenerator) this.randomGenerator).split());
++        }
 +        return new FasterRandomSource(this.nextLong());
 +    }
 +
