@@ -368,10 +368,10 @@ index 14ceb3308474e76220bd64b0254df3f2925d4206..6cd45791b19df76e367d2693bce349c6
      private final net.minecraft.world.entity.LivingEntity entity; // Purpur
 diff --git a/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java b/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..36b68febe1d82664bf8c3544fd6db9dfaa93ed6c
+index 0000000000000000000000000000000000000000..4f214a8f058434cb7f4930df75fc3d0f310878ae
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/async/tracker/MultithreadedTracker.java
-@@ -0,0 +1,184 @@
+@@ -0,0 +1,182 @@
 +package org.dreeam.leaf.async.tracker;
 +
 +import ca.spottedleaf.moonrise.common.list.ReferenceList;
@@ -435,9 +435,7 @@ index 0000000000000000000000000000000000000000..36b68febe1d82664bf8c3544fd6db9df
 +                tickAsyncWithCompatMode(level);
 +            }
 +        } catch (Exception e) {
-+            LOGGER.error("Error occurred while executing async task.");
-+            //noinspection CallToPrintStackTrace
-+            e.printStackTrace();
++            LOGGER.error("Error occurred while executing async task.", e);
 +        }
 +    }
 +
