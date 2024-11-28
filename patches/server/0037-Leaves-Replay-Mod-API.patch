@@ -215,7 +215,7 @@ index b2ae3fdf128e7d66e3f3430266321a6a09fa0be6..7c6bda95b8b08cc70182f19cf0b991f7
          this.stats = server.getPlayerList().getPlayerStats(this);
          this.advancements = server.getPlayerList().getPlayerAdvancements(this);
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index a25a8268d148862312ebf93cf9d7828b4e051375..b7228c495871d3222f184c1ede4d846d9c13a435 100644
+index 135a53742607dfccff17aa86f80f106b4a31f6b0..94b43be23f1b6498a09e9c45d2ec02df8fbd6d17 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -155,6 +155,7 @@ public abstract class PlayerList {
@@ -462,10 +462,10 @@ index 770606c4462d85d116f6d0bf91192dc49f438d0f..4317420bd5d3fc8e20ffd7f3a3d48c5a
          if (entity instanceof EnderDragonPart complexPart) {
              if (complexPart.parentMob instanceof EnderDragon) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 95c6275ec833a0bfe4e7b8105db5abafd69079c3..7294c6cc2cf65e3c142d174025d24d854bbe68ae 100644
+index 75f1e56281014a8fc7e682478307d8f40ad4bdcc..8addddffe97751524f265241ac644a9291405c42 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2263,7 +2263,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2273,7 +2273,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
  
      @Override
      public boolean canSee(Player player) {

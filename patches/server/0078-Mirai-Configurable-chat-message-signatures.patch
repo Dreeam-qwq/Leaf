@@ -105,7 +105,7 @@ index 50dc68a005490415b88780397ef6c26859596dd5..162115048cffc824376e54b7f60ae071
      public static record Favicon(byte[] iconBytes) {
          private static final String PREFIX = "data:image/png;base64,";
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index 2e78a464ae2f85722786e9da668f42851d8d65c4..86462d3eff74f373820ccdbb162978d1d4a6d9d6 100644
+index eecc459c7e16dfcda57f0682e90ed1b38d71da44..5a88fd8997d2703a1318df441a2789a7b1ab229c 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -707,6 +707,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -151,10 +151,10 @@ index 8a3736dbf6ee0b2c6fbb514b2841154d2ad9f0f5..22eb98d51e0cbc996195f7f1ba07c0e4
          if (packet == null || this.processedDisconnect) { // Spigot
              return;
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 3ac1446ed791e06e2bbf226b925890ac4d1a16de..2cdfd22baf31df99e2c2b1d114c47cb88569538f 100644
+index dad180fa1bab9cd9ed08891d42836020f6e709b2..0d791d0e0cbbc77dd1e5b376f82c26e3618c236e 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -1639,7 +1639,7 @@ public abstract class PlayerList {
+@@ -1641,7 +1641,7 @@ public abstract class PlayerList {
          // Paper end
          boolean flag = this.verifyChatTrusted(message);
  
@@ -163,7 +163,7 @@ index 3ac1446ed791e06e2bbf226b925890ac4d1a16de..2cdfd22baf31df99e2c2b1d114c47cb8
          OutgoingChatMessage outgoingchatmessage = OutgoingChatMessage.create(message);
          boolean flag1 = false;
  
-@@ -1668,6 +1668,7 @@ public abstract class PlayerList {
+@@ -1670,6 +1670,7 @@ public abstract class PlayerList {
      }
  
      public boolean verifyChatTrusted(PlayerChatMessage message) { // Paper - private -> public

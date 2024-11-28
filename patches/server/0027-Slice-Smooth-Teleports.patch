@@ -6,6 +6,8 @@ Subject: [PATCH] Slice: Smooth Teleports
 Original license: MIT
 Original project: https://github.com/Cryptite/Slice
 
+Co-authored-by: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 index 1dc2af59bafa5a5dc6721da02cde19a3ca77af28..b2ae3fdf128e7d66e3f3430266321a6a09fa0be6 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
@@ -19,7 +21,7 @@ index 1dc2af59bafa5a5dc6721da02cde19a3ca77af28..b2ae3fdf128e7d66e3f3430266321a6a
      // Paper start - rewrite chunk system
      private ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData chunkLoader;
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index bf3561764bab8e1b237c2b9760181853f60c8fa7..26a92a77481c46969b68e454b906b3935ad02043 100644
+index bf3561764bab8e1b237c2b9760181853f60c8fa7..fa658c59c61449e6499f5f0c334df180e532f883 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -901,10 +901,10 @@ public abstract class PlayerList {
@@ -27,28 +29,47 @@ index bf3561764bab8e1b237c2b9760181853f60c8fa7..26a92a77481c46969b68e454b906b393
          LevelData worlddata = worldserver1.getLevelData();
  
 -        entityplayer1.connection.send(new ClientboundRespawnPacket(entityplayer1.createCommonSpawnInfo(worldserver1), (byte) i));
-+        if (!entityplayer.smoothWorldTeleport) entityplayer1.connection.send(new ClientboundRespawnPacket(entityplayer1.createCommonSpawnInfo(worldserver1), (byte) i)); // Slice
++        if (!entityplayer.smoothWorldTeleport || !isSameLogicalHeight((ServerLevel) fromWorld, worldserver)) entityplayer1.connection.send(new ClientboundRespawnPacket(entityplayer1.createCommonSpawnInfo(worldserver1), (byte) i)); // Slice // Leaf
          entityplayer1.connection.send(new ClientboundSetChunkCacheRadiusPacket(worldserver1.spigotConfig.viewDistance)); // Spigot
          entityplayer1.connection.send(new ClientboundSetSimulationDistancePacket(worldserver1.spigotConfig.simulationDistance)); // Spigot
 -        entityplayer1.connection.teleport(CraftLocation.toBukkit(entityplayer1.position(), worldserver1.getWorld(), entityplayer1.getYRot(), entityplayer1.getXRot())); // CraftBukkit
-+        if (!entityplayer.smoothWorldTeleport) entityplayer1.connection.teleport(CraftLocation.toBukkit(entityplayer1.position(), worldserver1.getWorld(), entityplayer1.getYRot(), entityplayer1.getXRot())); // CraftBukkit // Slice
++        if (!entityplayer.smoothWorldTeleport || !isSameLogicalHeight((ServerLevel) fromWorld, worldserver)) entityplayer1.connection.teleport(CraftLocation.toBukkit(entityplayer1.position(), worldserver1.getWorld(), entityplayer1.getYRot(), entityplayer1.getXRot())); // CraftBukkit // Slice // Leaf
          entityplayer1.connection.send(new ClientboundSetDefaultSpawnPositionPacket(worldserver.getSharedSpawnPos(), worldserver.getSharedSpawnAngle()));
          entityplayer1.connection.send(new ClientboundChangeDifficultyPacket(worlddata.getDifficulty(), worlddata.isDifficultyLocked()));
          entityplayer1.connection.send(new ClientboundSetExperiencePacket(entityplayer1.experienceProgress, entityplayer1.totalExperience, entityplayer1.experienceLevel));
+@@ -965,6 +965,8 @@ public abstract class PlayerList {
+         return entityplayer1;
+     }
+ 
++    private boolean isSameLogicalHeight(ServerLevel level1, ServerLevel level2) { return level1.getLogicalHeight() == level2.getLogicalHeight(); } // Leaf - Check world height before smooth teleport
++
+     public void sendActivePlayerEffects(ServerPlayer player) {
+         this.sendActiveEffects(player, player.connection);
+     }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 88668656c8586d758b636561066d96dd883e6201..95c6275ec833a0bfe4e7b8105db5abafd69079c3 100644
+index 88668656c8586d758b636561066d96dd883e6201..75f1e56281014a8fc7e682478307d8f40ad4bdcc 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -1365,6 +1365,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1365,6 +1365,25 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          // Paper end
      }
  
 +    // Slice start
++    @Override
 +    public void teleportWithoutRespawn(Location location) {
 +        ServerPlayer serverPlayer = getHandle();
 +        serverPlayer.smoothWorldTeleport = true;
 +        teleport(location);
 +        serverPlayer.smoothWorldTeleport = false;
++    }
++
++    @Override
++    public boolean teleportWithoutRespawnOptionally(Location location) {
++        ServerPlayer serverPlayer = getHandle();
++        serverPlayer.smoothWorldTeleport = true;
++        boolean teleportResult = teleport(location);
++        serverPlayer.smoothWorldTeleport = false;
++        return teleportResult;
 +    }
 +    // Slice end
 +

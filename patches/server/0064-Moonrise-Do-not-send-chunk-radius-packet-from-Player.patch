@@ -26,10 +26,10 @@ index a608f57ebca98eda88ad749d0aad021678be54f9..1f301caa36212c85b06a33c714cb1050
              this.player.connection.send(this.updateClientChunkRadius(sendViewDistance));
              this.player.connection.send(this.updateClientSimulationDistance(tickViewDistance));
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index b7228c495871d3222f184c1ede4d846d9c13a435..505d7376681071e67c460d5a88eaa95f3d6ab820 100644
+index 94b43be23f1b6498a09e9c45d2ec02df8fbd6d17..0d41cd4fe9b423a8644475494bcfb73f98e8b70b 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -1718,7 +1718,7 @@ public abstract class PlayerList {
+@@ -1720,7 +1720,7 @@ public abstract class PlayerList {
  
      public void setViewDistance(int viewDistance) {
          this.viewDistance = viewDistance;

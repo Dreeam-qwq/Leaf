@@ -5,10 +5,10 @@ Subject: [PATCH] Remove useless creating stats json bases on player name logic
 
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 505d7376681071e67c460d5a88eaa95f3d6ab820..bc7dd0ceea8bb304fb4370084bf19f29c1df0828 100644
+index 0d41cd4fe9b423a8644475494bcfb73f98e8b70b..8d8f552acd4d2e846e1fd0bc19574d93c372fc2b 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -1685,6 +1685,8 @@ public abstract class PlayerList {
+@@ -1687,6 +1687,8 @@ public abstract class PlayerList {
              File file = this.server.getWorldPath(LevelResource.PLAYER_STATS_DIR).toFile();
              File file1 = new File(file, String.valueOf(uuid) + ".json");
  
@@ -17,7 +17,7 @@ index 505d7376681071e67c460d5a88eaa95f3d6ab820..bc7dd0ceea8bb304fb4370084bf19f29
              if (!file1.exists()) {
                  File file2 = new File(file, displayName + ".json"); // CraftBukkit
                  Path path = file2.toPath();
-@@ -1693,6 +1695,8 @@ public abstract class PlayerList {
+@@ -1695,6 +1697,8 @@ public abstract class PlayerList {
                      file2.renameTo(file1);
                  }
              }
