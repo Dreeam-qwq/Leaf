@@ -200,7 +200,7 @@ index 990457fb23d22c3b8732d70da54ac5aaed8221db..f55475b812fd989d076c7715b8f060ab
  
      protected double getNoiseValue(BlockPos pos, double scale) {
 diff --git a/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java b/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java
-index 10e39fcdce7c205a695b9c1b8c3551b07a64cfa0..c25acd90958184ded76d99295a219f41dfc02849 100644
+index 10e39fcdce7c205a695b9c1b8c3551b07a64cfa0..72adc7aa05d568875a7cc98e877e4e41b07b73bd 100644
 --- a/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java
 +++ b/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java
 @@ -241,7 +241,7 @@ public abstract class Structure {
@@ -208,7 +208,7 @@ index 10e39fcdce7c205a695b9c1b8c3551b07a64cfa0..c25acd90958184ded76d99295a219f41
              // Leaf end - Matter - Feature Secure Seed
  
 -            WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(0L));
-+            WorldgenRandom worldgenRandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.worldgenEnabled() ? new org.dreeam.leaf.util.math.random.FasterRandomSource(seed) : new LegacyRandomSource(0L));
++            WorldgenRandom worldgenRandom = new WorldgenRandom(org.dreeam.leaf.config.modules.opt.FastRNG.worldgenEnabled() ? new org.dreeam.leaf.util.math.random.FasterRandomSource(0L) : new LegacyRandomSource(0L));
              worldgenRandom.setLargeFeatureSeed(seed, chunkPos.x, chunkPos.z);
              return worldgenRandom;
          }
