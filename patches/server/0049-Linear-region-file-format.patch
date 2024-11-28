@@ -12,7 +12,7 @@ This format saves about 50% of disk space.
 Documentation: https://github.com/xymb-endcrystalme/LinearRegionFileFormatTools
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 776e4d697d6d9b4b66806f120066dbf35c66c480..c2f2783fc4cdf5f222498d9bd08db152677bbfdb 100644
+index 47ade0d7de17d2ad306b1f872d9399edcc295cf2..6aefe4052d410dee3f18671119252ea799988e74 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -21,6 +21,11 @@ dependencies {
@@ -20,7 +20,7 @@ index 776e4d697d6d9b4b66806f120066dbf35c66c480..c2f2783fc4cdf5f222498d9bd08db152
      // Leaf end - Leaf Config
  
 +    // LinearPaper start
-+    implementation("com.github.luben:zstd-jni:1.5.6-7")
++    implementation("com.github.luben:zstd-jni:1.5.6-8")
 +    implementation("org.lz4:lz4-java:1.8.0")
 +    // LinearPaper end
 +

@@ -10,7 +10,7 @@ This issue caused by inconsistent fluid count, because of a condition change
 in LevelChunkSection#setBlockState, introduced by Moonrise's block count optimisation
 
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 976d72b611011cccf4b4efadc9772ce1c68ef5ee..1309fa679b4e73645fac6ae04044709915092574 100644
+index 6a19390aff7c8f7170467d2c6306b00779f23082..d0bbbd2044809bdb1273248297f5d9fb87011189 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -4797,7 +4797,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess

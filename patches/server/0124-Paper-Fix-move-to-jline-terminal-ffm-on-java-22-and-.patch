@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MiniDigger | Martin <admin@minidigger.dev>
+Date: Sun, 17 Nov 2024 20:31:50 +0100
+Subject: [PATCH] Paper: Fix: move to jline-terminal-ffm on java 22+ and fall
+ back to jni on 21
+
+Original license: GPLv3
+Original project: https://github.com/PaperMC/Paper
+Paper pull request: https://github.com/PaperMC/Paper/pull/11631
+
+Ported from Paper 1.21.3
+Also see Leaf's Fix-console-freeze-above-JAVA-22.patch
+
+ffm requires 1) native access allowed (the jdk cracks down on undocumented native access in 22) and 2) reverting the default console back to java.base, so the internal jline doesnt take over
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 068ec805a51764fbe22b91578797e553a7bca1f8..572af93c43a66e6ae17b4aee219a87c5168e3dfa 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -31,7 +31,8 @@ dependencies {
+     // Leaf end - Libraries
+ 
+     // Paper start
+-    implementation("org.jline:jline-terminal-jansi:3.27.1") // Leaf - Bump Dependencies
++    implementation("org.jline:jline-terminal-ffm:3.27.1") // Paper - use ffm on java 22+
++    implementation("org.jline:jline-terminal-jni:3.27.1") // Paper - fall back to jni on java 21
+     implementation("net.minecrell:terminalconsoleappender:1.3.0")
+     implementation("net.kyori:adventure-text-serializer-ansi:4.17.0") // Keep in sync with adventureVersion from Paper-API build file
+     /*

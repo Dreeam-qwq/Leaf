@@ -6,7 +6,7 @@ Subject: [PATCH] EMC: Don't use snapshots for TileEntity::getOwner
 Original license: MIT
 Original project: https://github.com/starlis/empirecraft
 
-Also see EMC-Default-don-t-use-blockstate-snapshots.patch
+Also see Leaf's EMC-Default-don-t-use-blockstate-snapshots.patch
 
 diff --git a/src/main/java/net/minecraft/world/level/block/entity/BlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/BlockEntity.java
 index 73c9f91457683e8e6bd8293b4393ccbd984eddb7..7b38835bdac33dce9ed7ca1c0b3d43fdc2224d0c 100644

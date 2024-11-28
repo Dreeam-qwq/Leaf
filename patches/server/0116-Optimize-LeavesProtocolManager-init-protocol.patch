@@ -429,11 +429,11 @@ index b76eb38942171d22dcd767ea353f012e5920f1f5..ec901ea7103ce5a3e1d6fa1efd8135ce
          @Override
          public void write(@NotNull FriendlyByteBuf buf) {
 diff --git a/src/main/java/org/leavesmc/leaves/protocol/jade/JadeProtocol.java b/src/main/java/org/leavesmc/leaves/protocol/jade/JadeProtocol.java
-index cc9f71e2bc8261f07fdb4d296cc8d13cfa2753ad..a687c38577919bbb20a0f1b15255aec3c07fa3be 100644
+index fed4f91689f635dc107987e3714129250e2d458a..d59ef7d063841c912796b8436383290337b04452 100644
 --- a/src/main/java/org/leavesmc/leaves/protocol/jade/JadeProtocol.java
 +++ b/src/main/java/org/leavesmc/leaves/protocol/jade/JadeProtocol.java
-@@ -103,6 +103,10 @@ public class JadeProtocol {
- 
+@@ -98,6 +98,10 @@ public class JadeProtocol {
+     public static final PairHierarchyLookup<IServerDataProvider<BlockAccessor>> blockDataProviders = new PairHierarchyLookup<>(new HierarchyLookup<>(Block.class), new HierarchyLookup<>(BlockEntity.class));
      public static final WrappedHierarchyLookup<IServerExtensionProvider<ItemStack>> itemStorageProviders = new WrappedHierarchyLookup<>();
  
 +    public static boolean shouldEnable() {
@@ -443,27 +443,15 @@ index cc9f71e2bc8261f07fdb4d296cc8d13cfa2753ad..a687c38577919bbb20a0f1b15255aec3
      @Contract("_ -> new")
      public static @NotNull ResourceLocation id(String path) {
          return new ResourceLocation(PROTOCOL_ID, path);
-@@ -126,9 +130,9 @@ public class JadeProtocol {
-         priorities = new PriorityStore<>(IJadeProvider::getDefaultPriority, IJadeProvider::getUid);
-         priorities.setSortingFunction((store, allKeys) -> {
-             List<ResourceLocation> keys = allKeys.stream()
--                .filter(JadeProtocol::isPrimaryKey)
--                .sorted(Comparator.comparingInt(store::byKey))
--                .collect(Collectors.toCollection(ArrayList::new));
-+                    .filter(JadeProtocol::isPrimaryKey)
-+                    .sorted(Comparator.comparingInt(store::byKey))
-+                    .collect(Collectors.toCollection(ArrayList::new));
-             allKeys.stream().filter(Predicate.not(JadeProtocol::isPrimaryKey)).forEach($ -> {
-                 int index = keys.indexOf(JadeProtocol.getPrimaryKey($));
-                 keys.add(index + 1, $);
-@@ -187,17 +191,11 @@ public class JadeProtocol {
+@@ -169,19 +173,11 @@ public class JadeProtocol {
  
      @ProtocolHandler.PlayerJoin
      public static void onPlayerJoin(ServerPlayer player) {
--        if (org.dreeam.leaf.config.modules.network.ProtocolSupport.jadeProtocol) {
--            ProtocolUtils.sendPayloadPacket(player, new ServerPingPayload("", shearableBlocks));
+-        if (!org.dreeam.leaf.config.modules.network.ProtocolSupport.jadeProtocol) {
+-            return;
 -        }
-+        ProtocolUtils.sendPayloadPacket(player, new ServerPingPayload("", shearableBlocks));
+-
+         sendPingPacket(player);
      }
  
      @ProtocolHandler.PayloadReceiver(payload = RequestEntityPayload.class, payloadId = "request_entity")
@@ -475,7 +463,7 @@ index cc9f71e2bc8261f07fdb4d296cc8d13cfa2753ad..a687c38577919bbb20a0f1b15255aec3
          MinecraftServer server = MinecraftServer.getServer();
          server.execute(() -> {
              Level world = player.level();
-@@ -238,10 +236,6 @@ public class JadeProtocol {
+@@ -230,10 +226,6 @@ public class JadeProtocol {
  
      @ProtocolHandler.PayloadReceiver(payload = RequestBlockPayload.class, payloadId = "request_block")
      public static void requestBlockData(ServerPlayer player, RequestBlockPayload payload) {
@@ -486,36 +474,6 @@ index cc9f71e2bc8261f07fdb4d296cc8d13cfa2753ad..a687c38577919bbb20a0f1b15255aec3
          MinecraftServer server = MinecraftServer.getServer();
          server.execute(() -> {
              Level world = player.level();
-@@ -303,7 +297,8 @@ public class JadeProtocol {
-         }
-     }
- 
--    public record RequestEntityPayload(boolean showDetails, int entityId, int partIndex, Vec3 hitVec) implements LeavesCustomPayload<RequestEntityPayload> {
-+    public record RequestEntityPayload(boolean showDetails, int entityId, int partIndex,
-+                                       Vec3 hitVec) implements LeavesCustomPayload<RequestEntityPayload> {
- 
-         private static final ResourceLocation PACKET_REQUEST_ENTITY = JadeProtocol.id("request_entity");
- 
-@@ -327,7 +322,8 @@ public class JadeProtocol {
-         }
-     }
- 
--    public record RequestBlockPayload(boolean showDetails, BlockHitResult hitResult, BlockState blockState, ItemStack fakeBlock) implements LeavesCustomPayload<RequestBlockPayload> {
-+    public record RequestBlockPayload(boolean showDetails, BlockHitResult hitResult, BlockState blockState,
-+                                      ItemStack fakeBlock) implements LeavesCustomPayload<RequestBlockPayload> {
- 
-         private static final ResourceLocation PACKET_REQUEST_BLOCK = JadeProtocol.id("request_block");
-         private static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> ITEM_STACK_CODEC = ItemStack.OPTIONAL_STREAM_CODEC;
-@@ -353,7 +349,8 @@ public class JadeProtocol {
-         }
-     }
- 
--    public record ServerPingPayload(String serverConfig, List<Block> shearableBlocks) implements LeavesCustomPayload<ServerPingPayload> {
-+    public record ServerPingPayload(String serverConfig,
-+                                    List<Block> shearableBlocks) implements LeavesCustomPayload<ServerPingPayload> {
- 
-         private static final ResourceLocation PACKET_SERVER_PING = JadeProtocol.id("server_ping_v1");
-         private static final StreamCodec<RegistryFriendlyByteBuf, List<Block>> SHEARABLE_BLOCKS_CODEC = ByteBufCodecs.registry(Registries.BLOCK).apply(ByteBufCodecs.list());
 diff --git a/src/main/java/org/leavesmc/leaves/protocol/syncmatica/CommunicationManager.java b/src/main/java/org/leavesmc/leaves/protocol/syncmatica/CommunicationManager.java
 index 0704ac7825c69e69097b3e7c77763044f9fa9e1e..c039765237d56def91a1e630a0510062305fd585 100644
 --- a/src/main/java/org/leavesmc/leaves/protocol/syncmatica/CommunicationManager.java

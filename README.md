@@ -106,7 +106,6 @@ If these excellent projects hadn't appeared, Leaf wouldn't have become great.
       • <a href="https://github.com/ProjectEdenGG/Parchment">Parchment</a><br>
       • <a href="https://github.com/LeavesMC/Leaves">Leaves</a><br>
       • <a href="https://github.com/KaiijuMC/Kaiiju">Kaiiju</a><br>
-      • <a href="https://github.com/hpfxd/PandaSpigot">PandaSpigot</a><br>
       • <a href="https://github.com/PlazmaMC/PlazmaBukkit">Plazma</a><br>
       • <a href="https://github.com/SparklyPower/SparklyPaper">SparklyPaper</a><br>
       • <a href="https://github.com/HaHaWTH/Polpot">Polpot</a><br>
