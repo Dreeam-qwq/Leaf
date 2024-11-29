@@ -35,7 +35,7 @@ index edef689792b163e6a33921fe2e4b1af69715a2ee..28723ab8bd72ff0db5e21c68f44f0a8d
                  worldserver.addDuringTeleport(this);
                  this.triggerDimensionChangeTriggers(worldserver1);
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index f3b98a4a66cec8d6c9dc46479d573c2fb453837a..73e5823bef9e4d37bfe4e26336c797930c0690a1 100644
+index f3b98a4a66cec8d6c9dc46479d573c2fb453837a..00b9d244898ffdc1584eb254643557776bf4a76f 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -1057,10 +1057,10 @@ public abstract class PlayerList {
@@ -43,11 +43,11 @@ index f3b98a4a66cec8d6c9dc46479d573c2fb453837a..73e5823bef9e4d37bfe4e26336c79793
          LevelData worlddata = worldserver1.getLevelData();
  
 -        if (!entityplayer.smoothWorldTeleport || !isSameLogicalHeight((ServerLevel) fromWorld, worldserver)) entityplayer1.connection.send(new ClientboundRespawnPacket(entityplayer1.createCommonSpawnInfo(worldserver1), (byte) i)); // Slice // Leaf
-+        if ((!entityplayer.smoothWorldTeleport && !org.dreeam.leaf.config.modules.gameplay.SmoothTeleport.enabled || i != 1) || !isSameLogicalHeight((ServerLevel) fromWorld, worldserver)) entityplayer1.connection.send(new ClientboundRespawnPacket(entityplayer1.createCommonSpawnInfo(worldserver1), (byte) i)); // Slice // Leaf
++        if ((!entityplayer.smoothWorldTeleport && !org.dreeam.leaf.config.modules.gameplay.SmoothTeleport.enabled) || i != 1 || !isSameLogicalHeight((ServerLevel) fromWorld, worldserver)) entityplayer1.connection.send(new ClientboundRespawnPacket(entityplayer1.createCommonSpawnInfo(worldserver1), (byte) i)); // Slice // Leaf
          entityplayer1.connection.send(new ClientboundSetChunkCacheRadiusPacket(worldserver1.spigotConfig.viewDistance)); // Spigot
          entityplayer1.connection.send(new ClientboundSetSimulationDistancePacket(worldserver1.spigotConfig.simulationDistance)); // Spigot
 -        if (!entityplayer.smoothWorldTeleport || !isSameLogicalHeight((ServerLevel) fromWorld, worldserver)) entityplayer1.connection.teleport(CraftLocation.toBukkit(entityplayer1.position(), worldserver1.getWorld(), entityplayer1.getYRot(), entityplayer1.getXRot())); // CraftBukkit // Slice // Leaf
-+        if ((!entityplayer.smoothWorldTeleport && !org.dreeam.leaf.config.modules.gameplay.SmoothTeleport.enabled || i != 1) || !isSameLogicalHeight((ServerLevel) fromWorld, worldserver)) entityplayer1.connection.teleport(CraftLocation.toBukkit(entityplayer1.position(), worldserver1.getWorld(), entityplayer1.getYRot(), entityplayer1.getXRot())); // CraftBukkit // Slice // Leaf
++        if ((!entityplayer.smoothWorldTeleport && !org.dreeam.leaf.config.modules.gameplay.SmoothTeleport.enabled) || i != 1 || !isSameLogicalHeight((ServerLevel) fromWorld, worldserver)) entityplayer1.connection.teleport(CraftLocation.toBukkit(entityplayer1.position(), worldserver1.getWorld(), entityplayer1.getYRot(), entityplayer1.getXRot())); // CraftBukkit // Slice // Leaf
          entityplayer1.connection.send(new ClientboundSetDefaultSpawnPositionPacket(worldserver.getSharedSpawnPos(), worldserver.getSharedSpawnAngle()));
          entityplayer1.connection.send(new ClientboundChangeDifficultyPacket(worlddata.getDifficulty(), worlddata.isDifficultyLocked()));
          entityplayer1.connection.send(new ClientboundSetExperiencePacket(entityplayer1.experienceProgress, entityplayer1.totalExperience, entityplayer1.experienceLevel));
