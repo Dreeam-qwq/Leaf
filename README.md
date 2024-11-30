@@ -8,6 +8,9 @@
 **Leaf** is a drop-in replacement for [Paper](https://papermc.io/) servers designed to remove some checks, customized and high-performance, built on top of [Gale](https://github.com/Dreeam-qwq/Gale) with optimizations and fixes from other forks.
 </div>
 
+> [!WARNING]  
+> Leaf is an **EXPERIMENTAL** fork of [Paper](https://papermc.io/) there MAY BE issues depending on server to server, test and backup servers before switching to it.
+
 ## 🍃 Features
  - **Fork of [Gale](https://github.com/Dreeam-qwq/Gale)** for better performance
  - **Async** pathfinding, mob spawning and entity tracker
