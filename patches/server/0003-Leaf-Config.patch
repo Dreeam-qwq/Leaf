@@ -11,7 +11,7 @@ Add per world config
 Add config reload
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 4426855192b7dcc58b16d41b8a9d44bbbed3b55f..78d29b5e5047f9f03d1b8e93047953e727611c5e 100644
+index c3790a8ebeeaaa395449e30ab69f1abfa9637034..a56ff254fb752030600fdf1d4ce62ff7ec14765d 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -14,6 +14,13 @@ val alsoShade: Configuration by configurations.creating
@@ -56,14 +56,21 @@ index 4efbd656c57672b84c5d90f987bd57c67fc0c550..05f805c7e7a6ff6d40b9f86aaac5362a
              long tickSection = Util.getNanos();
 diff --git a/src/main/java/org/dreeam/leaf/config/ConfigModules.java b/src/main/java/org/dreeam/leaf/config/ConfigModules.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f05e1ee109a36c39857f75c296f2ff21800aba8e
+index 0000000000000000000000000000000000000000..0ea0cbf819d1756909729e2f923b235f0842183d
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/ConfigModules.java
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,53 @@
 +package org.dreeam.leaf.config;
 +
++import org.dreeam.leaf.config.annotations.Experimental;
++
++import java.lang.annotation.Annotation;
++import java.lang.reflect.Field;
 +import java.lang.reflect.InvocationTargetException;
++import java.lang.reflect.Modifier;
++import java.util.ArrayList;
 +import java.util.HashSet;
++import java.util.List;
 +import java.util.Set;
 +
 +public abstract class ConfigModules extends LeafConfig {
@@ -81,24 +88,30 @@ index 0000000000000000000000000000000000000000..f05e1ee109a36c39857f75c296f2ff21
 +            module.onLoaded();
 +
 +            modules.add(module);
++            for (Field field : getAnnotatedStaticFields(clazz, Experimental.class)) {
++                Object obj = field.get(null);
++                if (!(obj instanceof Boolean)) continue;
++                boolean enabled = (Boolean) obj;
++                if (enabled) {
++                    LeafConfig.LOGGER.warn("Experimental feature {} is enabled, please report any bugs you found!", clazz.getSimpleName());
++                    break;
++                }
++            }
 +        }
 +    }
 +
++    private static List<Field> getAnnotatedStaticFields(Class<?> clazz, Class<? extends Annotation> annotation) {
++        List<Field> fields = new ArrayList<>();
++        for (Field field : clazz.getDeclaredFields()) {
++            if (field.isAnnotationPresent(annotation) && Modifier.isStatic(field.getModifiers())) {
++                field.setAccessible(true);
++                fields.add(field);
++            }
++        }
++        return fields;
++    }
++
 +    public abstract void onLoaded();
-+}
-diff --git a/src/main/java/org/dreeam/leaf/config/DoNotLoad.java b/src/main/java/org/dreeam/leaf/config/DoNotLoad.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..42ce82d388336906a91547b81f6f70766f2b10f0
---- /dev/null
-+++ b/src/main/java/org/dreeam/leaf/config/DoNotLoad.java
-@@ -0,0 +1,8 @@
-+package org.dreeam.leaf.config;
-+
-+import java.lang.annotation.Retention;
-+import java.lang.annotation.RetentionPolicy;
-+
-+@Retention(RetentionPolicy.RUNTIME)
-+public @interface DoNotLoad {
 +}
 diff --git a/src/main/java/org/dreeam/leaf/config/EnumConfigCategory.java b/src/main/java/org/dreeam/leaf/config/EnumConfigCategory.java
 new file mode 100644
@@ -131,20 +144,6 @@ index 0000000000000000000000000000000000000000..7d99f0711c6b4f298dd296c26c11dd9d
 +    public static EnumConfigCategory[] getCategoryValues() {
 +        return VALUES;
 +    }
-+}
-diff --git a/src/main/java/org/dreeam/leaf/config/HotReloadUnsupported.java b/src/main/java/org/dreeam/leaf/config/HotReloadUnsupported.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..f7ab1ff5f298ff1e5e16fe5396d1e9e62a55fdfb
---- /dev/null
-+++ b/src/main/java/org/dreeam/leaf/config/HotReloadUnsupported.java
-@@ -0,0 +1,8 @@
-+package org.dreeam.leaf.config;
-+
-+import java.lang.annotation.Retention;
-+import java.lang.annotation.RetentionPolicy;
-+
-+@Retention(RetentionPolicy.RUNTIME)
-+public @interface HotReloadUnsupported {
 +}
 diff --git a/src/main/java/org/dreeam/leaf/config/LeafConfig.java b/src/main/java/org/dreeam/leaf/config/LeafConfig.java
 new file mode 100644
@@ -563,4 +562,50 @@ index 0000000000000000000000000000000000000000..794bc822d987ee2bb69b953ea70ae3ee
 +    public String pickStringRegionBased(String en, String cn) {
 +        return isCN ? cn : en;
 +    }
++}
+diff --git a/src/main/java/org/dreeam/leaf/config/annotations/DoNotLoad.java b/src/main/java/org/dreeam/leaf/config/annotations/DoNotLoad.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b6687584b7bd914ae53f97df592d7a309a7e1d51
+--- /dev/null
++++ b/src/main/java/org/dreeam/leaf/config/annotations/DoNotLoad.java
+@@ -0,0 +1,8 @@
++package org.dreeam.leaf.config.annotations;
++
++import java.lang.annotation.Retention;
++import java.lang.annotation.RetentionPolicy;
++
++@Retention(RetentionPolicy.RUNTIME)
++public @interface DoNotLoad {
++}
+diff --git a/src/main/java/org/dreeam/leaf/config/annotations/Experimental.java b/src/main/java/org/dreeam/leaf/config/annotations/Experimental.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..26a6967ca8917bbabb31804a44326a1091b9cb96
+--- /dev/null
++++ b/src/main/java/org/dreeam/leaf/config/annotations/Experimental.java
+@@ -0,0 +1,12 @@
++package org.dreeam.leaf.config.annotations;
++
++import java.lang.annotation.*;
++
++/**
++ * Indicates that a feature is experimental and may be removed or changed in the future.
++ */
++@Documented
++@Retention(RetentionPolicy.RUNTIME)
++@Target(value = {ElementType.FIELD})
++public @interface Experimental {
++}
+diff --git a/src/main/java/org/dreeam/leaf/config/annotations/HotReloadUnsupported.java b/src/main/java/org/dreeam/leaf/config/annotations/HotReloadUnsupported.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c89bf6a7ec4bdd94a9ee69eb3907e8e899e6d69b
+--- /dev/null
++++ b/src/main/java/org/dreeam/leaf/config/annotations/HotReloadUnsupported.java
+@@ -0,0 +1,8 @@
++package org.dreeam.leaf.config.annotations;
++
++import java.lang.annotation.Retention;
++import java.lang.annotation.RetentionPolicy;
++
++@Retention(RetentionPolicy.RUNTIME)
++public @interface HotReloadUnsupported {
 +}

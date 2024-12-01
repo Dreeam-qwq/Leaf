@@ -53,14 +53,15 @@ index f3b98a4a66cec8d6c9dc46479d573c2fb453837a..00b9d244898ffdc1584eb25464355777
          entityplayer1.connection.send(new ClientboundSetExperiencePacket(entityplayer1.experienceProgress, entityplayer1.totalExperience, entityplayer1.experienceLevel));
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/gameplay/SmoothTeleport.java b/src/main/java/org/dreeam/leaf/config/modules/gameplay/SmoothTeleport.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5fd8923efb2f8369d990767d40d75c004ceb7a1b
+index 0000000000000000000000000000000000000000..afed2f9210a1016afd5b7db0a3541ecc8c712d32
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/gameplay/SmoothTeleport.java
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,29 @@
 +package org.dreeam.leaf.config.modules.gameplay;
 +
 +import org.dreeam.leaf.config.ConfigModules;
 +import org.dreeam.leaf.config.EnumConfigCategory;
++import org.dreeam.leaf.config.annotations.Experimental;
 +
 +public class SmoothTeleport extends ConfigModules {
 +
@@ -68,6 +69,7 @@ index 0000000000000000000000000000000000000000..5fd8923efb2f8369d990767d40d75c00
 +        return EnumConfigCategory.GAMEPLAY.getBaseKeyName() + ".smooth-teleport";
 +    }
 +
++    @Experimental
 +    public static boolean enabled = false;
 +
 +    @Override

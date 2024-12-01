@@ -332,15 +332,14 @@ index 54f7aa95cfbcf39bb86ad1b4eb0f9ff2f8526030..7c4b81e97562bb158478c70dae082526
                  } catch (final IOException ex) {
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/RegionFormatConfig.java b/src/main/java/org/dreeam/leaf/config/modules/misc/RegionFormatConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7f95e17544b762ad4674315e53fcff8e80105cb8
+index 0000000000000000000000000000000000000000..e7a38c0102fd4838a17a590a50487fd231ca36ca
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/RegionFormatConfig.java
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,59 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import com.mojang.logging.LogUtils;
 +import org.dreeam.leaf.config.ConfigModules;
-+import org.dreeam.leaf.config.DoNotLoad;
 +import org.dreeam.leaf.config.EnumConfigCategory;
 +import org.slf4j.Logger;
 +import org.stupidcraft.linearpaper.region.EnumRegionFileExtension;
@@ -351,9 +350,7 @@ index 0000000000000000000000000000000000000000..7f95e17544b762ad4674315e53fcff8e
 +        return EnumConfigCategory.MISC.getBaseKeyName() + ".region-format-settings";
 +    }
 +
-+    @DoNotLoad
 +    private static final Logger logger = LogUtils.getLogger();
-+    @DoNotLoad
 +    public static EnumRegionFileExtension regionFormatType;
 +
 +    public static String regionFormatTypeName = "MCA";
