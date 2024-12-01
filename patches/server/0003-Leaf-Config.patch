@@ -56,10 +56,10 @@ index 4efbd656c57672b84c5d90f987bd57c67fc0c550..05f805c7e7a6ff6d40b9f86aaac5362a
              long tickSection = Util.getNanos();
 diff --git a/src/main/java/org/dreeam/leaf/config/ConfigModules.java b/src/main/java/org/dreeam/leaf/config/ConfigModules.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0ea0cbf819d1756909729e2f923b235f0842183d
+index 0000000000000000000000000000000000000000..475da1247655dd07ab59273ab5794b04b20e05ed
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/ConfigModules.java
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,57 @@
 +package org.dreeam.leaf.config;
 +
 +import org.dreeam.leaf.config.annotations.Experimental;
@@ -83,6 +83,7 @@ index 0000000000000000000000000000000000000000..0ea0cbf819d1756909729e2f923b235f
 +    }
 +
 +    public static void initModules() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
++        List<Class<?>> enabledExperimentalModules = new ArrayList<>();
 +        for (Class<?> clazz : LeafConfig.getClasses(LeafConfig.I_CONFIG_PKG)) {
 +            ConfigModules module = (ConfigModules) clazz.getConstructor().newInstance();
 +            module.onLoaded();
@@ -93,10 +94,13 @@ index 0000000000000000000000000000000000000000..0ea0cbf819d1756909729e2f923b235f
 +                if (!(obj instanceof Boolean)) continue;
 +                boolean enabled = (Boolean) obj;
 +                if (enabled) {
-+                    LeafConfig.LOGGER.warn("Experimental feature {} is enabled, please report any bugs you found!", clazz.getSimpleName());
++                    enabledExperimentalModules.add(clazz);
 +                    break;
 +                }
 +            }
++        }
++        if (!enabledExperimentalModules.isEmpty()) {
++            LeafConfig.LOGGER.warn("You have following experimental module(s) enabled: {}, please report any bugs you found!", enabledExperimentalModules.stream().map(Class::getSimpleName).toList());
 +        }
 +    }
 +
