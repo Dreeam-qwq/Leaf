@@ -29,13 +29,14 @@ index 068ec805a51764fbe22b91578797e553a7bca1f8..572af93c43a66e6ae17b4aee219a87c5
      implementation("net.kyori:adventure-text-serializer-ansi:4.17.0") // Keep in sync with adventureVersion from Paper-API build file
      /*
 diff --git a/src/main/java/org/dreeam/leaf/LeafBootstrap.java b/src/main/java/org/dreeam/leaf/LeafBootstrap.java
-index 316654051b80ac0fd62cf3b7a0e1b91010ec24b7..0052062cdfcb7672bec177c3d3788f7b1a56d3e5 100644
+index 316654051b80ac0fd62cf3b7a0e1b91010ec24b7..ff0ef887b892caa1451b5781d95f5505cfa2e413 100644
 --- a/src/main/java/org/dreeam/leaf/LeafBootstrap.java
 +++ b/src/main/java/org/dreeam/leaf/LeafBootstrap.java
-@@ -12,5 +12,6 @@ public class LeafBootstrap {
+@@ -12,5 +12,7 @@ public class LeafBootstrap {
      }
  
      private static void runPreBootTasks() {
 +        if (org.jline.utils.OSUtils.IS_WINDOWS) System.setProperty("net.kyori.ansi.colorLevel", "truecolor"); // Leaf - Fix terminal color on Windows by assuming the Windows always supports true color
++        if (org.galemc.gale.virtualthread.VirtualThreadService.getJavaMajorVersion() == 22) System.setProperty("jdk.console", "java.base"); // Leaf - Fix terminal input freeze on Java 22, higher Java version looks like fine
      }
  }
