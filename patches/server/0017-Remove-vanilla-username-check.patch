@@ -4,19 +4,6 @@ Date: Wed, 12 Oct 2022 14:36:58 -0400
 Subject: [PATCH] Remove vanilla username check
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
-index 8849862b45ccbbc635a1c316e9870bca81e55c04..5886e395f0b3b5837088bf97bf20ce13781cc5d3 100644
---- a/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
-+++ b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
-@@ -295,7 +295,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
- 
-     private static GameProfile createAuthLibProfile(UUID uniqueId, String name) {
-         Preconditions.checkArgument(name == null || name.length() <= 16, "Name cannot be longer than 16 characters");
--        Preconditions.checkArgument(name == null || StringUtil.isValidPlayerName(name), "The name of the profile contains invalid characters: %s", name);
-+        Preconditions.checkArgument(name == null || org.dreeam.leaf.config.modules.misc.RemoveVanillaUsernameCheck.enabled || StringUtil.isValidPlayerName(name), "The name of the profile contains invalid characters: %s", name); // Leaf - Remove Vanilla username check
-         return new GameProfile(
-             uniqueId != null ? uniqueId : Util.NIL_UUID,
-             name != null ? name : ""
 diff --git a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 index 5e64def50ba96778cbfaaf1dde0bd8193e9b6bfe..885c6b8c82d46f8e21eb648441dba10c3f3a99f6 100644
 --- a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
@@ -31,19 +18,37 @@ index 5e64def50ba96778cbfaaf1dde0bd8193e9b6bfe..885c6b8c82d46f8e21eb648441dba10c
              && io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.performUsernameValidation
              && !this.iKnowThisMayNotBeTheBestIdeaButPleaseDisableUsernameValidation) {
              Validate.validState(StringUtil.isReasonablePlayerName(packet.name()), "Invalid characters in username", me.titaniumtown.ArrayConstants.emptyObjectArray);
-diff --git a/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java b/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java
-index f58dec12326734c61f4bc2298a87fb38f1ac1dc4..66eff9ddee09f44935df6d8ed3eb24943b603581 100644
---- a/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java
-+++ b/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java
-@@ -79,7 +79,7 @@ public final class CraftPlayerProfile implements PlayerProfile, com.destroystoky
-             Preconditions.checkArgument((uniqueId != null) || !StringUtils.isBlank(name), "uniqueId is null or name is blank");
-         }
-         Preconditions.checkArgument(name == null || name.length() <= 16, "The name of the profile is longer than 16 characters"); // Paper - Validate
--        Preconditions.checkArgument(name == null || net.minecraft.util.StringUtil.isValidPlayerName(name), "The name of the profile contains invalid characters: %s", name); // Paper - Validate
-+        Preconditions.checkArgument(name == null || org.dreeam.leaf.config.modules.misc.RemoveVanillaUsernameCheck.enabled || net.minecraft.util.StringUtil.isValidPlayerName(name), "The name of the profile contains invalid characters: %s", name); // Paper - Validate // Leaf - Remove Vanilla username check
-         this.uniqueId = uniqueId;
-         this.name = name;
+diff --git a/src/main/java/net/minecraft/server/players/GameProfileCache.java b/src/main/java/net/minecraft/server/players/GameProfileCache.java
+index 34b4166adfae8ff7d1eb73d56a72931b005330a7..18ecb876bb65d2cf5d8fc999a22712f5731d8fcc 100644
+--- a/src/main/java/net/minecraft/server/players/GameProfileCache.java
++++ b/src/main/java/net/minecraft/server/players/GameProfileCache.java
+@@ -82,7 +82,7 @@ public class GameProfileCache {
      }
+ 
+     private static Optional<GameProfile> lookupGameProfile(GameProfileRepository repository, String name) {
+-        if (!StringUtil.isValidPlayerName(name)) {
++        if (!StringUtil.isValidPlayerName(name, false)) { // Leaf start - Remove Vanilla username check - Directly return, skip unnecessary following logic
+             return GameProfileCache.createUnknownProfile(name);
+         } else {
+             final AtomicReference<GameProfile> atomicreference = new AtomicReference();
+diff --git a/src/main/java/net/minecraft/util/StringUtil.java b/src/main/java/net/minecraft/util/StringUtil.java
+index 20211f40aeeade9217ece087688974bdf55afc56..90d710bad35dbe92d140755c13f4557a4958b0a7 100644
+--- a/src/main/java/net/minecraft/util/StringUtil.java
++++ b/src/main/java/net/minecraft/util/StringUtil.java
+@@ -64,6 +64,13 @@ public class StringUtil {
+     }
+ 
+     public static boolean isValidPlayerName(String name) {
++        // Leaf start - Remove Vanilla username check
++        return isValidPlayerName(name, org.dreeam.leaf.config.modules.misc.RemoveVanillaUsernameCheck.enabled);
++    }
++
++    public static boolean isValidPlayerName(String name, boolean bypassCheck) {
++        if (bypassCheck) return name.length() <= 16;
++        // Leaf end- Remove Vanilla username check
+         return name.length() <= 16 && name.chars().filter(c -> c <= 32 || c >= 127).findAny().isEmpty();
+     }
+ 
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveVanillaUsernameCheck.java b/src/main/java/org/dreeam/leaf/config/modules/misc/RemoveVanillaUsernameCheck.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..f094806fdc4f98924aab69b5dffb3a3ffbc2e21d
