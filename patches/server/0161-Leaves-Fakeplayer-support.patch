@@ -122,7 +122,7 @@ index 5e46c9b294699f56a9f6f9e9cf43f2390760b54d..48c9f0497caac8515fb070133bd7a42d
          AdvancementProgress advancementprogress = this.getOrStartProgress(advancement);
          boolean flag1 = advancementprogress.isDone();
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index 5a88fd8997d2703a1318df441a2789a7b1ab229c..8640812d33f464618f77f33ac5a8b72b8aef92db 100644
+index 5a88fd8997d2703a1318df441a2789a7b1ab229c..d4e8458b047704fd106daa7d7694ee3da8b3a154 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -217,6 +217,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -133,6 +133,17 @@ index 5a88fd8997d2703a1318df441a2789a7b1ab229c..8640812d33f464618f77f33ac5a8b72b
          this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage));
          org.spigotmc.SpigotConfig.init((java.io.File) this.options.valueOf("spigot-settings"));
          org.spigotmc.SpigotConfig.registerCommands();
+@@ -251,8 +252,9 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         io.papermc.paper.command.PaperCommands.registerCommands(this); // Paper - setup /paper command
+         org.galemc.gale.command.GaleCommands.registerCommands(this); // Gale - Gale commands - register commands
+         this.server.spark.registerCommandBeforePlugins(this.server); // Paper - spark
+-        com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics(); // Paper - start metrics
+         com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // Paper - load version history now
++        org.dreeam.leaf.config.modules.gameplay.FakePlayerSupport.registerBot(); // Leaves - Leaf - Fakeplayer Support
++        com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics(); // Paper - start metrics // Leaves - move down
+ 
+         // Gale start - Pufferfish - SIMD support
+         // Initialize vectorization
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
 index 58e79417e3722ce73cbbc1f9c74cbc73178f762d..2780db5ee87649bdada81bc74c9bf59962b069b3 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
@@ -508,7 +519,7 @@ index c9ecec5da937bc5458f69736b68ff6ae50aa5ebc..decaea842c557adecb9d2d6e654376f0
          if (nmsEntity.level() != this.getHandle().getLevel()) {
              nmsEntity = nmsEntity.changeDimension(new DimensionTransition(this.getHandle().getLevel(), nmsEntity, DimensionTransition.DO_NOTHING));
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index c7d806f7e2ddef2226be1efbe794f0da4c331615..1d82ad121ed4db181186cb2270120a5eb6d71204 100644
+index c7d806f7e2ddef2226be1efbe794f0da4c331615..6c1d8123088cf7646fa57fdcab2d3131ec4f6670 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -311,6 +311,7 @@ public final class CraftServer implements Server {
@@ -527,7 +538,15 @@ index c7d806f7e2ddef2226be1efbe794f0da4c331615..1d82ad121ed4db181186cb2270120a5e
      }
  
      public boolean getCommandBlockOverride(String command) {
-@@ -1493,7 +1495,7 @@ public final class CraftServer implements Server {
+@@ -1118,6 +1120,7 @@ public final class CraftServer implements Server {
+             playerMetadata.removeAll(plugin);
+         }
+         // Paper end
++        org.dreeam.leaf.config.modules.gameplay.FakePlayerSupport.registerBot(); // Leaves - Leaf - Fakeplayer Support
+         this.reloadData();
+         org.spigotmc.SpigotConfig.registerCommands(); // Spigot
+         io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
+@@ -1493,7 +1496,7 @@ public final class CraftServer implements Server {
              return false;
          }
  
@@ -536,7 +555,7 @@ index c7d806f7e2ddef2226be1efbe794f0da4c331615..1d82ad121ed4db181186cb2270120a5e
              return false;
          }
  
-@@ -3389,4 +3391,10 @@ public final class CraftServer implements Server {
+@@ -3389,4 +3392,10 @@ public final class CraftServer implements Server {
          return photographerManager;
      }
      // Leaves end - replay mod api
@@ -629,10 +648,10 @@ index 858c6c860d9b8aaa1d3f9f77a9e410726239d7cc..2b4c54f56986ad03dc222c4fddc816f5
              return event;
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/gameplay/FakePlayerSupport.java b/src/main/java/org/dreeam/leaf/config/modules/gameplay/FakePlayerSupport.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8fb500e97d75517ae9a9e8c4f897433ba174604d
+index 0000000000000000000000000000000000000000..e1344ccc0a550f52d424b943fcc94939adda370f
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/gameplay/FakePlayerSupport.java
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,77 @@
 +package org.dreeam.leaf.config.modules.gameplay;
 +
 +import net.minecraft.server.MinecraftServer;
@@ -684,15 +703,17 @@ index 0000000000000000000000000000000000000000..8fb500e97d75517ae9a9e8c4f897433b
 +        fakeplayerManualSaveAndLoad = config.getBoolean(getBasePath() + ".manual-save-and-load", fakeplayerManualSaveAndLoad);
 +        fakeplayerCacheSkin = config.getBoolean(getBasePath() + ".cache-skin", fakeplayerCacheSkin);
 +
++        if (fakeplayerRegenAmount < 0.0) {
++            throw new IllegalArgumentException("regen-amount need >= 0.0");
++        }
++    }
++
++    public static void registerBot() {
 +        if (fakeplayerSupport) {
 +            registerCommand("bot", new org.leavesmc.leaves.bot.BotCommand("bot"));
 +            org.leavesmc.leaves.bot.agent.Actions.registerAll();
 +        } else {
 +            unregisterCommand("bot");
-+        }
-+
-+        if (fakeplayerRegenAmount < 0.0) {
-+            throw new IllegalArgumentException("regen-amount need >= 0.0");
 +        }
 +    }
 +
