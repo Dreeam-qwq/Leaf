@@ -1,0 +1,44 @@
+name: Build Leaf 1.21.1 - Parallel World Ticking
+
+on:
+  push:
+    branches: [ "tick" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: gradle/actions/wrapper-validation@main
+      - name: Set up JDK
+        uses: graalvm/setup-graalvm@main
+        with:
+          java-version: 21
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Configure Git
+        run: git config --global user.email "no-reply@github.com" && git config --global user.name "Github Actions"
+
+      - name: Apply patches
+        run: ./gradlew -Dorg.gradle.jvmargs="-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector" applyPatches --stacktrace --no-daemon
+      - name: Create MojmapPaperclipJar
+        run: ./gradlew -Dorg.gradle.jvmargs="-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector" createMojmapPaperclipJar --stacktrace --no-daemon
+      - name: Create ReobfPaperclipJar
+        run: ./gradlew -Dorg.gradle.jvmargs="-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector" createReobfPaperclipJar --stacktrace --no-daemon
+
+      - name: Rename Paperclip Jar
+        run: |
+          mv build/libs/leaf-paperclip-1.21.1-R0.1-SNAPSHOT-mojmap.jar ./leaf-1.21.1-mojmap.jar
+          mv build/libs/leaf-paperclip-1.21.1-R0.1-SNAPSHOT-reobf.jar ./leaf-1.21.1-reobf.jar
+      - name: Upload Leaf
+        uses: actions/upload-artifact@main
+        with:
+          name: Leaf 1.21.1
+          path: ./leaf-1.21.1-*.jar
+
+      - name: Rename Paperclip Jar
+        run: |
+          mv ./leaf-1.21.1-mojmap.jar ./leaf-1.21.1.jar
