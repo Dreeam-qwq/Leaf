@@ -9,7 +9,8 @@
 </div>
 
 > [!WARNING]  
-> Leaf is an **EXPERIMENTAL** fork of [Paper](https://papermc.io/) there MAY BE issues depending on server to server, test and backup servers before switching to it.
+> Leaf is an **EXPERIMENTAL** fork of [Paper](https://papermc.io/) there MAY BE issues depending on server to server, test and backup servers before switching to it
+> LIGHTNINGLEAF has no relationship with Leaf / Winds Studio / Any other developers in Winds Studio or Leaf project
 
 ## 🍃 Features
  - **Fork of [Gale](https://github.com/Dreeam-qwq/Gale)** for better performance
@@ -117,7 +118,7 @@ If these excellent projects hadn't appeared, Leaf wouldn't have become great.
       • <a href="https://github.com/Gensokyo-Reimagined/Nitori">Nitori</a><br>
       • <a href="https://github.com/Tuinity/Moonrise">Moonrise</a><br>
     </p>
-</details>
+</details> 
 
 ## 🔥 Special Thanks
 <a href="https://cloud.swordsman.com.cn/"><img src="public/image/JiankeServer.jpg" alt="Jianke Cloud Host" align="left" hspace="8"></a>
