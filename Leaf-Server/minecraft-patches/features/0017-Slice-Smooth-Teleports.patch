@@ -21,7 +21,7 @@ index b7829a91a7ef79706ec6d90b8b2673fd369b9931..c798869665397de5b435e992873b566f
      // Paper start - rewrite chunk system
      private ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData chunkLoader;
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index b4f2b794ca0c6e04da0355e02c19493c892ebccf..9c323dbaff302ca37850af70ee42c2588f85b20d 100644
+index b4f2b794ca0c6e04da0355e02c19493c892ebccf..c334ce5c688ad362ffc96bd90d32c676acd50d4d 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -798,11 +798,11 @@ public abstract class PlayerList {
@@ -42,7 +42,7 @@ index b4f2b794ca0c6e04da0355e02c19493c892ebccf..9c323dbaff302ca37850af70ee42c258
          return serverPlayer;
      }
  
-+    private boolean isSameLogicalHeight(ServerLevel fromLevel, ServerLevel toLevel) { return fromLevel.getLogicalHeight() == toLevel.getLogicalHeight(); } // Leaf - Slice - Check world height before smooth teleport
++    public static boolean isSameLogicalHeight(ServerLevel fromLevel, ServerLevel toLevel) { return fromLevel.getLogicalHeight() == toLevel.getLogicalHeight(); } // Leaf - Slice - Check world height before smooth teleport
 +
      public void sendActivePlayerEffects(ServerPlayer player) {
          this.sendActiveEffects(player, player.connection);

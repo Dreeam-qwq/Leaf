@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Wed, 23 Oct 2024 20:20:16 +0800
+Subject: [PATCH] Fix MC-177381
+
+Removed since Paper 1.21.4, thanks Doritos
+
+Related MC issue: https://bugs.mojang.com/browse/MC-177381
+
+diff --git a/src/main/java/net/minecraft/server/commands/LocateCommand.java b/src/main/java/net/minecraft/server/commands/LocateCommand.java
+index 2972f041eea95b92b37c2ab869f9f8ed3d142a27..dcdde4cd7f15d34eabba4b3802971db20e6ae9d2 100644
+--- a/src/main/java/net/minecraft/server/commands/LocateCommand.java
++++ b/src/main/java/net/minecraft/server/commands/LocateCommand.java
+@@ -196,8 +196,10 @@ public class LocateCommand {
+     }
+ 
+     private static float dist(int x1, int y1, int x2, int y2) {
+-        int i = x2 - x1;
+-        int j = y2 - y1;
+-        return Mth.sqrt((float)(i * i + j * j));
++        // Leaf start - Fix distance overflow MC-177381
++        double i = x2 - x1;
++        double j = y2 - y1;
++        return (float) Math.hypot(i, j);
++        // Leaf end - Fix distance overflow MC-177381
+     }
+ }

@@ -9,6 +9,8 @@
 - [ ] Add server full join config explaination to docs
 - [ ] leaf at
 - [ ] Add purpur config changes to docs moved config
+- [ ] Check linear
+- [ ] Merge changes from Tramontane
 
 # Cleanup
 - [ ] 检查注释都应该start end - patch名或者合理注释

@@ -200,6 +200,104 @@ index 6f96551ba91da214054b89a255254ca597977cc0..3f1a80db81c0f0cd7bb1d5df4a2c2cb1
          // Purpur end - Option for Villager Clerics to farm Nether Wart
          ResourceKey<Level> resourceKey = level.dimension();
          BlockPos blockPos = entity.blockPosition();
+diff --git a/net/minecraft/world/entity/animal/allay/Allay.java b/net/minecraft/world/entity/animal/allay/Allay.java
+index 10d2a1138d814b83ce4233205a7f0ab2ed1f399d..e9f683ef9ce55e67748f1a16a45efe26bb4ff331 100644
+--- a/net/minecraft/world/entity/animal/allay/Allay.java
++++ b/net/minecraft/world/entity/animal/allay/Allay.java
+@@ -287,8 +287,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
+     private int behaviorTick = 0; // Pufferfish
+     @Override
+     protected void customServerAiStep(ServerLevel level) {
+-        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+-        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+         this.getBrain().tick(level, this);
+         AllayAi.updateActivity(this);
+         super.customServerAiStep(level);
+diff --git a/net/minecraft/world/entity/animal/axolotl/Axolotl.java b/net/minecraft/world/entity/animal/axolotl/Axolotl.java
+index 1323cedcacd3072cdf5f1eac644688cd098b53db..ed15200319d0e50b495f2d0d912093d670fdb309 100644
+--- a/net/minecraft/world/entity/animal/axolotl/Axolotl.java
++++ b/net/minecraft/world/entity/animal/axolotl/Axolotl.java
+@@ -347,8 +347,7 @@ public class Axolotl extends Animal implements VariantHolder<Axolotl.Variant>, B
+     private int behaviorTick = 0; // Pufferfish
+     @Override
+     protected void customServerAiStep(ServerLevel level) {
+-        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+-        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+         this.getBrain().tick(level, this);
+         AxolotlAi.updateActivity(this);
+         if (!this.isNoAi()) {
+diff --git a/net/minecraft/world/entity/animal/frog/Frog.java b/net/minecraft/world/entity/animal/frog/Frog.java
+index 4ecc6b6247a6ab14a5d46f9a05d5df8412ae2a5f..a962b06ac3fc15604b7fbf5e2109f1cc8d238ac7 100644
+--- a/net/minecraft/world/entity/animal/frog/Frog.java
++++ b/net/minecraft/world/entity/animal/frog/Frog.java
+@@ -241,8 +241,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
+     private int behaviorTick = 0; // Pufferfish
+     @Override
+     protected void customServerAiStep(ServerLevel level) {
+-        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+-        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+         this.getBrain().tick(level, this);
+         FrogAi.updateActivity(this);
+         super.customServerAiStep(level);
+diff --git a/net/minecraft/world/entity/animal/frog/Tadpole.java b/net/minecraft/world/entity/animal/frog/Tadpole.java
+index 0ca35514a920dddf230d749bc1a5fe15f1c7940a..8468f7095e1db7a54042ce9a97d991d3105bd535 100644
+--- a/net/minecraft/world/entity/animal/frog/Tadpole.java
++++ b/net/minecraft/world/entity/animal/frog/Tadpole.java
+@@ -133,8 +133,7 @@ public class Tadpole extends AbstractFish {
+     private int behaviorTick = 0; // Pufferfish
+     @Override
+     protected void customServerAiStep(ServerLevel level) {
+-        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+-        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+         this.getBrain().tick(level, this);
+         TadpoleAi.updateActivity(this);
+         super.customServerAiStep(level);
+diff --git a/net/minecraft/world/entity/animal/goat/Goat.java b/net/minecraft/world/entity/animal/goat/Goat.java
+index 7107cc2462e7d33bca413a1b051822cc1bd61bfa..2e3ca6b17862494218042e6d84970a60272c2b40 100644
+--- a/net/minecraft/world/entity/animal/goat/Goat.java
++++ b/net/minecraft/world/entity/animal/goat/Goat.java
+@@ -223,8 +223,7 @@ public class Goat extends Animal {
+     private int behaviorTick = 0; // Pufferfish
+     @Override
+     protected void customServerAiStep(ServerLevel level) {
+-        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+-        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+         this.getBrain().tick(level, this);
+         GoatAi.updateActivity(this);
+         super.customServerAiStep(level);
+diff --git a/net/minecraft/world/entity/monster/hoglin/Hoglin.java b/net/minecraft/world/entity/monster/hoglin/Hoglin.java
+index 24725009d7619b0e9043d7d0039f805c611aedf6..a9d381568625ca871dcaf40b363d46692f45591d 100644
+--- a/net/minecraft/world/entity/monster/hoglin/Hoglin.java
++++ b/net/minecraft/world/entity/monster/hoglin/Hoglin.java
+@@ -203,8 +203,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
+     private int behaviorTick; // Pufferfish
+     @Override
+     protected void customServerAiStep(ServerLevel level) {
+-        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+-        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+         this.getBrain().tick(level, this);
+         HoglinAi.updateActivity(this);
+         if (this.isConverting()) {
+diff --git a/net/minecraft/world/entity/monster/piglin/Piglin.java b/net/minecraft/world/entity/monster/piglin/Piglin.java
+index 242b2545b6082f567d0bb7900ef06ded3c0fdcdd..85306d8f0fba3b5dcb244df54c949b45e07ee4e7 100644
+--- a/net/minecraft/world/entity/monster/piglin/Piglin.java
++++ b/net/minecraft/world/entity/monster/piglin/Piglin.java
+@@ -382,8 +382,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
+     private int behaviorTick; // Pufferfish
+     @Override
+     protected void customServerAiStep(ServerLevel level) {
+-        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+-        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
+         this.getBrain().tick(level, this);
+         PiglinAi.updateActivity(this);
+         super.customServerAiStep(level);
 diff --git a/net/minecraft/world/entity/npc/Villager.java b/net/minecraft/world/entity/npc/Villager.java
 index 347affae3cc18e01474734d2da2699c9b7b17e26..5dbf28c15f828505d42dc31c1a2185e01a7542c1 100644
 --- a/net/minecraft/world/entity/npc/Villager.java

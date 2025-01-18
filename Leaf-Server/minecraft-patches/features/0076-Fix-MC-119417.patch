@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Sun, 7 Jul 2024 01:42:45 +0800
+Subject: [PATCH] Fix-MC-119417
+
+Related MC issue: https://bugs.mojang.com/browse/MC-119417
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 09c9ca038f359372bda3a3d8b743d497a530ce97..ef20741ab2a7feaa8a86759ee0ae6283e4d4651c 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -2260,6 +2260,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+             this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.CHANGE_GAME_MODE, gameMode.getId()));
+             if (gameMode == GameType.SPECTATOR) {
+                 this.removeEntitiesOnShoulder();
++                this.stopSleeping(); // Leaf - Fix MC-119417
+                 this.stopRiding();
+                 EnchantmentHelper.stopLocationBasedEffects(this);
+             } else {

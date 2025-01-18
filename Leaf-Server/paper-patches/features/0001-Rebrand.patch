@@ -124,22 +124,6 @@ index 0b5979723bb30f9011ac64c36d894aa41713ec9b..e220f5601f6b92b7b280ce8ebe64117d
          Properties properties = new Properties();
  
          if (stream != null) {
-diff --git a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java.rej b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java.rej
-new file mode 100644
-index 0000000000000000000000000000000000000000..0d8c2c5d1c88f635a1f0b6a9fc311d9921a0a3d7
---- /dev/null
-+++ b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java.rej
-@@ -0,0 +1,10 @@
-+diff a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java	(rejected hunks)
-+@@ -11,7 +11,7 @@ public final class Versioning {
-+     public static String getBukkitVersion() {
-+         String result = "Unknown-Version";
-+ 
-+-        InputStream stream = Bukkit.class.getClassLoader().getResourceAsStream("META-INF/maven/org.galemc.gale/gale-api/pom.properties"); // Gale - branding changes
-++        InputStream stream = Bukkit.class.getClassLoader().getResourceAsStream("META-INF/maven/cn.dreeam.leaf/leaf-api/pom.properties"); // Gale - branding changes // Leaf
-+         Properties properties = new Properties();
-+ 
-+         if (stream != null) {
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
 index 64e3c7bd0a1ff93dd87e688f9e49e213c8f6670e..6bc6a318286cd6a1d5464a9b139fb9b8ca4a219e 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java

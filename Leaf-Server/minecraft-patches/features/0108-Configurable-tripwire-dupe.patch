@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Tue, 24 Dec 2024 13:28:56 -0500
+Subject: [PATCH] Configurable tripwire dupe
+
+Bring back MC-59471, MC-129055 on 1.21.2+, which fixed in 1.21.2 snapshots 24w33a and 24w36a
+
+diff --git a/net/minecraft/world/level/block/TripWireHookBlock.java b/net/minecraft/world/level/block/TripWireHookBlock.java
+index 6a7e5a642e2eaf7d5dffadb81738f7385a38c0af..fa7e2c5406bb4bb755fb6e215dda5fe704b6bdf4 100644
+--- a/net/minecraft/world/level/block/TripWireHookBlock.java
++++ b/net/minecraft/world/level/block/TripWireHookBlock.java
+@@ -215,7 +215,7 @@ public class TripWireHookBlock extends Block {
+                     BlockState blockState2 = blockStates[i2];
+                     if (blockState2 != null) {
+                         BlockState blockState3 = level.getBlockState(blockPos1);
+-                        if (blockState3.is(Blocks.TRIPWIRE) || blockState3.is(Blocks.TRIPWIRE_HOOK)) {
++                        if (org.dreeam.leaf.config.modules.gameplay.ConfigurableTripWireDupe.enabled || blockState3.is(Blocks.TRIPWIRE) || blockState3.is(Blocks.TRIPWIRE_HOOK)) { // Leaf - Configurable tripwire dupe
+                             level.setBlock(blockPos1, blockState2.trySetValue(ATTACHED, Boolean.valueOf(flag2)), 3);
+                         }
+                     }

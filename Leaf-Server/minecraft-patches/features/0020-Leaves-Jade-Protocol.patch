@@ -22,10 +22,10 @@ index a24ed1747fb8836927ac41b822dc666862701516..d840577023d42dc986e2b811382dfc43
  
      public Armadillo(EntityType<? extends Animal> entityType, Level level) {
 diff --git a/net/minecraft/world/entity/animal/frog/Tadpole.java b/net/minecraft/world/entity/animal/frog/Tadpole.java
-index 0ca35514a920dddf230d749bc1a5fe15f1c7940a..669f7d6e5f481fb209e800c8e4acc52cf0c6dfce 100644
+index 8468f7095e1db7a54042ce9a97d991d3105bd535..fd1aa79d1d1ec05853762df0c99099af3b790c63 100644
 --- a/net/minecraft/world/entity/animal/frog/Tadpole.java
 +++ b/net/minecraft/world/entity/animal/frog/Tadpole.java
-@@ -286,7 +286,7 @@ public class Tadpole extends AbstractFish {
+@@ -285,7 +285,7 @@ public class Tadpole extends AbstractFish {
          }
      }
  
@@ -35,7 +35,7 @@ index 0ca35514a920dddf230d749bc1a5fe15f1c7940a..669f7d6e5f481fb209e800c8e4acc52c
      }
  
 diff --git a/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java b/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
-index 3e3c72a4a52e72c15e0d3288f805d7887dcac351..38cd62d1a3c17913fdadf02e3c3871dac7619f82 100644
+index 4977262e78fe320d72158479c267842837344b67..4190940922af3a00845e6c656873ef8bca409f2c 100644
 --- a/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
 +++ b/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
 @@ -67,7 +67,7 @@ public class TrialSpawnerData {

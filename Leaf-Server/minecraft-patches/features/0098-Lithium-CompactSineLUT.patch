@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Thu, 7 Nov 2024 23:51:51 +0100
+Subject: [PATCH] Lithium: CompactSineLUT
+
+This patch is based on the following mixin:
+"net/caffeinemc/mods/lithium/mixin/math/sine_lut/MthMixin.java"
+By: 2No2Name <2No2Name@web.de>
+As part of: Lithium (https://github.com/CaffeineMC/lithium-fabric)
+Licensed under: LGPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
+
+diff --git a/net/minecraft/util/Mth.java b/net/minecraft/util/Mth.java
+index 85c329437f27fc2fc143d2873572f8d3cf30660d..1ebac20359345630ad56a2578b4b1686617300d2 100644
+--- a/net/minecraft/util/Mth.java
++++ b/net/minecraft/util/Mth.java
+@@ -29,7 +29,7 @@ public class Mth {
+     public static final Vector3f Y_AXIS = new Vector3f(0.0F, 1.0F, 0.0F);
+     public static final Vector3f X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
+     public static final Vector3f Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
+-    private static final float[] SIN = Util.make(new float[65536], floats -> {
++    public static final float[] SIN = Util.make(new float[65536], floats -> { // Leaf - Lithium - private -> public
+         for (int i1 = 0; i1 < floats.length; i1++) {
+             floats[i1] = (float)Math.sin(i1 * Math.PI * 2.0 / 65536.0);
+         }
+@@ -46,11 +46,11 @@ public class Mth {
+     private static final double[] COS_TAB = new double[257];
+ 
+     public static float sin(float value) {
+-        return SIN[(int)(value * 10430.378F) & 65535];
++        return org.dreeam.leaf.util.math.CompactSineLUT.sin(value); // Leaf - Lithium - CompactSineLUT
+     }
+ 
+     public static float cos(float value) {
+-        return SIN[(int)(value * 10430.378F + 16384.0F) & 65535];
++        return org.dreeam.leaf.util.math.CompactSineLUT.cos(value); // Leaf - Lithium - CompactSineLUT
+     }
+ 
+     public static float sqrt(float value) {

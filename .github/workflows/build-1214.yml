@@ -24,7 +24,7 @@ jobs:
         run: git config --global user.email "no-reply@github.com" && git config --global user.name "Github Actions"
 
       - name: Apply patches
-        run: ./gradlew -Dorg.gradle.jvmargs="-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector" applyPatches --stacktrace --no-daemon
+        run: ./gradlew -Dorg.gradle.jvmargs="-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector" applyAllPatches --stacktrace --no-daemon
       - name: Create MojmapPaperclipJar
         run: ./gradlew -Dorg.gradle.jvmargs="-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector" createMojmapPaperclipJar --stacktrace --no-daemon
       - name: Create ReobfPaperclipJar

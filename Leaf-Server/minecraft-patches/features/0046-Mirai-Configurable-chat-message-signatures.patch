@@ -89,43 +89,6 @@ index 30bd254542d631676494f349ff3f44f52d54ab2f..63e6411d8bac1629e143cc620fe35dba
      );
  
      public record Favicon(byte[] iconBytes) {
-diff --git a/net/minecraft/network/protocol/status/ServerStatus.java.rej b/net/minecraft/network/protocol/status/ServerStatus.java.rej
-new file mode 100644
-index 0000000000000000000000000000000000000000..04a6f2fe6563665d8432789e3cbb3278a9408669
---- /dev/null
-+++ b/net/minecraft/network/protocol/status/ServerStatus.java.rej
-@@ -0,0 +1,31 @@
-+diff a/net/minecraft/network/protocol/status/ServerStatus.java b/net/minecraft/network/protocol/status/ServerStatus.java	(rejected hunks)
-+@@ -22,8 +22,11 @@ public record ServerStatus(
-+     Optional<ServerStatus.Favicon> favicon,
-+     boolean enforcesSecureChat
-+ ) {
-++    // Leaf start - Mirai - Configurable chat message signatures
-+     public static final Codec<ServerStatus> CODEC = RecordCodecBuilder.create(
-+-        instance -> instance.group(
-++        instance ->
-++                org.dreeam.leaf.config.modules.network.ChatMessageSignature.enabled
-++                ? instance.group(
-+                     ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
-+                     ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players),
-+                     ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version),
-+@@ -31,7 +34,16 @@ public record ServerStatus(
-+                     Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", Boolean.valueOf(false)).forGetter(ServerStatus::enforcesSecureChat)
-+                 )
-+                 .apply(instance, ServerStatus::new)
-++                : instance.group(
-++                    ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
-++                    ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players),
-++                    ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version),
-++                    ServerStatus.Favicon.CODEC.lenientOptionalFieldOf("favicon").forGetter(ServerStatus::favicon),
-++                    Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", Boolean.FALSE).forGetter(x -> true)
-++                )
-++                .apply(instance, ServerStatus::new)
-+     );
-++    // Leaf end- Mirai - Configurable chat message signatures
-+ 
-+     public static record Favicon(byte[] iconBytes) {
-+         private static final String PREFIX = "data:image/png;base64,";
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
 index 22b0f33dc3ef9f51ba2ca3cb665b07a16bd1c9d9..7b1e5addd6a1b815498233ba9032f224494af12a 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
@@ -173,7 +136,7 @@ index ee8cdd532b73180cb484fcc37c36f09c40faacda..eb388c1c94bc6feda6c8757b1800d158
          if (packet == null || this.processedDisconnect) { // Spigot
              return;
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index e4c3819de8af08f36cd30fafb6ce859005c5cb43..b98e854fb9fad65b176b4915214a0a4c5e424d6c 100644
+index 7d7343d4e2c206daf77a61050f2f4c229dd042cd..6855076ef73bbfd23e75ba4ae8eaa0ea598c9d4e 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -1509,7 +1509,7 @@ public abstract class PlayerList {

@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
+import ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
 
-public interface IRegionFile extends AutoCloseable {
+public interface IRegionFile extends AutoCloseable, ChunkSystemRegionFile {
     Path getPath();
     void flush() throws IOException;
     void clear(ChunkPos pos) throws IOException;

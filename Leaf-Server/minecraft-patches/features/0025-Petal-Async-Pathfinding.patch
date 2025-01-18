@@ -580,10 +580,10 @@ index 57c50ce5724b073b1aedf4df3129285143097303..91635b344ac02b66e51aa5620acf9ca4
          }
      }
 diff --git a/net/minecraft/world/entity/animal/frog/Frog.java b/net/minecraft/world/entity/animal/frog/Frog.java
-index 4ecc6b6247a6ab14a5d46f9a05d5df8412ae2a5f..2c28e97e76155fe4de309422f4913c1269972ff4 100644
+index a962b06ac3fc15604b7fbf5e2109f1cc8d238ac7..035e7eac88ded12f9ca8f7e2a4d99c4156eb311f 100644
 --- a/net/minecraft/world/entity/animal/frog/Frog.java
 +++ b/net/minecraft/world/entity/animal/frog/Frog.java
-@@ -479,9 +479,25 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
+@@ -478,9 +478,25 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
              return pathType != PathType.WATER_BORDER && super.canCutCorner(pathType);
          }
  

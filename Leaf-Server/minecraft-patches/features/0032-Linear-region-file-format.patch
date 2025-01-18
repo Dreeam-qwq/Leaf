@@ -181,7 +181,7 @@ index 231d1905092532acf7e632197ba0e727adc4b1d7..dac802a8c70ff8ab96c000a48e1c5e10
          try (DataInputStream out = new DataInputStream(new java.io.BufferedInputStream(new java.util.zip.InflaterInputStream(Files.newInputStream(file))))) {
              return net.minecraft.nbt.NbtIo.read((java.io.DataInput) out);
 diff --git a/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index 7fff86a4956f59b2f4a9f7e283256879c034c1b8..58d9840d2557fbb9b357bf4e3d5ad19ef40d73c9 100644
+index 7fff86a4956f59b2f4a9f7e283256879c034c1b8..329ac5cc12ba3e247ea4f513a347c9daad91a6e0 100644
 --- a/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 @@ -18,7 +18,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
@@ -242,7 +242,7 @@ index 7fff86a4956f59b2f4a9f7e283256879c034c1b8..58d9840d2557fbb9b357bf4e3d5ad19e
  
          this.regionCache.putAndMoveToFirst(key, ret);
  
-@@ -144,7 +148,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -144,11 +148,11 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
          }
  
          final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
@@ -251,6 +251,11 @@ index 7fff86a4956f59b2f4a9f7e283256879c034c1b8..58d9840d2557fbb9b357bf4e3d5ad19e
  
          // note: not required to keep regionfile loaded after this call, as the write param takes a regionfile as input
          // (and, the regionfile parameter is unused for writing until the write call)
+-        final ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData writeData = ((ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile)regionFile).moonrise$startWrite(compound, pos);
++        final ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData writeData = regionFile.moonrise$startWrite(compound, pos); // LinearPaper
+ 
+         try { // Paper - implement RegionFileSizeException
+         try {
 @@ -178,7 +182,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
      ) throws IOException {
          final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
