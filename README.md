@@ -9,8 +9,7 @@
 </div>
 
 > [!WARNING]  
-> Leaf is an **EXPERIMENTAL** fork of [Paper](https://papermc.io/) there MAY BE issues depending on server to server, test and backup servers before switching to it
-
+> Leaf is an **EXPERIMENTAL** fork of [Paper](https://papermc.io/) there MAY BE issues depending on server to server, test and backup servers before switching to it.
 > LIGHTNINGLEAF has no relationship with Leaf / Winds Studio / Any other developers in Winds Studio or Leaf project
 
 ## 🍃 Features
