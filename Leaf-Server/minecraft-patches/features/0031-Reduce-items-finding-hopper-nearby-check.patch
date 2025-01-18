@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Mon, 15 Jan 2024 10:53:10 -0500
+Subject: [PATCH] Reduce items finding hopper nearby check
+
+This patch add a toggle for items checking MinecraftHopper nearby,
+
+But still recommend to turn-off `checkForMinecartNearItemWhileActive`
+Since `Reduce-hopper-item-checks.patch` will cause lag under massive dropped items
+
+diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
+index 0e21c644d62597cf3425c8717ab1e70c766e22f2..6287f5d84f961968b82d350c3d15b587e8d19236 100644
+--- a/net/minecraft/world/entity/item/ItemEntity.java
++++ b/net/minecraft/world/entity/item/ItemEntity.java
+@@ -241,7 +241,9 @@ public class ItemEntity extends Entity implements TraceableEntity {
+                 this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
+                 return; // Gale - EMC - reduce hopper item checks
+             }
+-            this.markNearbyHopperCartsAsImmune(); // Gale - EMC - reduce hopper item checks
++            if (level().galeConfig().smallOptimizations.reducedIntervals.checkNearbyItem.hopper.minecart.temporaryImmunity.checkForMinecartNearItemWhileActive) { // Leaf - Reduce items finding hopper nearby check
++                this.markNearbyHopperCartsAsImmune(); // Gale - EMC - reduce hopper item checks
++            }
+         }
+     }
+ 

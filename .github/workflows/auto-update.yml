@@ -45,23 +45,23 @@ jobs:
       - name: Grant execute permission for gradlew
         run: |
           cd Leaf
-          git config --global user.name "Dreeam"
+          git config --global user.name "Dreeam-qwq"
           git config --global user.email 61569423+Dreeam-qwq@users.noreply.github.com
           chmod +x gradlew
 
       - uses: actions/setup-java@main
         with:
           distribution: 'zulu'
-          java-version:  21
+          java-version:  '21'
 
       - name: Running tests before push
         run: |
           cd Leaf
           if ! git diff --quiet; then
             echo "Running tests...."
-            ./gradlew applyPatches
-            ./gradlew createMojmapPaperclipJar
-            ./gradlew rebuildPatches
+            ./gradlew applyAllPatches
+            ./gradlew build
+            ./gradlew rebuildAllServerPatches
           fi
 
       - name: Check for changes and write to repository

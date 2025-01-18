@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 8 Nov 2024 00:14:03 +0100
+Subject: [PATCH] Lithium: HashedList
+
+This patch is based on the following mixins:
+* "me/jellysquid/mods/lithium/mixin/world/block_entity_ticking/collections/WorldMixin.java" (1.16.x/dev branch)
+* "net/caffeinemc/mods/lithium/common/util/collections/HashedReferenceList.java"
+By: 2No2Name <2No2Name@web.de>
+As part of: Lithium (https://github.com/CaffeineMC/lithium-fabric)
+Licensed under: LGPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
+
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index 859708f1ab4b9f1bd318ca08c73cb67b1c3fe010..c1a3dbefc8d0ef0c36b8cc40a4cfd3c1015d8509 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -116,9 +116,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+     public static final int TICKS_PER_DAY = 24000;
+     public static final int MAX_ENTITY_SPAWN_Y = 20000000;
+     public static final int MIN_ENTITY_SPAWN_Y = -20000000;
+-    public final List<TickingBlockEntity> blockEntityTickers = Lists.newArrayList(); // Paper - public
++    public final List<TickingBlockEntity> blockEntityTickers = new org.dreeam.leaf.util.HashedReferenceList<>(Lists.newArrayList()); // Paper - public // Leaf - Lithium - hashed list
+     protected final NeighborUpdater neighborUpdater;
+-    private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
++    private final List<TickingBlockEntity> pendingBlockEntityTickers = new org.dreeam.leaf.util.HashedReferenceList<>(Lists.newArrayList()); // Leaf - Lithium - hashed list
+     private boolean tickingBlockEntities;
+     public final Thread thread;
+     private final boolean isDebug;

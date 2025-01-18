@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Mon, 24 Jun 2024 10:49:04 +0800
+Subject: [PATCH] Do not place player if the server is full
+
+Fix https://github.com/PaperMC/Paper/issues/10668
+
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 5fe6a295f5b5285a20c535a026e1342f89896fd7..8233b250a8d0e9f26302f6756931d2edfe017504 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -340,6 +340,13 @@ public abstract class PlayerList {
+             return;
+         }
+         // Gale end - MultiPaper - do not place player in world if kicked before being spawned in
++        // Leaf start - Do not place player if the server is full - copied from canPlayerLogin
++        if (org.dreeam.leaf.config.modules.fixes.DontPlacePlayerIfFull.enabled && this.realPlayers.size() >= this.maxPlayers && !(player.getBukkitEntity().hasPermission("purpur.joinfullserver") || this.canBypassPlayerLimit(gameProfile))) { // Purpur - Allow player join full server by permission // Leaves - only real player
++            connection.disconnect(io.papermc.paper.adventure.PaperAdventure.asVanilla(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(org.spigotmc.SpigotConfig.serverFullMessage)));
++            //playerconnection.disconnect(io.papermc.paper.adventure.PaperAdventure.asVanilla(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(org.spigotmc.SpigotConfig.serverFullMessage)), org.bukkit.event.player.PlayerKickEvent.Cause.TIMEOUT);
++            return;
++        }
++        // Leaf end - Do not place player if the server is full - copied from canPlayerLogin
+ 
+         org.bukkit.Location loc = ev.getSpawnLocation();
+         serverLevel = ((org.bukkit.craftbukkit.CraftWorld) loc.getWorld()).getHandle();
+@@ -834,7 +841,7 @@ public abstract class PlayerList {
+             // return this.players.size() >= this.maxPlayers && !this.canBypassPlayerLimit(gameProfile)
+             //     ? Component.translatable("multiplayer.disconnect.server_full")
+             //     : null;
+-            if (this.realPlayers.size() >= this.maxPlayers && !(player.hasPermission("purpur.joinfullserver") || this.canBypassPlayerLimit(gameProfile))) { // Purpur - Allow player join full server by permission // Leaves - only real player
++            if (this.realPlayers.size() >= this.maxPlayers && !(player.hasPermission("purpur.joinfullserver") || this.canBypassPlayerLimit(gameProfile))) { // Purpur - Allow player join full server by permission // Leaves - only real player // Leaf - Do not place player if the server is full - diff on change
+                 event.disallow(org.bukkit.event.player.PlayerLoginEvent.Result.KICK_FULL, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(org.spigotmc.SpigotConfig.serverFullMessage)); // Spigot // Paper - Adventure
+             }
+         }

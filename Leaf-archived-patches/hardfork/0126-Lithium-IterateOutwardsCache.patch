@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 8 Nov 2024 00:06:34 +0100
+Subject: [PATCH] Lithium: IterateOutwardsCache
+
+By: 2No2Name <2No2Name@web.de>
+As part of: Lithium (https://github.com/CaffeineMC/lithium-fabric)
+Licensed under: LGPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
+
+diff --git a/net/minecraft/core/BlockPos.java b/net/minecraft/core/BlockPos.java
+index 21ea63da99c5b3e2e1ab9cc1049c903bba6cf288..350a5d47cca11c0e49437a4b05029ba5c29b7ee5 100644
+--- a/net/minecraft/core/BlockPos.java
++++ b/net/minecraft/core/BlockPos.java
+@@ -344,7 +344,19 @@ public class BlockPos extends Vec3i {
+             };
+     }
+ 
++    // JettPack start - lithium: cached iterate outwards
++    private static final org.dreeam.leaf.util.cache.IterateOutwardsCache ITERATE_OUTWARDS_CACHE = new org.dreeam.leaf.util.cache.IterateOutwardsCache(50);
++    private static final it.unimi.dsi.fastutil.longs.LongList HOGLIN_PIGLIN_CACHE = ITERATE_OUTWARDS_CACHE.getOrCompute(8, 4, 8);
++    // JettPack end
++
++
+     public static Iterable<BlockPos> withinManhattan(BlockPos center, int rangeX, int rangeY, int rangeZ) {
++        // JettPack start - lithium: cached iterate outwards
++        if (center != org.dreeam.leaf.util.cache.IterateOutwardsCache.POS_ZERO) {
++            final it.unimi.dsi.fastutil.longs.LongList positions = rangeX == 8 && rangeY == 4 && rangeZ == 8 ? HOGLIN_PIGLIN_CACHE : ITERATE_OUTWARDS_CACHE.getOrCompute(rangeX, rangeY, rangeZ);
++            return new org.dreeam.leaf.util.cache.LongList2BlockPosMutableIterable(center, positions);
++        }
++        // JettPack end
+         int i = rangeX + rangeY + rangeZ;
+         // Paper start - rename variables to fix conflict with anonymous class (remap fix)
+         int centerX = center.getX();

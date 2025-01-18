@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Sat, 2 Nov 2024 04:15:20 -0400
+Subject: [PATCH] Cache chunk key
+
+Cache convert process between ChunkPos < - > chunkKey
+This patch didn't cahce SectionPos or BlockPos to chunkKey, since it needs to consider the mutable blockpos siutation.
+
+TODO: Cache block pos and section pos, whether need?
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java b/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java
+index 036c1a287db04c0191e5f84b027ea68d31447cbc..753c3e99e2f677ee1704b206a3196eb05c83f4ea 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java
++++ b/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java
+@@ -20,15 +20,15 @@ public final class CoordinateUtils {
+     }
+ 
+     public static long getChunkKey(final ChunkPos pos) {
+-        return ((long)pos.z << 32) | (pos.x & 0xFFFFFFFFL);
++        return ((long)pos.z << 32) | (pos.x & 0xFFFFFFFFL); // Leaf - Cache chunk key
+     }
+ 
+     public static long getChunkKey(final SectionPos pos) {
+-        return ((long)pos.getZ() << 32) | (pos.getX() & 0xFFFFFFFFL);
++        return ((long)pos.getZ() << 32) | (pos.getX() & 0xFFFFFFFFL); // Leaf - Cache chunk key
+     }
+ 
+     public static long getChunkKey(final int x, final int z) {
+-        return ((long)z << 32) | (x & 0xFFFFFFFFL);
++        return ((long)z << 32) | (x & 0xFFFFFFFFL); // Leaf - Cache chunk key
+     }
+ 
+     public static int getChunkX(final long chunkKey) {

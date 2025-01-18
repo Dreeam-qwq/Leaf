@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: nostalgic853 <yuu8583@proton.me>
+Date: Sun, 23 Oct 2022 23:21:45 +0800
+Subject: [PATCH] KeYi: Add an option for spigot item merging mechanism
+
+Original license: MIT
+Original project: https://github.com/KeYiMC/KeYi
+
+diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
+index 88f55f9ea0a98a07ba8277b4b43f6957e6f16283..0e21c644d62597cf3425c8717ab1e70c766e22f2 100644
+--- a/net/minecraft/world/entity/item/ItemEntity.java
++++ b/net/minecraft/world/entity/item/ItemEntity.java
+@@ -313,7 +313,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
+         ItemStack item = this.getItem();
+         ItemStack item1 = itemEntity.getItem();
+         if (Objects.equals(this.target, itemEntity.target) && areMergable(item, item1)) {
+-            if (true || item1.getCount() < item.getCount()) { // Spigot
++            if (org.dreeam.leaf.config.modules.gameplay.UseSpigotItemMergingMech.enabled || item1.getCount() < item.getCount()) { // Spigot // Leaf - KeYi - Configurable spigot item merging mechanism
+                 merge(this, item, itemEntity, item1);
+             } else {
+                 merge(itemEntity, item1, this, item);

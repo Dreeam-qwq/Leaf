@@ -22,7 +22,10 @@ build-data
 patches/todo
 run
 
-Leaf-API
-Leaf-MojangAPI
-Leaf-Server
-paper-api-generator
+leaf-api/build.gradle.kts
+leaf-server/build.gradle.kts
+leaf-server/src/minecraft
+gale-api
+gale-server
+paper-api
+paper-server

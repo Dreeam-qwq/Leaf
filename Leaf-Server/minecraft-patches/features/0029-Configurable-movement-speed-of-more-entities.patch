@@ -1,0 +1,168 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Sun, 17 Dec 2023 19:34:46 -0500
+Subject: [PATCH] Configurable movement speed of more entities
+
+
+diff --git a/net/minecraft/world/entity/monster/Drowned.java b/net/minecraft/world/entity/monster/Drowned.java
+index f5e6673ff2bd3029585b9ffea10df5d549f1cdd6..6b328ea277bb3adcb674b05845f82f7427237555 100644
+--- a/net/minecraft/world/entity/monster/Drowned.java
++++ b/net/minecraft/world/entity/monster/Drowned.java
+@@ -97,6 +97,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
+     public void initAttributes() {
+         this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(this.level().purpurConfig.drownedMaxHealth);
+         this.getAttribute(Attributes.SCALE).setBaseValue(this.level().purpurConfig.drownedScale);
++        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(this.level().purpurConfig.drownedMovementSpeed); // Leaf - Configurable drowned movement speed
+     }
+ 
+     @Override
+diff --git a/net/minecraft/world/entity/monster/Husk.java b/net/minecraft/world/entity/monster/Husk.java
+index a5bfc6f5caba1da8cfcb345524e05e8676672cb0..a500584a3736d289bca2f7a76fec2d1567065229 100644
+--- a/net/minecraft/world/entity/monster/Husk.java
++++ b/net/minecraft/world/entity/monster/Husk.java
+@@ -43,6 +43,7 @@ public class Husk extends Zombie {
+     @Override
+     public void initAttributes() {
+         this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(this.level().purpurConfig.huskMaxHealth);
++        this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(this.level().purpurConfig.huskMovementSpeed); // Leaf - Configurable husk movement speed
+     }
+ 
+     @Override
+diff --git a/net/minecraft/world/entity/monster/Zombie.java b/net/minecraft/world/entity/monster/Zombie.java
+index 7af71c777dca26cd94b1807a2a77ea0d30e92976..cab69c308a0524137636fd50dc7a0dd0d2a4a2c3 100644
+--- a/net/minecraft/world/entity/monster/Zombie.java
++++ b/net/minecraft/world/entity/monster/Zombie.java
+@@ -123,6 +123,7 @@ public class Zombie extends Monster {
+     public void initAttributes() {
+         this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(this.level().purpurConfig.zombieMaxHealth);
+         this.getAttribute(Attributes.SCALE).setBaseValue(this.level().purpurConfig.zombieScale);
++        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(this.level().purpurConfig.zombieMovementSpeed); // Leaf - Configurable zombie movement speed
+     }
+     // Purpur end - Configurable entity base attributes
+ 
+@@ -190,7 +191,7 @@ public class Zombie extends Monster {
+     public static AttributeSupplier.Builder createAttributes() {
+         return Monster.createMonsterAttributes()
+             .add(Attributes.FOLLOW_RANGE, 35.0)
+-            .add(Attributes.MOVEMENT_SPEED, 0.23F)
++            //.add(Attributes.MOVEMENT_SPEED, 0.23F) // Leaf - Configurable zombie movement speed
+             .add(Attributes.ATTACK_DAMAGE, 3.0)
+             .add(Attributes.ARMOR, 2.0)
+             .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+diff --git a/net/minecraft/world/entity/monster/ZombieVillager.java b/net/minecraft/world/entity/monster/ZombieVillager.java
+index 1ca0514732916d325c4a76d73120aaf613c3f780..750f63e337661b5448d0d863ab4dc99398fd5655 100644
+--- a/net/minecraft/world/entity/monster/ZombieVillager.java
++++ b/net/minecraft/world/entity/monster/ZombieVillager.java
+@@ -99,6 +99,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
+     @Override
+     public void initAttributes() {
+         this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(this.level().purpurConfig.zombieVillagerMaxHealth);
++        this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(this.level().purpurConfig.zombieVillagerMovementSpeed); // Leaf - Configurable zombieVillager movement speed
+     }
+ 
+     @Override
+diff --git a/net/minecraft/world/entity/monster/ZombifiedPiglin.java b/net/minecraft/world/entity/monster/ZombifiedPiglin.java
+index fddbbffafea275dad187b7908386cf4c05c86743..10eac072872b9e61c25d368d19e86b18bc3d19e7 100644
+--- a/net/minecraft/world/entity/monster/ZombifiedPiglin.java
++++ b/net/minecraft/world/entity/monster/ZombifiedPiglin.java
+@@ -85,6 +85,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
+     public void initAttributes() {
+         this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(this.level().purpurConfig.zombifiedPiglinMaxHealth);
+         this.getAttribute(Attributes.SCALE).setBaseValue(this.level().purpurConfig.zombifiedPiglinScale);
++        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(this.level().purpurConfig.zombifiedPiglinMovementSpeed); // Leaf - Configurable zombifiedPiglin movement speed
+     }
+     // Purpur end - Configurable entity base attributes
+ 
+@@ -136,7 +137,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
+     public static AttributeSupplier.Builder createAttributes() {
+         return Zombie.createAttributes()
+             .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0)
+-            .add(Attributes.MOVEMENT_SPEED, 0.23F)
++            //.add(Attributes.MOVEMENT_SPEED, 0.23F) // Leaf - Configurable zombie movement speed
+             .add(Attributes.ATTACK_DAMAGE, 5.0);
+     }
+ 
+diff --git a/org/purpurmc/purpur/PurpurWorldConfig.java b/org/purpurmc/purpur/PurpurWorldConfig.java
+index 2aac26f50958d8653eb1472daa7761d36093cf4c..fd5a5b9cb9958e96ecfeb4846e290c756265b300 100644
+--- a/org/purpurmc/purpur/PurpurWorldConfig.java
++++ b/org/purpurmc/purpur/PurpurWorldConfig.java
+@@ -1563,6 +1563,7 @@ public class PurpurWorldConfig {
+     public boolean drownedTakeDamageFromWater = false;
+     public boolean drownedBreakDoors = false;
+     public boolean drownedAlwaysDropExp = false;
++    public double drownedMovementSpeed = 0.23F; // Leaf - Configurable drowned movement speed
+     private void drownedSettings() {
+         drownedRidable = getBoolean("mobs.drowned.ridable", drownedRidable);
+         drownedRidableInWater = getBoolean("mobs.drowned.ridable-in-water", drownedRidableInWater);
+@@ -1581,6 +1582,7 @@ public class PurpurWorldConfig {
+         drownedTakeDamageFromWater = getBoolean("mobs.drowned.takes-damage-from-water", drownedTakeDamageFromWater);
+         drownedBreakDoors = getBoolean("mobs.drowned.can-break-doors", drownedBreakDoors);
+         drownedAlwaysDropExp = getBoolean("mobs.drowned.always-drop-exp", drownedAlwaysDropExp);
++        drownedMovementSpeed = getDouble("mobs.drowned.movement-speed", drownedMovementSpeed); // Leaf - Configurable drowned movement speed
+     }
+ 
+     public boolean elderGuardianRidable = false;
+@@ -1955,6 +1957,7 @@ public class PurpurWorldConfig {
+     public boolean huskJockeyTryExistingChickens = true;
+     public boolean huskTakeDamageFromWater = false;
+     public boolean huskAlwaysDropExp = false;
++    public double huskMovementSpeed = 0.23F; // Leaf - Configurable husk movement speed
+     private void huskSettings() {
+         huskRidable = getBoolean("mobs.husk.ridable", huskRidable);
+         huskRidableInWater = getBoolean("mobs.husk.ridable-in-water", huskRidableInWater);
+@@ -1972,6 +1975,7 @@ public class PurpurWorldConfig {
+         huskJockeyTryExistingChickens = getBoolean("mobs.husk.jockey.try-existing-chickens", huskJockeyTryExistingChickens);
+         huskTakeDamageFromWater = getBoolean("mobs.husk.takes-damage-from-water", huskTakeDamageFromWater);
+         huskAlwaysDropExp = getBoolean("mobs.husk.always-drop-exp", huskAlwaysDropExp);
++        huskMovementSpeed = getDouble("mobs.husk.movement-speed", huskMovementSpeed); // Leaf - Configurable husk movement speed
+     }
+ 
+     public boolean illusionerRidable = false;
+@@ -3269,6 +3273,7 @@ public class PurpurWorldConfig {
+     public boolean zombieTakeDamageFromWater = false;
+     public boolean zombieAlwaysDropExp = false;
+     public double zombieHeadVisibilityPercent = 0.5D;
++    public double zombieMovementSpeed = 0.23F; // Leaf - Configurable zombie movement speed
+     private void zombieSettings() {
+         zombieRidable = getBoolean("mobs.zombie.ridable", zombieRidable);
+         zombieRidableInWater = getBoolean("mobs.zombie.ridable-in-water", zombieRidableInWater);
+@@ -3289,6 +3294,7 @@ public class PurpurWorldConfig {
+         zombieTakeDamageFromWater = getBoolean("mobs.zombie.takes-damage-from-water", zombieTakeDamageFromWater);
+         zombieAlwaysDropExp = getBoolean("mobs.zombie.always-drop-exp", zombieAlwaysDropExp);
+         zombieHeadVisibilityPercent = getDouble("mobs.zombie.head-visibility-percent", zombieHeadVisibilityPercent);
++        zombieMovementSpeed = getDouble("mobs.zombie.movement-speed", zombieMovementSpeed); // Leaf - Configurable zombie movement speed
+     }
+ 
+     public boolean zombieHorseRidable = false;
+@@ -3338,6 +3344,7 @@ public class PurpurWorldConfig {
+     public int zombieVillagerCuringTimeMax = 6000;
+     public boolean zombieVillagerCureEnabled = true;
+     public boolean zombieVillagerAlwaysDropExp = false;
++    public double zombieVillagerMovementSpeed = 0.23F; // Leaf - Configurable zombieVillager movement speed
+     private void zombieVillagerSettings() {
+         zombieVillagerRidable = getBoolean("mobs.zombie_villager.ridable", zombieVillagerRidable);
+         zombieVillagerRidableInWater = getBoolean("mobs.zombie_villager.ridable-in-water", zombieVillagerRidableInWater);
+@@ -3358,6 +3365,7 @@ public class PurpurWorldConfig {
+         zombieVillagerCuringTimeMax = getInt("mobs.zombie_villager.curing_time.max", zombieVillagerCuringTimeMax);
+         zombieVillagerCureEnabled = getBoolean("mobs.zombie_villager.cure.enabled", zombieVillagerCureEnabled);
+         zombieVillagerAlwaysDropExp = getBoolean("mobs.zombie_villager.always-drop-exp", zombieVillagerAlwaysDropExp);
++        zombieVillagerMovementSpeed = getDouble("mobs.zombie_villager.movement-speed", zombieVillagerMovementSpeed); // Leaf - Configurable zombieVillager movement speed
+     }
+ 
+     public boolean zombifiedPiglinRidable = false;
+@@ -3372,6 +3380,7 @@ public class PurpurWorldConfig {
+     public boolean zombifiedPiglinCountAsPlayerKillWhenAngry = true;
+     public boolean zombifiedPiglinTakeDamageFromWater = false;
+     public boolean zombifiedPiglinAlwaysDropExp = false;
++    public double zombifiedPiglinMovementSpeed = 0.23F; // Leaf - Configurable zombifiedPiglin movement speed
+     private void zombifiedPiglinSettings() {
+         zombifiedPiglinRidable = getBoolean("mobs.zombified_piglin.ridable", zombifiedPiglinRidable);
+         zombifiedPiglinRidableInWater = getBoolean("mobs.zombified_piglin.ridable-in-water", zombifiedPiglinRidableInWater);
+@@ -3390,6 +3399,7 @@ public class PurpurWorldConfig {
+         zombifiedPiglinCountAsPlayerKillWhenAngry = getBoolean("mobs.zombified_piglin.count-as-player-kill-when-angry", zombifiedPiglinCountAsPlayerKillWhenAngry);
+         zombifiedPiglinTakeDamageFromWater = getBoolean("mobs.zombified_piglin.takes-damage-from-water", zombifiedPiglinTakeDamageFromWater);
+         zombifiedPiglinAlwaysDropExp = getBoolean("mobs.zombified_piglin.always-drop-exp", zombifiedPiglinAlwaysDropExp);
++        zombifiedPiglinMovementSpeed = getDouble("mobs.zombified_piglin.movement-speed", zombifiedPiglinMovementSpeed); // Leaf - Configurable zombifiedPiglin movement speed
+     }
+ 
+     public float hungerStarvationDamage = 1.0F;

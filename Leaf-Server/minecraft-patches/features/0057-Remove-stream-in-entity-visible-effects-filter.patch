@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Tue, 17 Sep 2024 02:26:44 -0400
+Subject: [PATCH] Remove stream in entity visible effects filter
+
+
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index c041cba43b4687e2f2f057edfae448a42f6d8753..8b096a0f9f23a9b90ef88414e8749a514e3910cf 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -988,12 +988,15 @@ public abstract class LivingEntity extends Entity implements Attackable {
+     }
+ 
+     private void updateSynchronizedMobEffectParticles() {
+-        List<ParticleOptions> list = this.activeEffects
+-            .values()
+-            .stream()
+-            .filter(MobEffectInstance::isVisible)
+-            .map(MobEffectInstance::getParticleOptions)
+-            .toList();
++        // Leaf start - Remove stream in entity visible effects filter
++        List<ParticleOptions> list = new ArrayList<>();
++
++        for (MobEffectInstance effect : this.activeEffects.values()) {
++            if (effect.isVisible()) {
++                list.add(effect.getParticleOptions());
++            }
++        }
++        // Leaf end - Remove stream in entity visible effects filter
+         this.entityData.set(DATA_EFFECT_PARTICLES, list);
+         this.entityData.set(DATA_EFFECT_AMBIENCE_ID, areAllEffectsAmbient(this.activeEffects.values()));
+     }

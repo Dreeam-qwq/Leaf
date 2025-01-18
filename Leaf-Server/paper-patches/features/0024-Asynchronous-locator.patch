@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Wed, 23 Oct 2024 23:54:00 +0800
+Subject: [PATCH] Asynchronous locator
+
+Original license: MIT
+Original project: https://github.com/thebrightspark/AsyncLocator
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/common/util/TickThread.java b/src/main/java/ca/spottedleaf/moonrise/common/util/TickThread.java
+index 157e5edb507d6d2a922833c70a1c27abc93c9c34..152fc4347000bb14b3c3fbea3a2bef75efcfc784 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/common/util/TickThread.java
++++ b/src/main/java/ca/spottedleaf/moonrise/common/util/TickThread.java
+@@ -101,6 +101,12 @@ public class TickThread extends Thread {
+         this(null, run, name);
+     }
+ 
++    // Leaf start - Async locator
++    public TickThread(final Runnable run, final String name, final int id) {
++        this(null, run, name, id);
++    }
++    // Leaf end - Async locator
++
+     public TickThread(final ThreadGroup group, final Runnable run, final String name) {
+         this(group, run, name, ID_GENERATOR.incrementAndGet());
+     }
+diff --git a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
+index 361f4de9cdf0f7505628a2fed2a3f5366031e04b..befeb418c7d9021b9043b1f50b688b1870f7e591 100644
+--- a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
++++ b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
+@@ -48,6 +48,12 @@ class PaperEventManager {
+                 return;
+             }
+             // Leaf end - Multithreaded tracker
++            // Leaf start - Async locator
++            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled) {
++                net.minecraft.server.MinecraftServer.getServer().scheduleOnMain(event::callEvent);
++                return;
++            }
++            // Leaf end - Async locator
+             throw new IllegalStateException(event.getEventName() + " may only be triggered synchronously.");
+         }
+         // Leaves start - skip photographer

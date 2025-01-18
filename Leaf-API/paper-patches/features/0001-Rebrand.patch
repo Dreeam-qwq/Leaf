@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Tue, 21 May 2024 11:43:49 +0800
+Subject: [PATCH] Rebrand
+
+
+diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java/io/papermc/paper/ServerBuildInfo.java
+index b68770f6992b044d13e67d9affa6933c90ca8fb8..184ed5a41a138d14757f12acd4ec3113cb165b72 100644
+--- a/src/main/java/io/papermc/paper/ServerBuildInfo.java
++++ b/src/main/java/io/papermc/paper/ServerBuildInfo.java
+@@ -26,6 +26,17 @@ public interface ServerBuildInfo {
+     Key BRAND_GALE_ID = Key.key("galemc", "gale");
+     // Gale end - branding changes
+ 
++    // Leaf start
++    /**
++     * The brand id for Pufferfish.
++     */
++    Key BRAND_PUFFERFISH_ID = Key.key("pufferfish", "pufferfish");
++    /**
++     * The brand id for Leaf.
++     */
++    Key BRAND_LEAF_ID = Key.key("winds-studio", "leaf");
++    // Leaf end
++
+     /**
+      * Gets the {@code ServerBuildInfo}.
+      *
+diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+index e64bb57f74e6d6f78927be228825b3e0bdf41f48..5bccca7740dbec750960d96d4d951cff5da688da 100644
+--- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
++++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+@@ -215,7 +215,7 @@ public class VersionCommand extends BukkitCommand {
+         String version = Bukkit.getVersion();
+         // Paper start
+         if (version.startsWith("null")) { // running from ide?
+-            setVersionMessage(Component.text("Unknown version, custom build?", NamedTextColor.YELLOW));
++            setVersionMessage(Component.text("* Unknown version, custom build?", NamedTextColor.RED)); // Leaf - Purpur - Clean up version command output
+             return;
+         }
+         setVersionMessage(getVersionFetcher().getVersionMessage(version));

@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: nostalgic853 <yuu8583@proton.me>
+Date: Sun, 20 Nov 2022 00:20:00 +0800
+Subject: [PATCH] KeYi: Player Skull API
+
+Original license: MIT
+Original project: https://github.com/KeYiMC/KeYi
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 9fbbdc9664353fd2be8eae112e5cfe8880d51d08..b60982fa6e11c1f72e2c7021059ebbd04e064364 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -3640,4 +3640,31 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         this.getHandle().connection.send(new net.minecraft.network.protocol.game.ClientboundPlayerCombatKillPacket(getEntityId(), io.papermc.paper.adventure.PaperAdventure.asVanilla(message)));
+     }
+     // Purpur end - Death screen API
++
++    // Leaf start - KeYi - Player Skull API
++    @Override
++    public ItemStack getSkull() {
++        ItemStack skull = new ItemStack(Material.PLAYER_HEAD, 1);
++        org.bukkit.inventory.meta.SkullMeta meta = (org.bukkit.inventory.meta.SkullMeta) skull.getItemMeta();
++
++        meta.setOwningPlayer(this);
++        skull.setItemMeta(meta);
++
++        return skull;
++    }
++
++    @Override
++    @Deprecated(forRemoval = true)
++    public CompletableFuture<ItemStack> getSkullAsynchronously() {
++        org.apache.logging.log4j.LogManager.getLogger("Leaf")
++            .warn("You should not use this method: Player#getSkullAsynchronously(), cause low performance, " +
++                "and will be removed in the future.");
++        java.util.concurrent.ExecutorService executorService = java.util.concurrent.Executors.newCachedThreadPool();
++
++        CompletableFuture<ItemStack> future = (CompletableFuture<ItemStack>) executorService.submit(this::getSkull);
++        executorService.shutdown();
++
++        return future;
++    }
++    // Leaf end - KeYi - Player Skull API
+ }

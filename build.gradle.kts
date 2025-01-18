@@ -1,41 +1,39 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
-    java
     `maven-publish`
-    id("io.papermc.paperweight.patcher") version "1.7.8-SNAPSHOT"
+    id("io.papermc.paperweight.patcher") version "2.0.0-beta.14"
 }
 
 val paperMavenPublicUrl = "https://repo.papermc.io/repository/maven-public/"
 val leafMavenPublicUrl = "https://maven.nostal.ink/repository/maven-snapshots/"
 
-repositories {
-    mavenCentral()
-    maven(paperMavenPublicUrl) {
-        content { onlyForConfigurations(configurations.paperclip.name) }
-    }
-    maven(leafMavenPublicUrl) // Quantumleaper
-}
-
-dependencies {
-    remapper("net.fabricmc:tiny-remapper:0.10.4:fat")
-    decompiler("org.vineflower:vineflower:1.10.1")
-    paperclip("cn.dreeam:quantumleaper:1.0.0-SNAPSHOT")
-}
-
-allprojects {
-    apply(plugin = "java")
+subprojects {
+    apply(plugin = "java-library")
     apply(plugin = "maven-publish")
 
-    java {
+    extensions.configure<JavaPluginExtension> {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
+            languageVersion = JavaLanguageVersion.of(21)
         }
     }
-}
 
-subprojects {
+    repositories {
+        mavenCentral()
+        maven(paperMavenPublicUrl)
+        maven(leafMavenPublicUrl)
+        maven("https://ci.pluginwiki.us/plugin/repository/everything/") // Leaf Config - ConfigurationMaster-API
+    }
+
+    tasks.withType<AbstractArchiveTask>().configureEach {
+        isPreserveFileTimestamps = false
+        isReproducibleFileOrder = true
+    }
     tasks.withType<JavaCompile> {
         options.encoding = Charsets.UTF_8.name()
-        options.release.set(21)
+        options.release = 21
+        options.isFork = true
     }
     tasks.withType<Javadoc> {
         options.encoding = Charsets.UTF_8.name()
@@ -43,75 +41,51 @@ subprojects {
     tasks.withType<ProcessResources> {
         filteringCharset = Charsets.UTF_8.name()
     }
+    tasks.withType<Test> {
+        testLogging {
+            showStackTraces = true
+            exceptionFormat = TestExceptionFormat.FULL
+            events(TestLogEvent.STANDARD_OUT)
+        }
+    }
 
-    repositories {
-        mavenCentral()
-        maven(paperMavenPublicUrl)
-        maven("https://ci.pluginwiki.us/plugin/repository/everything/") // Leaf Config - ConfigurationMaster-API
+    extensions.configure<PublishingExtension> {
+        repositories {
+            maven(leafMavenPublicUrl) {
+                name = "leaf"
+
+                credentials.username = "dreeam"
+                credentials.password = "dreeam123"
+            }
+        }
     }
 }
 
 paperweight {
-    serverProject.set(project(":leaf-server"))
+    upstreams.register("gale") {
+        repo = github("Dreeam-qwq", "Gale")
+        ref = providers.gradleProperty("galeCommit")
 
-    remapRepo.set(paperMavenPublicUrl)
-    decompileRepo.set(paperMavenPublicUrl)
-
-    useStandardUpstream("Gale") {
-        url.set(github("Dreeam-qwq", "Gale"))
-        ref.set(providers.gradleProperty("galeCommit"))
-
-        withStandardPatcher {
-            apiSourceDirPath.set("gale-api")
-            serverSourceDirPath.set("gale-server")
-
-            apiPatchDir.set(layout.projectDirectory.dir("patches/api"))
-            apiOutputDir.set(layout.projectDirectory.dir("Leaf-API"))
-
-            serverPatchDir.set(layout.projectDirectory.dir("patches/server"))
-            serverOutputDir.set(layout.projectDirectory.dir("Leaf-Server"))
+        patchFile {
+            path = "gale-server/build.gradle.kts"
+            outputFile = file("leaf-server/build.gradle.kts")
+            patchFile = file("leaf-server/build.gradle.kts.patch")
         }
-
-        patchTasks.register("generatedApi") {
-            isBareDirectory = true
-            upstreamDirPath = "paper-api-generator/generated"
-            patchDir = layout.projectDirectory.dir("patches/generated-api")
-            outputDir = layout.projectDirectory.dir("paper-api-generator/generated")
+        patchFile {
+            path = "gale-api/build.gradle.kts"
+            outputFile = file("leaf-api/build.gradle.kts")
+            patchFile = file("leaf-api/build.gradle.kts.patch")
         }
-    }
-}
-
-tasks.generateDevelopmentBundle {
-    apiCoordinates = "cn.dreeam.leaf:leaf-api"
-    libraryRepositories.set(
-        listOf(
-            "https://repo.maven.apache.org/maven2/",
-            paperMavenPublicUrl,
-            leafMavenPublicUrl
-        )
-    )
-}
-
-publishing {
-    if (project.providers.gradleProperty("publishDevBundle").isPresent) {
-        publications.create<MavenPublication>("devBundle") {
-            artifact(tasks.generateDevelopmentBundle) {
-                artifactId = "dev-bundle"
-            }
+        patchRepo("paperApi") {
+            upstreamPath = "paper-api"
+            patchesDir = file("leaf-api/paper-patches")
+            outputDir = file("paper-api")
         }
-    }
-}
-
-allprojects {
-    publishing {
-        repositories {
-            maven {
-                name = "leaf"
-                url = uri(leafMavenPublicUrl)
-
-                credentials.username = System.getenv("REPO_USER")
-                credentials.password = System.getenv("REPO_PASSWORD")
-            }
+        patchDir("galeApi") {
+            upstreamPath = "gale-api"
+            excludes = listOf("build.gradle.kts", "build.gradle.kts.patch", "paper-patches")
+            patchesDir = file("leaf-api/gale-patches")
+            outputDir = file("gale-api")
         }
     }
 }

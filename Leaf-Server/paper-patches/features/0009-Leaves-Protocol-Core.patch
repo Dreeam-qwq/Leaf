@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: violetc <58360096+s-yh-china@users.noreply.github.com>
+Date: Tue, 26 Sep 2023 19:00:41 +0800
+Subject: [PATCH] Leaves: Protocol Core
+
+TODO: Check whether Leaves's Return-nether-portal-fix.patch improves performance
+and change store way to sql maybe?
+
+Original license: GPLv3
+Original project: https://github.com/LeavesMC/Leaves
+
+Commit: 41476d86922416c45f703df2871890831fc42bb5
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 911bb12bcbcae2b8046d786e7b828cc1e1bcdb3a..dd054c184095644a122be0f610ade1d47d9be74a 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -507,6 +507,7 @@ public final class CraftServer implements Server {
+         this.potionBrewer = new io.papermc.paper.potion.PaperPotionBrewer(console); // Paper - custom potion mixes
+         datapackManager = new io.papermc.paper.datapack.PaperDatapackManager(console.getPackRepository()); // Paper
+         this.spark = new io.papermc.paper.SparksFly(this); // Paper - spark
++        org.leavesmc.leaves.protocol.core.LeavesProtocolManager.init(); // Leaves - protocol
+     }
+ 
+     public boolean getCommandBlockOverride(String command) {
+@@ -1138,6 +1139,7 @@ public final class CraftServer implements Server {
+         org.purpurmc.purpur.PurpurConfig.registerCommands(); // Purpur - Purpur config files
+         this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
+         this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
++        org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handleServerReload(); // Leaves - protocol
+ 
+         int pollCount = 0;
+ 

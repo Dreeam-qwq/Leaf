@@ -1,0 +1,100 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Tue, 9 Nov 2077 00:00:00 +0800
+Subject: [PATCH] Smart sort entities in NearestLivingEntitySensor
+
+Co-authored-by: Taiyou06 <kaandindar21@gmail.com>
+
+This patch optimizes sorting algorithm by dynamically sorting based
+on entity count, if entity count doesn't reach the Bucket Sort threshold,
+Quick Sort of Fastutil will be used.
+When entity count reached the threshold, Bucket Sort will be used.
+This offers a 10~15% performance improvement in average.
+In best situation, this can give an up to 50% improvement.
+
+diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
+index 23494aebfa51e7181fb06d123dad429e68ebf922..a5e85005ba9a1d85084c8e54124df9e4227e5273 100644
+--- a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
++++ b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
+@@ -13,17 +13,78 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+ import net.minecraft.world.phys.AABB;
+ 
+ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T> {
++    // Leaf start - Smart sort entities in NearestLivingEntitySensor
++    private static final int NUM_BUCKETS = org.apache.commons.lang3.math.NumberUtils.toInt((System.getProperty("Leaf.nearestEntitySensorBucketCount", "10")), 10);
++    private static final int BUCKET_SORT_THRESHOLD = (int) Math.floor(NUM_BUCKETS * org.apache.commons.lang3.math.NumberUtils.toDouble(System.getProperty("Leaf.nearestEntitySensorBucketSortThresholdRatio", "2.0"), 2.0D));
++    // Leaf end - Smart sort entities in NearestLivingEntitySensor
+     @Override
+     protected void doTick(ServerLevel world, T entity) {
+         double d = entity.getAttributeValue(Attributes.FOLLOW_RANGE);
+         AABB aABB = entity.getBoundingBox().inflate(d, d, d);
+         List<LivingEntity> list = world.getEntitiesOfClass(LivingEntity.class, aABB, e -> e != entity && e.isAlive());
+-        list.sort(Comparator.comparingDouble(entity::distanceToSqr));
++        // Leaf start - Smart sort entities in NearestLivingEntitySensor
++        LivingEntity[] sortedEntities = smartSortEntities(list.toArray(new LivingEntity[]{}), entity);
++        List<LivingEntity> sortedList = java.util.Arrays.asList(sortedEntities);
++        // Leaf end - Smart sort entities in NearestLivingEntitySensor
+         Brain<?> brain = entity.getBrain();
+-        brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, list);
+-        brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(world, entity, list));
++        // Leaf start - Smart sort entities in NearestLivingEntitySensor
++        brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, sortedList);
++        brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(world, entity, sortedList));
++        // Leaf end - Smart sort entities in NearestLivingEntitySensor
+     }
+ 
++    // Leaf start - Smart sort entities in NearestLivingEntitySensor
++    private LivingEntity[] smartSortEntities(LivingEntity[] entities, T referenceEntity) {
++        if (entities.length <= 1) {
++            return entities;
++        }
++        final Comparator<LivingEntity> comparator = Comparator.comparingDouble(referenceEntity::distanceToSqr);
++
++        if (entities.length < BUCKET_SORT_THRESHOLD) {
++            it.unimi.dsi.fastutil.objects.ObjectArrays.quickSort(entities, comparator);
++            return entities;
++        }
++
++        // Create buckets
++        @SuppressWarnings("unchecked")
++        List<LivingEntity>[] buckets = new List[NUM_BUCKETS];
++        for (int i = 0; i < NUM_BUCKETS; i++) {
++            buckets[i] = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
++        }
++
++        // Find max distance to normalize bucket distribution - Leaf
++        double maxDistSq = 0.0;
++        for (LivingEntity e : entities) {
++            maxDistSq = Math.max(maxDistSq, referenceEntity.distanceToSqr(e));
++        }
++
++        // Handle edge case where all entities are at the same position - Leaf
++        if (maxDistSq == 0.0) {
++            return entities;
++        }
++
++        // Distribute entities into buckets
++        for (LivingEntity e : entities) {
++            double distSq = referenceEntity.distanceToSqr(e);
++            int bucketIndex = (int) ((distSq / maxDistSq) * (NUM_BUCKETS - 1));
++            buckets[bucketIndex].add(e);
++        }
++
++        // Sort each bucket and combine results
++        int currentIndex = 0;
++        for (List<LivingEntity> bucket : buckets) {
++            if (!bucket.isEmpty()) {
++                bucket.sort(comparator);
++                for (LivingEntity e : bucket) {
++                    entities[currentIndex++] = e;
++                }
++            }
++        }
++
++        return entities;
++    }
++    // Leaf end - Smart sort entities in NearestLivingEntitySensor
++
+     @Override
+     public Set<MemoryModuleType<?>> requires() {
+         return ImmutableSet.of(MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);

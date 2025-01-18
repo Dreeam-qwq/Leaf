@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Fri, 23 Aug 2024 22:04:20 -0400
+Subject: [PATCH] Nitori: Async playerdata Save
+
+Original license: GPL v3
+Original project: https://github.com/Gensokyo-Reimagined/Nitori
+
+diff --git a/net/minecraft/world/level/storage/LevelStorageSource.java b/net/minecraft/world/level/storage/LevelStorageSource.java
+index cdca5ae69991cc068bfbc0686b5defb3604a5440..5ab705731209fd4d4c20cd342ee7bf1bf26f3b0c 100644
+--- a/net/minecraft/world/level/storage/LevelStorageSource.java
++++ b/net/minecraft/world/level/storage/LevelStorageSource.java
+@@ -605,7 +605,11 @@ public class LevelStorageSource {
+             CompoundTag nbttagcompound2 = new CompoundTag();
+ 
+             nbttagcompound2.put("Data", nbttagcompound1);
+-            this.saveLevelData(nbttagcompound2);
++
++            // Leaf start - Nitori - Async playerdata save
++            Runnable runnable = () -> this.saveLevelData(nbttagcompound2);
++            org.dreeam.leaf.async.AsyncPlayerDataSaving.saveAsync(runnable);
++            // Leaf end - Nitori - Async playerdata save
+         }
+ 
+         private void saveLevelData(CompoundTag nbt) {
+@@ -702,7 +706,11 @@ public class LevelStorageSource {
+             CompoundTag nbttagcompound = LevelStorageSource.readLevelDataTagRaw(this.levelDirectory.dataFile());
+ 
+             nbtProcessor.accept(nbttagcompound.getCompound("Data"));
+-            this.saveLevelData(nbttagcompound);
++
++            // Leaf start - Nitori - Async playerdata save
++            Runnable runnable = () -> this.saveLevelData(nbttagcompound);
++            org.dreeam.leaf.async.AsyncPlayerDataSaving.saveAsync(runnable);
++            // Leaf end - Nitori - Async playerdata save
+         }
+ 
+         public long makeWorldBackup() throws IOException {
+diff --git a/net/minecraft/world/level/storage/PlayerDataStorage.java b/net/minecraft/world/level/storage/PlayerDataStorage.java
+index b148cf247acdd36f856d0495cde4cc5ad32b5a2f..e825d9e573a38531f5a3b3f9cdccc24570953015 100644
+--- a/net/minecraft/world/level/storage/PlayerDataStorage.java
++++ b/net/minecraft/world/level/storage/PlayerDataStorage.java
+@@ -36,6 +36,13 @@ public class PlayerDataStorage {
+ 
+     public void save(Player player) {
+         if (org.spigotmc.SpigotConfig.disablePlayerDataSaving) return; // Spigot
++
++        // Leaf start - Nitori - Async playerdata save
++        Runnable runnable = () -> save0(player);
++        org.dreeam.leaf.async.AsyncPlayerDataSaving.saveAsync(runnable);
++    }
++    private void save0(Player player) {
++        // Leaf end - Nitori - Async playerdata save
+         try {
+             CompoundTag nbttagcompound = player.saveWithoutId(new CompoundTag());
+             Path path = this.playerDir.toPath();

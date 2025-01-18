@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Sun, 4 Aug 2024 19:34:29 +0800
+Subject: [PATCH] Configurable player knockback zombie
+
+
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index 7aab6970bf73108435e79a6ef39896e9fca8659e..b816d4509f5d1154fdbe462a0534a17c0d238281 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -2109,6 +2109,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
+     }
+ 
+     public void knockback(double d0, double d1, double d2, @Nullable Entity attacker, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause cause) { // Paper - knockback events
++        if (!canKnockback(attacker, this)) return; // Leaf - Configurable player knockback zombie
++
+         d0 *= 1.0D - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+         if (true || d0 > 0.0D) { // CraftBukkit - Call event even when force is 0
+             //this.hasImpulse = true; // CraftBukkit - Move down
+@@ -2136,6 +2138,20 @@ public abstract class LivingEntity extends Entity implements Attackable {
+         }
+     }
+ 
++    // Leaf start - Configurable player knockback zombie
++    private boolean canKnockback(@Nullable Entity attacker, LivingEntity target) {
++        if (!org.dreeam.leaf.config.modules.gameplay.Knockback.canPlayerKnockbackZombie) {
++            if (attacker instanceof ServerPlayer && target.getType() == EntityType.ZOMBIE) { // Player -> Zombie
++                return false;
++            } else if (attacker instanceof Projectile projectile && projectile.getOwner() instanceof ServerPlayer && target.getType() == EntityType.ZOMBIE) { // Player -> projectile -> Zombie
++                return false;
++            }
++        }
++
++        return true;
++    }
++    // Leaf end - Configurable player knockback zombie
++
+     public void indicateDamage(double deltaX, double deltaZ) {}
+ 
+     @Nullable
+diff --git a/src/main/java/org/dreeam/leaf/config/modules/gameplay/Knockback.java b/src/main/java/org/dreeam/leaf/config/modules/gameplay/Knockback.java
+index 7b434158818834450ea43611e2ab5636917bb938..3499b1e60bde373bff79f007990fdd1a88fa48bf 100644
+--- a/src/main/java/org/dreeam/leaf/config/modules/gameplay/Knockback.java
++++ b/src/main/java/org/dreeam/leaf/config/modules/gameplay/Knockback.java
+@@ -11,6 +11,7 @@ public class Knockback extends ConfigModules {
+ 
+     public static boolean snowballCanKnockback = false;
+     public static boolean eggCanKnockback = false;
++    public static boolean canPlayerKnockbackZombie = true;
+ 
+     @Override
+     public void onLoaded() {
+@@ -24,5 +25,10 @@ public class Knockback extends ConfigModules {
+                         "Make egg can knockback players.",
+                         "使鸡蛋可以击退玩家."
+                         ));
++        canPlayerKnockbackZombie = config.getBoolean(getBasePath() + ".can-player-knockback-zombie", canPlayerKnockbackZombie,
++                config.pickStringRegionBased(
++                        "Make players can knockback zombie.",
++                        "使玩家可以击退僵尸."
++                        ));
+     }
+ }

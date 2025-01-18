@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Mon, 29 Apr 2024 14:18:58 -0400
+Subject: [PATCH] Fix Pufferfish and Purpur patches
+
+
+diff --git a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
+index ea2bca6e0bbc56156c2f744769abd677e6fb0c18..aa80daab4917e22bc3849eb9b0915b1c705091af 100644
+--- a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
++++ b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
+@@ -32,6 +32,8 @@ public record ServerBuildInfoImpl(
+ 
+     private static final String BRAND_PAPER_NAME = "Paper";
+     private static final String BRAND_GALE_NAME = "Gale"; // Gale - branding changes
++    private static final String BRAND_PUFFERFISH_NAME = "Pufferfish"; // Leaf
++    private static final String BRAND_PURPUR_NAME = "Purpur"; // Leaf - Purpur - Rebrand
+     private static final String BRAND_LEAF_NAME = "Leaf"; // Leaf
+ 
+     private static final String BUILD_DEV = "DEV";
+@@ -65,7 +67,9 @@ public record ServerBuildInfoImpl(
+     public boolean isBrandCompatible(final @NotNull Key brandId) {
+         return brandId.equals(this.brandId)
+             || brandId.equals(BRAND_PAPER_ID)
+-            || brandId.equals(BRAND_GALE_ID); // Gale - branding changes // Leaf
++                || brandId.equals(BRAND_GALE_ID) // Gale - branding changes // Leaf
++                || brandId.equals(BRAND_PUFFERFISH_ID) // Leaf
++                || brandId.equals(BRAND_PURPUR_ID); // Leaf
+     }
+ 
+     @Override

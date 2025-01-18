@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <fsjk947@gmail.com>
+Date: Wed, 13 Mar 2024 03:33:08 +0800
+Subject: [PATCH] Fix MC-65198
+
+Mojang issues: https://bugs.mojang.com/browse/MC-65198
+
+diff --git a/net/minecraft/world/inventory/ItemCombinerMenu.java b/net/minecraft/world/inventory/ItemCombinerMenu.java
+index ac9df238ef0f3d009f25976b95e0b750e963e952..b94daec80a5222468d6065cec4ac693a1de92b38 100644
+--- a/net/minecraft/world/inventory/ItemCombinerMenu.java
++++ b/net/minecraft/world/inventory/ItemCombinerMenu.java
+@@ -129,6 +129,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
+             ItemStack itemstack1 = slot1.getItem();
+ 
+             itemstack = itemstack1.copy();
++            ItemStack itemStack2 = itemstack.copy(); // Leaf - Fix MC-65198
+             int j = this.getInventorySlotStart();
+             int k = this.getUseRowEnd();
+ 
+@@ -165,7 +166,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
+             }
+ 
+             this.activeQuickItem = itemstack; // Purpur - Anvil API
+-            slot1.onTake(player, itemstack1);
++            slot1.onTake(player, itemStack2); // Leaf - Fix MC-65198
+             this.activeQuickItem = null; // Purpur - Anvil API
+         }
+ 
+diff --git a/net/minecraft/world/inventory/ResultSlot.java b/net/minecraft/world/inventory/ResultSlot.java
+index ff30071f3ef37d1b28cf86e26ce4f7477335a07a..78122f7aaa095278095a57974b9906f7999a17df 100644
+--- a/net/minecraft/world/inventory/ResultSlot.java
++++ b/net/minecraft/world/inventory/ResultSlot.java
+@@ -49,7 +49,7 @@ public class ResultSlot extends Slot {
+     @Override
+     protected void checkTakeAchievements(ItemStack stack) {
+         if (this.removeCount > 0) {
+-            stack.onCraftedBy(this.player.level(), this.player, this.removeCount);
++            stack.onCraftedBy(this.player.level(), this.player, stack.getCount()); // Leaf - Fix MC-65198
+         }
+ 
+         if (this.container instanceof RecipeCraftingHolder recipeCraftingHolder) {
+diff --git a/net/minecraft/world/inventory/StonecutterMenu.java b/net/minecraft/world/inventory/StonecutterMenu.java
+index ca65965757e6f12abc972250a04817c7547bb0bd..675300ca10b2328be102a7cbc447e1c25ef12f82 100644
+--- a/net/minecraft/world/inventory/StonecutterMenu.java
++++ b/net/minecraft/world/inventory/StonecutterMenu.java
+@@ -255,6 +255,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
+             Item item = itemstack1.getItem();
+ 
+             itemstack = itemstack1.copy();
++            ItemStack itemStack2 = itemstack.copy(); // Leaf - Fix MC-65198
+             if (slot == 1) {
+                 item.onCraftedBy(itemstack1, player.level(), player);
+                 if (!this.moveItemStackTo(itemstack1, 2, 38, true)) {
+@@ -287,9 +288,9 @@ public class StonecutterMenu extends AbstractContainerMenu {
+                 return ItemStack.EMPTY;
+             }
+ 
+-            slot1.onTake(player, itemstack1);
++            slot1.onTake(player, itemStack2); // Leaf - Fix MC-65198
+             if (slot == 1) {
+-                player.drop(itemstack1, false);
++                player.drop(itemStack2, false); // Leaf - Fix MC-65198
+             }
+ 
+             this.broadcastChanges();
