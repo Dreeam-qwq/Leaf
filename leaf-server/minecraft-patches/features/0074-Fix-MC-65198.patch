@@ -40,7 +40,7 @@ index 01b8d73b1be9b41d6f51d11a0bead37a7bd9023f..7637eed0dedcdc5ac0dd51cc82010eb4
  
          if (this.container instanceof RecipeCraftingHolder recipeCraftingHolder) {
 diff --git a/net/minecraft/world/inventory/StonecutterMenu.java b/net/minecraft/world/inventory/StonecutterMenu.java
-index d6854d0ebe5cb4205963e879d71eb3940d54de1f..a32f56d0317b719a0ae38009327d09519038e440 100644
+index d6854d0ebe5cb4205963e879d71eb3940d54de1f..72dbf8c03fcd5210fb2764f5c0a2a3ce3b1f9b51 100644
 --- a/net/minecraft/world/inventory/StonecutterMenu.java
 +++ b/net/minecraft/world/inventory/StonecutterMenu.java
 @@ -238,6 +238,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
@@ -51,15 +51,12 @@ index d6854d0ebe5cb4205963e879d71eb3940d54de1f..a32f56d0317b719a0ae38009327d0951
              if (index == 1) {
                  item1.onCraftedBy(item, player.level(), player);
                  if (!this.moveItemStackTo(item, 2, 38, true)) {
-@@ -270,9 +271,9 @@ public class StonecutterMenu extends AbstractContainerMenu {
+@@ -270,7 +271,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
                  return ItemStack.EMPTY;
              }
  
 -            slot.onTake(player, item);
 +            slot.onTake(player, itemStack2); // Leaf - Fix MC-65198
              if (index == 1) {
--                player.drop(item, false);
-+                player.drop(itemStack2, false); // Leaf - Fix MC-65198
+                 player.drop(item, false);
              }
- 
-             this.broadcastChanges();
