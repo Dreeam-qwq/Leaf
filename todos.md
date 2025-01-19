@@ -9,7 +9,6 @@
 - [ ] Add server full join config explaination to docs
 - [ ] leaf at
 - [ ] Add purpur config changes to docs moved config
-- [ ] Check linear
 - [ ] Merge changes from Tramontane
 
 # Cleanup
