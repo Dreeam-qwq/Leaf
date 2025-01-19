@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur API Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: dd4143984219cea8440913b7918322b5ba59265a
+Commit: 4b74604c1f9f84e87f91dd390c83850f088a736b
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "co/aikar/timings/TimedEventExecutor.java.patch"
@@ -20,6 +20,37 @@ Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "org/bukkit/plugin/java/LibraryLoader.java.patch"
 * "org/spigotmc/CustomTimingsHandler.java.patch"
 
+diff --git a/src/generated/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java b/src/generated/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java
+index f15a7b4471cd31a487467ec7ecf7a186fa887a51..f09fefe6821d8b2b8c8f055985bacc2e042ca569 100644
+--- a/src/generated/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java
++++ b/src/generated/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java
+@@ -441,6 +441,26 @@ public interface VanillaGoal<T extends Mob> extends Goal<T> {
+ 
+     GoalKey<Zombie> ZOMBIE_ATTACK_TURTLE_EGG = create("zombie_attack_turtle_egg", Zombie.class);
+ 
++    // Purpur start - Ridables
++    GoalKey<Mob> MOB_HAS_RIDER = GoalKey.of(Mob.class, NamespacedKey.minecraft("has_rider"));
++    GoalKey<AbstractHorse> HORSE_HAS_RIDER = GoalKey.of(AbstractHorse.class, NamespacedKey.minecraft("horse_has_rider"));
++    GoalKey<Llama> LLAMA_HAS_RIDER = GoalKey.of(Llama.class, NamespacedKey.minecraft("llama_has_rider"));
++    // Purpur end - Ridables
++    // Purpur start - Phantoms attracted to crystals and crystals shoot phantoms
++    GoalKey<Phantom> FIND_CRYSTAL = GoalKey.of(Phantom.class, NamespacedKey.minecraft("find_crystal"));
++    GoalKey<Phantom> ORBIT_CRYSTAL = GoalKey.of(Phantom.class, NamespacedKey.minecraft("orbit_crystal"));
++    // Purpur end - Phantoms attracted to crystals and crystals shoot phantoms
++    // Purpur start - Add option to disable zombie aggressiveness towards villagers when lagging
++    GoalKey<Drowned> DROWNED_ATTACK_VILLAGER = GoalKey.of(Drowned.class, NamespacedKey.minecraft("drowned_attack_villager"));
++    GoalKey<Zombie> ZOMBIE_ATTACK_VILLAGER = GoalKey.of(Zombie.class, NamespacedKey.minecraft("zombie_attack_villager"));
++    // Purpur end - Add option to disable zombie aggressiveness towards villagers when lagging
++    // Purpur start - Configurable chance for wolves to spawn rabid
++    GoalKey<Wolf> AVOID_RABID_WOLF = GoalKey.of(Wolf.class, NamespacedKey.minecraft("avoid_rabid_wolf"));
++    // Purpur end - Configurable chance for wolves to spawn rabid
++    // Purpur start - Iron golem poppy calms anger
++    GoalKey<IronGolem> RECEIVE_FLOWER = GoalKey.of(IronGolem.class, NamespacedKey.minecraft("receive_flower"));
++    // Purpur end - Iron golem poppy calms anger
++
+     private static <T extends Mob> GoalKey<T> create(final String key, final Class<T> type) {
+         return GoalKey.of(type, NamespacedKey.minecraft(key));
+     }
 diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java/io/papermc/paper/ServerBuildInfo.java
 index 184ed5a41a138d14757f12acd4ec3113cb165b72..2240bb704dd9fa62836efa1b3d6ec4d7744d9b1d 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfo.java

@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Minecraft Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: dd4143984219cea8440913b7918322b5ba59265a
+Commit: 4b74604c1f9f84e87f91dd390c83850f088a736b
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "net/minecraft/CrashReport.java.patch"
@@ -118,18 +118,10 @@ index c2b7164a1395842ab95428540782eeda4c7960b0..59c70c567051bc7dba0d308387352d1b
          boolean flag = this.source.acceptsSuccess() && !this.silent;
          boolean flag1 = allowLogging && this.source.shouldInformAdmins() && !this.silent;
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 60cfa713ffc778d0cd11dfb2ea1a52db806119b2..a5cc373dbe034560865e196ce12a8361932ea085 100644
+index 60cfa713ffc778d0cd11dfb2ea1a52db806119b2..967c01f9e40c2c73f266de281425c918472cf66e 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
-@@ -135,6 +135,7 @@ import net.minecraft.util.profiling.jfr.JvmProfiler;
- import net.minecraft.world.flag.FeatureFlagSet;
- import net.minecraft.world.flag.FeatureFlags;
- import net.minecraft.world.level.GameRules;
-+import org.bukkit.event.player.PlayerCommandSendEvent;
- import org.slf4j.Logger;
- 
- public class Commands {
-@@ -213,8 +214,8 @@ public class Commands {
+@@ -213,8 +213,8 @@ public class Commands {
              JfrCommand.register(this.dispatcher);
          }
  
@@ -140,7 +132,7 @@ index 60cfa713ffc778d0cd11dfb2ea1a52db806119b2..a5cc373dbe034560865e196ce12a8361
              RaidCommand.register(this.dispatcher, context);
              DebugPathCommand.register(this.dispatcher);
              DebugMobSpawningCommand.register(this.dispatcher);
-@@ -242,6 +243,14 @@ public class Commands {
+@@ -242,6 +242,14 @@ public class Commands {
              StopCommand.register(this.dispatcher);
              TransferCommand.register(this.dispatcher);
              WhitelistCommand.register(this.dispatcher);
@@ -914,7 +906,7 @@ index e52d976f0c1c5eacdc8608b204c3a178b9b17446..a13aa7b896a998975d2ee14eafb86a85
                  }
                  // Paper end - Fix merchant inventory not closing on entity removal
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index e56e930df980613a13f92d771f1036eba82b1d19..b7829a91a7ef79706ec6d90b8b2673fd369b9931 100644
+index e56e930df980613a13f92d771f1036eba82b1d19..1173deb1aeb5abc225e7b5914cc3c325afdfab16 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -392,6 +392,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -945,7 +937,7 @@ index e56e930df980613a13f92d771f1036eba82b1d19..b7829a91a7ef79706ec6d90b8b2673fd
          this.saveEnderPearls(compound);
 +        compound.putBoolean("Purpur.TPSBar", this.tpsBar); // Purpur - Implement TPSBar
 +        compound.putBoolean("Purpur.CompassBar", this.compassBar); // Purpur - Add compass command
-+        compound.putBoolean("Purpur.CompassBar", this.compassBar); // Purpur - Add rambar command
++        compound.putBoolean("Purpur.RamBar", this.ramBar); // Purpur - Add rambar command
      }
  
      private void saveParentVehicle(CompoundTag tag) {
@@ -12232,7 +12224,7 @@ index e6d368bc601357cfca694ce328c8e6e47491f3b5..489613b31fe47a0bd43fafddbeab6bb6
      }
  
 diff --git a/net/minecraft/world/entity/npc/Villager.java b/net/minecraft/world/entity/npc/Villager.java
-index a02cd34bcd643c7abad3a355043cb88d035143a0..347affae3cc18e01474734d2da2699c9b7b17e26 100644
+index a02cd34bcd643c7abad3a355043cb88d035143a0..e8e2848c12e3cf2ad86fc3bd18f03182ee291775 100644
 --- a/net/minecraft/world/entity/npc/Villager.java
 +++ b/net/minecraft/world/entity/npc/Villager.java
 @@ -179,6 +179,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
@@ -12366,7 +12358,7 @@ index a02cd34bcd643c7abad3a355043cb88d035143a0..347affae3cc18e01474734d2da2699c9
      }
  
      public boolean assignProfessionWhenSpawned() {
-@@ -290,10 +389,18 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -290,12 +389,21 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          // Paper start - EAR 2
          this.customServerAiStep(level, false);
      }
@@ -12386,8 +12378,11 @@ index a02cd34bcd643c7abad3a355043cb88d035143a0..347affae3cc18e01474734d2da2699c9
 +        if (!inactive && (getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) { // Purpur - Ridables
              this.getBrain().tick(level, this); // Paper - EAR 2
          }
++        else if (this.isLobotomized && shouldRestock()) restock(); // Purpur - Lobotomize stuck villagers
          // Pufferfish end
-@@ -351,7 +458,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+         if (this.assignProfessionWhenSpawned) {
+             this.assignProfessionWhenSpawned = false;
+@@ -351,7 +459,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
              return super.mobInteract(player, hand);
          } else if (this.isBaby()) {
              this.setUnhappy();
@@ -12396,7 +12391,7 @@ index a02cd34bcd643c7abad3a355043cb88d035143a0..347affae3cc18e01474734d2da2699c9
          } else {
              if (!this.level().isClientSide) {
                  boolean isEmpty = this.getOffers().isEmpty();
-@@ -364,9 +471,12 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -364,9 +472,12 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
                  }
  
                  if (isEmpty) {
@@ -12410,7 +12405,7 @@ index a02cd34bcd643c7abad3a355043cb88d035143a0..347affae3cc18e01474734d2da2699c9
                  this.startTrading(player);
              }
  
-@@ -505,7 +615,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -505,7 +616,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
  
      private void updateDemand() {
          for (MerchantOffer merchantOffer : this.getOffers()) {
@@ -12419,7 +12414,7 @@ index a02cd34bcd643c7abad3a355043cb88d035143a0..347affae3cc18e01474734d2da2699c9
          }
      }
  
-@@ -709,7 +819,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -709,7 +820,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
  
      @Override
      public boolean canBreed() {
@@ -12428,7 +12423,7 @@ index a02cd34bcd643c7abad3a355043cb88d035143a0..347affae3cc18e01474734d2da2699c9
      }
  
      private boolean hungry() {
-@@ -878,7 +988,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -878,7 +989,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
      }
  
      public boolean hasFarmSeeds() {
@@ -12437,7 +12432,7 @@ index a02cd34bcd643c7abad3a355043cb88d035143a0..347affae3cc18e01474734d2da2699c9
      }
  
      @Override
-@@ -930,6 +1040,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -930,6 +1041,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
      }
  
      public void spawnGolemIfNeeded(ServerLevel serverLevel, long gameTime, int minVillagerAmount) {
@@ -12445,7 +12440,7 @@ index a02cd34bcd643c7abad3a355043cb88d035143a0..347affae3cc18e01474734d2da2699c9
          if (this.wantsToSpawnGolem(gameTime)) {
              AABB aabb = this.getBoundingBox().inflate(10.0, 10.0, 10.0);
              List<Villager> entitiesOfClass = serverLevel.getEntitiesOfClass(Villager.class, aabb);
-@@ -1003,6 +1114,12 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -1003,6 +1115,12 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
  
      @Override
      public void startSleeping(BlockPos pos) {

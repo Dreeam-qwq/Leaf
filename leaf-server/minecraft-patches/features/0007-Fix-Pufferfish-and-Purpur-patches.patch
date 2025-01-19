@@ -298,18 +298,6 @@ index 242b2545b6082f567d0bb7900ef06ded3c0fdcdd..85306d8f0fba3b5dcb244df54c949b45
          this.getBrain().tick(level, this);
          PiglinAi.updateActivity(this);
          super.customServerAiStep(level);
-diff --git a/net/minecraft/world/entity/npc/Villager.java b/net/minecraft/world/entity/npc/Villager.java
-index 347affae3cc18e01474734d2da2699c9b7b17e26..5dbf28c15f828505d42dc31c1a2185e01a7542c1 100644
---- a/net/minecraft/world/entity/npc/Villager.java
-+++ b/net/minecraft/world/entity/npc/Villager.java
-@@ -404,6 +404,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
-             this.getBrain().tick(level, this); // Paper - EAR 2
-         }
-         // Pufferfish end
-+        else if (this.isLobotomized && shouldRestock()) restock(); // Leaf - Purpur - Lobotomize stuck villagers
-         if (this.assignProfessionWhenSpawned) {
-             this.assignProfessionWhenSpawned = false;
-         }
 diff --git a/net/minecraft/world/entity/projectile/Projectile.java b/net/minecraft/world/entity/projectile/Projectile.java
 index bd93ee97982038789114f17ee369208fc6413796..0b1263000f872431e44abfdd57134b6efe245641 100644
 --- a/net/minecraft/world/entity/projectile/Projectile.java

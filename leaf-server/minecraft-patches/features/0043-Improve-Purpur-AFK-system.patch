@@ -7,10 +7,10 @@ AFK command & command cooldown
 AFK title message
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index a5cc373dbe034560865e196ce12a8361932ea085..d03a6dc74877bc08b170be5add061270dc46549b 100644
+index 967c01f9e40c2c73f266de281425c918472cf66e..d8464f77c54f547161356b78e76429923937b4a7 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
-@@ -243,6 +243,7 @@ public class Commands {
+@@ -242,6 +242,7 @@ public class Commands {
              StopCommand.register(this.dispatcher);
              TransferCommand.register(this.dispatcher);
              WhitelistCommand.register(this.dispatcher);
@@ -19,7 +19,7 @@ index a5cc373dbe034560865e196ce12a8361932ea085..d03a6dc74877bc08b170be5add061270
              org.purpurmc.purpur.command.DemoCommand.register(this.dispatcher); // Purpur - Add demo command
              org.purpurmc.purpur.command.PingCommand.register(this.dispatcher); // Purpur - Add ping command
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 08578d7398658d226318a28324a1eae0d4453add..09c9ca038f359372bda3a3d8b743d497a530ce97 100644
+index 2da6609ab8398c5c537e9065b3a82693f43200e2..9db63f122539134003a5955aabae970645131c1c 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -2460,6 +2460,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -142,7 +142,7 @@ index 465e34eb906ec78f49ff1183b635e77a1fcaa758..39b01b3d96d03bca4c33eaddfc54edef
          this.cserver.getPluginManager().callEvent(event);
          command = event.getMessage().substring(1);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 015c4480a60acc252342d58aa129350ab36dc29b..e4c3819de8af08f36cd30fafb6ce859005c5cb43 100644
+index 65f943dbbe6e30f0a299fdbd73b94ca60d4f406c..7d7343d4e2c206daf77a61050f2f4c229dd042cd 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -667,6 +667,7 @@ public abstract class PlayerList {
