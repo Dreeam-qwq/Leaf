@@ -1,24 +1,24 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Tue, 26 Nov 2024 17:15:38 -0500
-Subject: [PATCH] Cache canHoldAnyFluid result
+Subject: [PATCH] Cache part of canHoldFluid result
 
-Cache the result of half of canHoldAnyFluid logic, since there is a state#is in this method,
+Cache the result of part of canHoldFluid logic, since there are many state#is in canAnyHoldFluid method,
 it uses map contains to do iteration to check whether a block has a specific block tag key,
 which the contains iteration call is very expensive if called everytime
 
 In the test, it can improve ~30% performance in ~1577000 times of canHoldAnyFluid calls (~159ms -> ~111ms)
 
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 36ac6114cc3449a3b344baac5f3034288cf77a63..82c36a031e883033a76968b7dfccc2c1f2a3d687 100644
+index 36ac6114cc3449a3b344baac5f3034288cf77a63..fb0843e26e5ee2834fd9917e9d929cb06d915eca 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -454,6 +454,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          private VoxelShape[] occlusionShapesByFace;
          private boolean propagatesSkylightDown;
          private int lightBlock;
-+        private boolean canHoldAnyFluidInternal; // Leaf - Cache canHoldAnyFluid result
-+        private boolean canHoldAnyFluidInternalInit; // Leaf - Cache canHoldAnyFluid result
++        private boolean canHoldAnyFluidInternal; // Leaf - Cache part of canHoldFluid result
++        private boolean canHoldAnyFluidInternalInit; // Leaf - Cache part of canHoldFluid result
  
          // Paper start - rewrite chunk system
          private boolean isConditionallyFullOpaque;
@@ -26,8 +26,8 @@ index 36ac6114cc3449a3b344baac5f3034288cf77a63..82c36a031e883033a76968b7dfccc2c1
  
              this.propagatesSkylightDown = this.owner.propagatesSkylightDown(this.asState());
              this.lightBlock = this.owner.getLightBlock(this.asState());
-+            this.canHoldAnyFluidInternal = false; // Leaf - Cache canHoldAnyFluid result
-+            this.canHoldAnyFluidInternalInit = false; // Leaf - Cache canHoldAnyFluid result
++            this.canHoldAnyFluidInternal = false; // Leaf - Cache part of canHoldFluid result
++            this.canHoldAnyFluidInternalInit = false; // Leaf - Cache part of canHoldFluid result
              // Paper start - rewrite chunk system
              this.isConditionallyFullOpaque = this.canOcclude & this.useShapeForLightOcclusion;
              // Paper end - rewrite chunk system
@@ -35,7 +35,7 @@ index 36ac6114cc3449a3b344baac5f3034288cf77a63..82c36a031e883033a76968b7dfccc2c1
              return block != Blocks.COBWEB && block != Blocks.BAMBOO_SAPLING && this.isSolid();
          }
  
-+        // Leaf start - Cache canHoldAnyFluid result
++        // Leaf start - Cache part of canHoldFluid result
 +        public boolean canHoldAnyFluidInternal() {
 +            // Lazy load cache
 +            if (!canHoldAnyFluidInternalInit) {
@@ -45,30 +45,21 @@ index 36ac6114cc3449a3b344baac5f3034288cf77a63..82c36a031e883033a76968b7dfccc2c1
 +
 +            return canHoldAnyFluidInternal;
 +        }
-+        // Leaf end - Cache canHoldAnyFluid result
++        // Leaf end - Cache part of canHoldFluid result
 +
          @Deprecated
          public boolean isSolid() {
              return this.legacySolid;
 diff --git a/net/minecraft/world/level/material/FlowingFluid.java b/net/minecraft/world/level/material/FlowingFluid.java
-index c535cd03c577d76c3b19da5a8426d0cbee3069f0..efa4f2e2a2ee8b12cdcc7b674f29eae89179b409 100644
+index c535cd03c577d76c3b19da5a8426d0cbee3069f0..2bb220d0442f3c8593c40af2eb559c312c8f47b3 100644
 --- a/net/minecraft/world/level/material/FlowingFluid.java
 +++ b/net/minecraft/world/level/material/FlowingFluid.java
-@@ -384,7 +384,7 @@ public abstract class FlowingFluid extends Fluid {
-         BlockGetter level, BlockPos pos, BlockState state, Direction direction, BlockPos spreadPos, BlockState spreadState, FluidState fluidState
-     ) {
-         return !this.isSourceBlockOfThisType(fluidState)
--            && canHoldAnyFluid(spreadState)
-+            && state.canHoldAnyFluidInternal() // Leaf - Cache canHoldAnyFluid result
-             && canPassThroughWall(direction, level, pos, state, spreadPos, spreadState);
-     }
- 
 @@ -450,7 +450,7 @@ public abstract class FlowingFluid extends Fluid {
          return map;
      }
  
 -    private static boolean canHoldAnyFluid(BlockState state) {
-+    public static boolean canHoldAnyFluid(BlockState state) { // Leaf - Cache canHoldAnyFluid result - private -> public
++    public static boolean canHoldAnyFluid(BlockState state) { // Leaf - Cache part of canHoldFluid result - private -> public
          Block block = state.getBlock();
          return block instanceof LiquidBlockContainer
              || !state.blocksMotion()
@@ -77,7 +68,7 @@ index c535cd03c577d76c3b19da5a8426d0cbee3069f0..efa4f2e2a2ee8b12cdcc7b674f29eae8
  
      private static boolean canHoldFluid(BlockGetter level, BlockPos pos, BlockState state, Fluid fluid) {
 -        return canHoldAnyFluid(state) && canHoldSpecificFluid(level, pos, state, fluid);
-+        return /*canHoldAnyFluid(state)*/ state.canHoldAnyFluidInternal() && canHoldSpecificFluid(level, pos, state, fluid); // Leaf - Cache canHoldAnyFluid result
++        return /*canHoldAnyFluid(state)*/ state.canHoldAnyFluidInternal() && canHoldSpecificFluid(level, pos, state, fluid); // Leaf - Cache part of canHoldFluid result
      }
  
      private static boolean canHoldSpecificFluid(BlockGetter level, BlockPos pos, BlockState state, Fluid fluid) {
