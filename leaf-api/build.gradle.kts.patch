@@ -33,7 +33,7 @@
  
      // Deprecate bungeecord-chat in favor of adventure
      api("net.md-5:bungeecord-chat:$bungeeCordChatVersion-deprecated+build.19") {
-@@ -68,29 +_,37 @@
+@@ -68,29 +_,39 @@
      apiAndDocs("net.kyori:adventure-text-serializer-plain")
      apiAndDocs("net.kyori:adventure-text-logger-slf4j")
  
@@ -68,11 +68,13 @@
 +    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 +    testImplementation("org.hamcrest:hamcrest:3.0")
 +    testImplementation("org.mockito:mockito-core:5.15.2")
++    // Leaf end - Bump Dependencies
      testImplementation("org.ow2.asm:asm-tree:9.7.1")
 -    mockitoAgent("org.mockito:mockito-core:5.14.1") { isTransitive = false } // configure mockito agent that is needed in newer java versions
-+    mockitoAgent("org.mockito:mockito-core:5.15.2") { isTransitive = false } // configure mockito agent that is needed in newer java versions
++    mockitoAgent("org.mockito:mockito-core:5.15.2") { isTransitive = false } // configure mockito agent that is needed in newer java versions // Leaf - Bump Dependencies
      testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 +
++    // Leaf start - Bump Dependencies
 +    // commons-lang3 is removed in maven-resolver-provider since 3.9.8
 +    // Add this because bukkit api still need it.
 +    compileOnly("org.apache.commons:commons-lang3:3.17.0")
