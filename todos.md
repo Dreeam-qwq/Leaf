@@ -5,7 +5,6 @@
 - [ ] check reduce array allocation, whether need do clone for some reference, to prevent potential issues.. or add debug command for debugging?.
 
 # Leaf TODOs
-- [ ] Check Fix MC-65198 fix
 - [ ] refactor leaves protocol manager opt and pr it.
 - [ ] check multithreaded tracker, that moonrise change
 - [ ] Check and apply work patches

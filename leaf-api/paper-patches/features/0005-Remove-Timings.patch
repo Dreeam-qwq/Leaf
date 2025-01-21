@@ -2954,7 +2954,7 @@ index 32c81559507a8e5085c91d466cda69d0dc11327e..7e9f1237f197094318fc41df2e2fa58f
              server.getPluginManager().callEvent(new com.destroystokyo.paper.event.server.ServerExceptionEvent(new com.destroystokyo.paper.exception.ServerCommandException(ex, target, sender, args))); // Paper
              throw new CommandException(msg, ex);
 diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
-index 2e6d62c4f3687e299c34e876c503b400e13be05a..c3e239f70200aa89835f2bbbc7e4c61764ce8aed 100644
+index 2e6d62c4f3687e299c34e876c503b400e13be05a..e7f1a35610d53891d346a3284cca1bca8e53761d 100644
 --- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 +++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 @@ -61,7 +61,6 @@ public final class SimplePluginManager implements PluginManager {
@@ -2975,7 +2975,7 @@ index 2e6d62c4f3687e299c34e876c503b400e13be05a..c3e239f70200aa89835f2bbbc7e4c617
 -        } else {
 -            getEventListeners(event).register(new RegisteredListener(listener, executor, priority, plugin, ignoreCancelled));
 -        }
-+        getEventListeners(event).register(new RegisteredListener(listener, executor, priority, plugin, ignoreCancelled));
++        getEventListeners(event).register(new RegisteredListener(listener, executor, priority, plugin, ignoreCancelled)); // Leaf - Remove Timings
      }
  
      @NotNull
@@ -2998,7 +2998,7 @@ index 2e6d62c4f3687e299c34e876c503b400e13be05a..c3e239f70200aa89835f2bbbc7e4c617
  
      // Paper start
 diff --git a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
-index 2fae50a9d1f0d9ecd91036697dedd64bc56f7d3b..2daf3d072e4441778ca566387d6a80d67e774a8b 100644
+index 2fae50a9d1f0d9ecd91036697dedd64bc56f7d3b..bf299cfe88c383d489de0c36fd9a4922cfeab572 100644
 --- a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
 +++ b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
 @@ -39,11 +39,9 @@ import org.bukkit.plugin.PluginDescriptionFile;
@@ -3026,7 +3026,7 @@ index 2fae50a9d1f0d9ecd91036697dedd64bc56f7d3b..2daf3d072e4441778ca566387d6a80d6
              }
  
 -            EventExecutor executor = new co.aikar.timings.TimedEventExecutor(new EventExecutor() { // Paper
-+            EventExecutor executor = new EventExecutor() {
++            EventExecutor executor = new EventExecutor() { // Paper // Leaf - Remove Timings
                  @Override
                  public void execute(@NotNull Listener listener, @NotNull Event event) throws EventException { // Paper
                      try {
@@ -3040,8 +3040,8 @@ index 2fae50a9d1f0d9ecd91036697dedd64bc56f7d3b..2daf3d072e4441778ca566387d6a80d6
 -            } else {
 -                eventSet.add(new RegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
 -            }
-+            };
-+            eventSet.add(new RegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
++            }; // Paper // Leaf - Remove Timings
++            eventSet.add(new RegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled())); // Leaf - Remove Timings
          }
          return ret;
      }

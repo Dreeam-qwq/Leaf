@@ -7,7 +7,7 @@ Original license: MIT
 Original project: https://github.com/KeYiMC/KeYi
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 886a954b1a12e895f5d54fd35a9acb36673e3733..02cf7995d15487a4958ba5a5a19018d24d707b80 100644
+index 886a954b1a12e895f5d54fd35a9acb36673e3733..1df8a2ceb4df1ea14d9d936a9389d9d44fd91b55 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
 @@ -4021,4 +4021,23 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
@@ -32,5 +32,5 @@ index 886a954b1a12e895f5d54fd35a9acb36673e3733..02cf7995d15487a4958ba5a5a19018d2
 +     */
 +    @Deprecated(forRemoval = true)
 +    CompletableFuture<ItemStack> getSkullAsynchronously();
-+    // Leaf end - KeYi
++    // Leaf end - KeYi - Player Skull API
  }

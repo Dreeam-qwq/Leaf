@@ -52,7 +52,7 @@ index f15a7b4471cd31a487467ec7ecf7a186fa887a51..f09fefe6821d8b2b8c8f055985bacc2e
          return GoalKey.of(type, NamespacedKey.minecraft(key));
      }
 diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java/io/papermc/paper/ServerBuildInfo.java
-index 184ed5a41a138d14757f12acd4ec3113cb165b72..2240bb704dd9fa62836efa1b3d6ec4d7744d9b1d 100644
+index 6b2f6ab137ae37ff0db4827886614436b7ed5dcb..66a9fc729182476c4f601cdb32bcb10970a9498c 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfo.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfo.java
 @@ -26,6 +26,13 @@ public interface ServerBuildInfo {
@@ -66,7 +66,7 @@ index 184ed5a41a138d14757f12acd4ec3113cb165b72..2240bb704dd9fa62836efa1b3d6ec4d7
 +    Key BRAND_PURPUR_ID = Key.key("purpurmc", "purpur");
 +    // Purpur end
 +
-     // Leaf start
+     // Leaf start - Rebrand
      /**
       * The brand id for Pufferfish.
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
@@ -446,7 +446,7 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +    // Purpur end - OfflinePlayer API
  }
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 331006b854dfe785c567baf8489afaac01a99cd0..335db5f0893df51c65c5aab7f11fd6aef59a191d 100644
+index 5e1cc13695ce58aadb882c03ed4259f8ad843730..02fb928e8c44bdbfc948079ccc2eba40c4621ae6 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -2383,6 +2383,18 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
@@ -465,7 +465,7 @@ index 331006b854dfe785c567baf8489afaac01a99cd0..335db5f0893df51c65c5aab7f11fd6ae
 +        }
 +        // Purpur end
 +
-         // Leaf start
+         // Leaf start - Leaf config - API
          @NotNull
          public org.bukkit.configuration.file.YamlConfiguration getLeafConfig()
 @@ -2740,4 +2752,111 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
