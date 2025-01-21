@@ -1,9 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Mon, 15 Jan 2024 10:53:10 -0500
-Subject: [PATCH] Reduce items finding hopper nearby check
+Subject: [PATCH] Reduce active items finding hopper nearby check
 
-This patch add a toggle for items checking MinecraftHopper nearby,
+This patch add a toggle for active items checking MinecraftHopper nearby,
 
 But still recommend to turn-off `checkForMinecartNearItemWhileActive`
 Since `Reduce-hopper-item-checks.patch` will cause lag under massive dropped items
