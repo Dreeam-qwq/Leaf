@@ -11,26 +11,26 @@ Add per world config
 Add config reload
 
 diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index 9aa664537cc37e44db46d5a2a64ae3116938c681..841546cef2a98427ae78ca2a07693391eb0d3035 100644
+index 9aa664537cc37e44db46d5a2a64ae3116938c681..748816e3f325468f523bdb8dfb94992883ed1989 100644
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
 @@ -112,6 +112,7 @@ public class Main {
              Bootstrap.bootStrap();
              Bootstrap.validate();
              Util.startTimerHackThread();
-+            org.dreeam.leaf.config.LeafConfig.loadConfig(); // Leaf
++            org.dreeam.leaf.config.LeafConfig.loadConfig(); // Leaf - Leaf config
              Path path1 = Paths.get("server.properties");
              DedicatedServerSettings dedicatedServerSettings = new DedicatedServerSettings(optionSet); // CraftBukkit - CLI argument support
              dedicatedServerSettings.forceSave();
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 0da1eeab6a2f8336283a62ebcb3aa0d1b1933c85..8794ae06ac574b399cc2dbb3fa61b6ef51d8062d 100644
+index 0da1eeab6a2f8336283a62ebcb3aa0d1b1933c85..bef8b563ea638a613c140000e69f53d12e17fb2b 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1175,6 +1175,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              org.spigotmc.WatchdogThread.tick();
              // Paper end
              org.spigotmc.WatchdogThread.hasStarted = true; // Paper
-+            org.dreeam.leaf.config.LeafConfig.regSparkExtraConfig(); // Leaf - Leaf Config
++            org.dreeam.leaf.config.LeafConfig.regSparkExtraConfig(); // Leaf - Leaf config
              Arrays.fill(this.recentTps, 20);
              // Paper start - further improve server tick loop
              long tickSection = Util.getNanos();

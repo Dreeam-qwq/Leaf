@@ -5,26 +5,26 @@ Subject: [PATCH] Fix Pufferfish and Purpur patches
 
 
 diff --git a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
-index ea2bca6e0bbc56156c2f744769abd677e6fb0c18..aa80daab4917e22bc3849eb9b0915b1c705091af 100644
+index bbdda3b5263118ec00847e94dde761617db09df2..3a23bebec1f2b0f61f2ada307a37046c29f8dcbe 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
-@@ -32,6 +32,8 @@ public record ServerBuildInfoImpl(
- 
+@@ -33,6 +33,8 @@ public record ServerBuildInfoImpl(
      private static final String BRAND_PAPER_NAME = "Paper";
      private static final String BRAND_GALE_NAME = "Gale"; // Gale - branding changes
-+    private static final String BRAND_PUFFERFISH_NAME = "Pufferfish"; // Leaf
-+    private static final String BRAND_PURPUR_NAME = "Purpur"; // Leaf - Purpur - Rebrand
-     private static final String BRAND_LEAF_NAME = "Leaf"; // Leaf
+     // Leaf start - Rebrand
++    private static final String BRAND_PUFFERFISH_NAME = "Pufferfish";
++    private static final String BRAND_PURPUR_NAME = "Purpur";
+     private static final String BRAND_LEAF_NAME = "Leaf";
+     // Leaf end- Rebrand
  
-     private static final String BUILD_DEV = "DEV";
-@@ -65,7 +67,9 @@ public record ServerBuildInfoImpl(
-     public boolean isBrandCompatible(final @NotNull Key brandId) {
+@@ -68,7 +70,9 @@ public record ServerBuildInfoImpl(
          return brandId.equals(this.brandId)
              || brandId.equals(BRAND_PAPER_ID)
--            || brandId.equals(BRAND_GALE_ID); // Gale - branding changes // Leaf
-+                || brandId.equals(BRAND_GALE_ID) // Gale - branding changes // Leaf
-+                || brandId.equals(BRAND_PUFFERFISH_ID) // Leaf
-+                || brandId.equals(BRAND_PURPUR_ID); // Leaf
+             // Leaf start - Rebrand
+-            || brandId.equals(BRAND_GALE_ID); // Gale - branding changes
++            || brandId.equals(BRAND_GALE_ID) // Gale - branding changes
++            || brandId.equals(BRAND_PUFFERFISH_ID)
++            || brandId.equals(BRAND_PURPUR_ID);
+             // Leaf end - Rebrand
      }
  
-     @Override

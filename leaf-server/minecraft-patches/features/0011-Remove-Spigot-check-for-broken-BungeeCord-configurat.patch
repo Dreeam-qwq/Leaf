@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Wed, 12 Oct 2022 14:48:45 -0400
-Subject: [PATCH] Remove Spigot Check for Broken BungeeCord Configurations
+Subject: [PATCH] Remove Spigot check for broken BungeeCord configurations
 
 
 diff --git a/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java b/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java

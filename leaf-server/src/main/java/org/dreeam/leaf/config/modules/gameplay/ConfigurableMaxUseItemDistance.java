@@ -9,7 +9,7 @@ public class ConfigurableMaxUseItemDistance extends ConfigModules {
         return EnumConfigCategory.GAMEPLAY.getBaseKeyName() + ".player";
     }
 
-    public static double maxUseItemDistance = 1.0000001D;
+    public static double maxUseItemDistance = 1.0000001;
 
     @Override
     public void onLoaded() {

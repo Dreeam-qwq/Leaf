@@ -57,10 +57,10 @@ index 2da6609ab8398c5c537e9065b3a82693f43200e2..9db63f122539134003a5955aabae9706
              } else {
                  getBukkitEntity().setPlayerListName(prefix + scoreboardName + suffix, true);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 465e34eb906ec78f49ff1183b635e77a1fcaa758..39b01b3d96d03bca4c33eaddfc54edef23c3df0c 100644
+index 356feb908e533d7f1cddf6eb8238823c9bf8250a..3085fa1c463b3652edb03d2b86fd43a564e4d1b4 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -2255,6 +2255,8 @@ public class ServerGamePacketListenerImpl
+@@ -2254,6 +2254,8 @@ public class ServerGamePacketListenerImpl
          }
      }
  
@@ -69,7 +69,7 @@ index 465e34eb906ec78f49ff1183b635e77a1fcaa758..39b01b3d96d03bca4c33eaddfc54edef
      @Override
      public void handleChatCommand(ServerboundChatCommandPacket packet) {
          this.tryHandleChat(packet.command(), () -> {
-@@ -2275,6 +2277,32 @@ public class ServerGamePacketListenerImpl
+@@ -2274,6 +2276,32 @@ public class ServerGamePacketListenerImpl
              LOGGER.info("{} issued server command: {}", this.player.getScoreboardName(), prefixedCommand);
          }
  
@@ -102,7 +102,7 @@ index 465e34eb906ec78f49ff1183b635e77a1fcaa758..39b01b3d96d03bca4c33eaddfc54edef
          PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(this.getCraftPlayer(), prefixedCommand, new LazyPlayerSet(this.server));
          this.cserver.getPluginManager().callEvent(event);
  
-@@ -2312,11 +2340,37 @@ public class ServerGamePacketListenerImpl
+@@ -2311,11 +2339,37 @@ public class ServerGamePacketListenerImpl
  
      private void performSignedChatCommand(ServerboundChatCommandSignedPacket packet, LastSeenMessages lastSeenMessages) {
          // CraftBukkit start

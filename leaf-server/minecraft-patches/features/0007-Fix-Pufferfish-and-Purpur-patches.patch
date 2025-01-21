@@ -5,7 +5,7 @@ Subject: [PATCH] Fix Pufferfish and Purpur patches
 
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index f348202ae2cc78586cf4b7926180c659b5fca56f..66418672e548a022980a403de912e05984137f37 100644
+index 73d052596310098abe69b247f45cdb118297f1ee..b12d0833e1499f97a02b7fedc398fcfd9c391e08 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -278,7 +278,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -65,7 +65,7 @@ index 35fd539eb2bfe60ad17ab1e558a01273666acc54..445bbdc8da7f1fdbddfc4d8787d78fea
          this.values[this.vp++ & 0xFF] = (int)(l * 100L / Runtime.getRuntime().maxMemory());
          this.repaint();
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index fde7de56f46502a1cc268318684e67ac2fbd5157..77676b38912e558a4ba0c65a009af4cdc531c5fa 100644
+index fde7de56f46502a1cc268318684e67ac2fbd5157..f618d3cf32be10b9ca3833231e653975bcf56e4c 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -625,7 +625,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
@@ -73,7 +73,7 @@ index fde7de56f46502a1cc268318684e67ac2fbd5157..77676b38912e558a4ba0c65a009af4cd
              // Gale start - MultiPaper - skip unnecessary mob spawning computations
          } else {
 -            spawnState = null;
-+            lastSpawnState = null; // Leaf - Pufferfish - Optimize mob spawning
++            lastSpawnState = null; // Leaf - Fix Pufferfish and Purpur patches - Optimize mob spawning
          }
          // Gale end - MultiPaper - skip unnecessary mob spawning computations
          int _int = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
@@ -91,13 +91,14 @@ index 1a9664a3b00dcb8171145c3bb3f3f704272aaa73..ec6276f3335fd963c8554dbc43adf5bd
                  this.disconnectAsync(Component.literal("Book too large!"), org.bukkit.event.player.PlayerKickEvent.Cause.ILLEGAL_ACTION); // Paper - kick event cause // Paper - add proper async disconnect
                  return;
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 3f97182bc9ef86476c25deb3106dab7152014edf..3e1a5ef63d97e2ad43d98c5736a185ade7afb4bd 100644
+index 3f97182bc9ef86476c25deb3106dab7152014edf..539cd1fe6ff15a4ebcbd65f41d8711d1f4ce5b97 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -536,21 +536,31 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -536,23 +536,35 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
      // Purpur end - Add canSaveToDisk to Entity
  
++    // Leaf start - Fix Pufferfish and Purpur patches
 +    // Gale start - JettPack - optimize sun burn tick - cache eye blockpos
 +    private BlockPos cached_eye_blockpos;
 +    private net.minecraft.world.phys.Vec3 cached_position;
@@ -134,9 +135,12 @@ index 3f97182bc9ef86476c25deb3106dab7152014edf..3e1a5ef63d97e2ad43d98c5736a185ad
 +        return false; // Gale - JettPack - optimize sun burn tick - optimizations and cache eye blockpos - diff on change
      }
      // Purpur end - copied from Mob - API for any mob to burn daylight
++    // Leaf end - Fix Pufferfish and Purpur patches
  
+     public Entity(EntityType<?> entityType, Level level) {
+         this.type = entityType;
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 8728aba69ac24b52e6221ea2ddd8fc6d5a26f3f3..956c1b5422c177e0da5140c4184720d10aa4e790 100644
+index 8728aba69ac24b52e6221ea2ddd8fc6d5a26f3f3..9f36d063168c262fec7e69a96bad375b4eaff797 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -1024,13 +1024,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
@@ -144,16 +148,16 @@ index 8728aba69ac24b52e6221ea2ddd8fc6d5a26f3f3..956c1b5422c177e0da5140c4184720d1
              EntityType<?> type = lookingEntity.getType();
              // Purpur start - Mob head visibility percent
 -            if (type == EntityType.SKELETON && itemBySlot.is(Items.SKELETON_SKULL)) {
-+            if (type == EntityType.SKELETON && this.getItemBySlot(EquipmentSlot.HEAD).is(Items.SKELETON_SKULL)) {
++            if (type == EntityType.SKELETON && this.getItemBySlot(EquipmentSlot.HEAD).is(Items.SKELETON_SKULL)) { // Leaf - Fix Pufferfish and Purpur patches
                  d *= lookingEntity.level().purpurConfig.skeletonHeadVisibilityPercent;
 -            } else if (type == EntityType.ZOMBIE && itemBySlot.is(Items.ZOMBIE_HEAD)) {
-+            } else if (type == EntityType.ZOMBIE && this.getItemBySlot(EquipmentSlot.HEAD).is(Items.ZOMBIE_HEAD)) {
++            } else if (type == EntityType.ZOMBIE && this.getItemBySlot(EquipmentSlot.HEAD).is(Items.ZOMBIE_HEAD)) { // Leaf - Fix Pufferfish and Purpur patches
                  d *= lookingEntity.level().purpurConfig.zombieHeadVisibilityPercent;
 -            } else if ((type == EntityType.PIGLIN || type == EntityType.PIGLIN_BRUTE) && itemBySlot.is(Items.PIGLIN_HEAD)) {
-+            } else if ((type == EntityType.PIGLIN || type == EntityType.PIGLIN_BRUTE) && this.getItemBySlot(EquipmentSlot.HEAD).is(Items.PIGLIN_HEAD)) {
++            } else if ((type == EntityType.PIGLIN || type == EntityType.PIGLIN_BRUTE) && this.getItemBySlot(EquipmentSlot.HEAD).is(Items.PIGLIN_HEAD)) { // Leaf - Fix Pufferfish and Purpur patches
                  d *= lookingEntity.level().purpurConfig.piglinHeadVisibilityPercent;
 -            } else if (type == EntityType.CREEPER && itemBySlot.is(Items.CREEPER_HEAD)) {
-+            } else if (type == EntityType.CREEPER && this.getItemBySlot(EquipmentSlot.HEAD).is(Items.CREEPER_HEAD)) {
++            } else if (type == EntityType.CREEPER && this.getItemBySlot(EquipmentSlot.HEAD).is(Items.CREEPER_HEAD)) { // Leaf - Fix Pufferfish and Purpur patches
                  d *= lookingEntity.level().purpurConfig.creeperHeadVisibilityPercent;
              }
              // Purpur end - Mob head visibility percent
@@ -174,15 +178,17 @@ index 7b8804844ab5636323bc8d136c775f1e9591e89c..14d9dceacc82cc6c085dab8f52e59a31
          // Purpur - implemented in Entity - API for any mob to burn daylight
          return super.isSunBurnTick();
 diff --git a/net/minecraft/world/entity/ai/sensing/SecondaryPoiSensor.java b/net/minecraft/world/entity/ai/sensing/SecondaryPoiSensor.java
-index 6f96551ba91da214054b89a255254ca597977cc0..3f1a80db81c0f0cd7bb1d5df4a2c2cb1b6a8d2d9 100644
+index 6f96551ba91da214054b89a255254ca597977cc0..3d5ac6976efd66b29657749f83d03ba77ebea2eb 100644
 --- a/net/minecraft/world/entity/ai/sensing/SecondaryPoiSensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/SecondaryPoiSensor.java
-@@ -22,19 +22,15 @@ public class SecondaryPoiSensor extends Sensor<Villager> {
+@@ -22,20 +22,16 @@ public class SecondaryPoiSensor extends Sensor<Villager> {
  
      @Override
      protected void doTick(ServerLevel level, Villager entity) {
-+        // Purpur start - Option for Villager Clerics to farm Nether Wart - make sure clerics don't wander to soul sand when the option is off
-         // Gale start - Lithium - skip secondary POI sensor if absent
+-        // Gale start - Lithium - skip secondary POI sensor if absent
++        // Leaf start - Fix Pufferfish and Purpur patches
++        // Purpur: Option for Villager Clerics to farm Nether Wart - make sure clerics don't wander to soul sand when the option is off
++        // Gale: Lithium - skip secondary POI sensor if absent
          var secondaryPoi = entity.getVillagerData().getProfession().secondaryPoi();
 -        if (secondaryPoi.isEmpty()) {
 -            entity.getBrain().eraseMemory(MemoryModuleType.SECONDARY_JOB_SITE);
@@ -196,12 +202,13 @@ index 6f96551ba91da214054b89a255254ca597977cc0..3f1a80db81c0f0cd7bb1d5df4a2c2cb1
              brain.eraseMemory(MemoryModuleType.SECONDARY_JOB_SITE);
              return;
          }
-+        // Gale end - Lithium - skip secondary POI sensor if absent
-         // Purpur end - Option for Villager Clerics to farm Nether Wart
+-        // Purpur end - Option for Villager Clerics to farm Nether Wart
++        // Leaf end - Fix Pufferfish and Purpur patches
          ResourceKey<Level> resourceKey = level.dimension();
          BlockPos blockPos = entity.blockPosition();
+         List<GlobalPos> list = Lists.newArrayList();
 diff --git a/net/minecraft/world/entity/animal/allay/Allay.java b/net/minecraft/world/entity/animal/allay/Allay.java
-index 10d2a1138d814b83ce4233205a7f0ab2ed1f399d..e9f683ef9ce55e67748f1a16a45efe26bb4ff331 100644
+index 10d2a1138d814b83ce4233205a7f0ab2ed1f399d..a642533eddd1aca96ad57c2a219f00870a615f71 100644
 --- a/net/minecraft/world/entity/animal/allay/Allay.java
 +++ b/net/minecraft/world/entity/animal/allay/Allay.java
 @@ -287,8 +287,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
@@ -210,12 +217,12 @@ index 10d2a1138d814b83ce4233205a7f0ab2ed1f399d..e9f683ef9ce55e67748f1a16a45efe26
      protected void customServerAiStep(ServerLevel level) {
 -        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
 -        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
-+        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider // Leaf - Fix Pufferfish and Purpur patches
          this.getBrain().tick(level, this);
          AllayAi.updateActivity(this);
          super.customServerAiStep(level);
 diff --git a/net/minecraft/world/entity/animal/axolotl/Axolotl.java b/net/minecraft/world/entity/animal/axolotl/Axolotl.java
-index 1323cedcacd3072cdf5f1eac644688cd098b53db..ed15200319d0e50b495f2d0d912093d670fdb309 100644
+index 1323cedcacd3072cdf5f1eac644688cd098b53db..ad19bbd6989bfb98966872b304f6ece0e869f7a4 100644
 --- a/net/minecraft/world/entity/animal/axolotl/Axolotl.java
 +++ b/net/minecraft/world/entity/animal/axolotl/Axolotl.java
 @@ -347,8 +347,7 @@ public class Axolotl extends Animal implements VariantHolder<Axolotl.Variant>, B
@@ -224,12 +231,12 @@ index 1323cedcacd3072cdf5f1eac644688cd098b53db..ed15200319d0e50b495f2d0d912093d6
      protected void customServerAiStep(ServerLevel level) {
 -        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
 -        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
-+        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider // Leaf - Fix Pufferfish and Purpur patches
          this.getBrain().tick(level, this);
          AxolotlAi.updateActivity(this);
          if (!this.isNoAi()) {
 diff --git a/net/minecraft/world/entity/animal/frog/Frog.java b/net/minecraft/world/entity/animal/frog/Frog.java
-index 4ecc6b6247a6ab14a5d46f9a05d5df8412ae2a5f..a962b06ac3fc15604b7fbf5e2109f1cc8d238ac7 100644
+index 4ecc6b6247a6ab14a5d46f9a05d5df8412ae2a5f..4aadf347811df904e634ea7ebcc5361ea6cb7e7a 100644
 --- a/net/minecraft/world/entity/animal/frog/Frog.java
 +++ b/net/minecraft/world/entity/animal/frog/Frog.java
 @@ -241,8 +241,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
@@ -238,12 +245,12 @@ index 4ecc6b6247a6ab14a5d46f9a05d5df8412ae2a5f..a962b06ac3fc15604b7fbf5e2109f1cc
      protected void customServerAiStep(ServerLevel level) {
 -        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
 -        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
-+        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider // Leaf - Fix Pufferfish and Purpur patches
          this.getBrain().tick(level, this);
          FrogAi.updateActivity(this);
          super.customServerAiStep(level);
 diff --git a/net/minecraft/world/entity/animal/frog/Tadpole.java b/net/minecraft/world/entity/animal/frog/Tadpole.java
-index 0ca35514a920dddf230d749bc1a5fe15f1c7940a..8468f7095e1db7a54042ce9a97d991d3105bd535 100644
+index 0ca35514a920dddf230d749bc1a5fe15f1c7940a..ec9db1c12426db80dbf02d704e6c7ec867d59f6f 100644
 --- a/net/minecraft/world/entity/animal/frog/Tadpole.java
 +++ b/net/minecraft/world/entity/animal/frog/Tadpole.java
 @@ -133,8 +133,7 @@ public class Tadpole extends AbstractFish {
@@ -252,12 +259,12 @@ index 0ca35514a920dddf230d749bc1a5fe15f1c7940a..8468f7095e1db7a54042ce9a97d991d3
      protected void customServerAiStep(ServerLevel level) {
 -        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
 -        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
-+        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider // Leaf - Fix Pufferfish and Purpur patches
          this.getBrain().tick(level, this);
          TadpoleAi.updateActivity(this);
          super.customServerAiStep(level);
 diff --git a/net/minecraft/world/entity/animal/goat/Goat.java b/net/minecraft/world/entity/animal/goat/Goat.java
-index 7107cc2462e7d33bca413a1b051822cc1bd61bfa..2e3ca6b17862494218042e6d84970a60272c2b40 100644
+index 7107cc2462e7d33bca413a1b051822cc1bd61bfa..a1cdb620368fe7f6eb95734af903d66257156b26 100644
 --- a/net/minecraft/world/entity/animal/goat/Goat.java
 +++ b/net/minecraft/world/entity/animal/goat/Goat.java
 @@ -223,8 +223,7 @@ public class Goat extends Animal {
@@ -266,12 +273,12 @@ index 7107cc2462e7d33bca413a1b051822cc1bd61bfa..2e3ca6b17862494218042e6d84970a60
      protected void customServerAiStep(ServerLevel level) {
 -        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
 -        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
-+        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider // Leaf - Fix Pufferfish and Purpur patches
          this.getBrain().tick(level, this);
          GoatAi.updateActivity(this);
          super.customServerAiStep(level);
 diff --git a/net/minecraft/world/entity/monster/hoglin/Hoglin.java b/net/minecraft/world/entity/monster/hoglin/Hoglin.java
-index 24725009d7619b0e9043d7d0039f805c611aedf6..a9d381568625ca871dcaf40b363d46692f45591d 100644
+index 24725009d7619b0e9043d7d0039f805c611aedf6..f89a3c4f75a40981aff7253cd04bcdf3c8c26952 100644
 --- a/net/minecraft/world/entity/monster/hoglin/Hoglin.java
 +++ b/net/minecraft/world/entity/monster/hoglin/Hoglin.java
 @@ -203,8 +203,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
@@ -280,12 +287,12 @@ index 24725009d7619b0e9043d7d0039f805c611aedf6..a9d381568625ca871dcaf40b363d4669
      protected void customServerAiStep(ServerLevel level) {
 -        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
 -        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
-+        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider // Leaf - Fix Pufferfish and Purpur patches
          this.getBrain().tick(level, this);
          HoglinAi.updateActivity(this);
          if (this.isConverting()) {
 diff --git a/net/minecraft/world/entity/monster/piglin/Piglin.java b/net/minecraft/world/entity/monster/piglin/Piglin.java
-index 242b2545b6082f567d0bb7900ef06ded3c0fdcdd..85306d8f0fba3b5dcb244df54c949b45e07ee4e7 100644
+index 242b2545b6082f567d0bb7900ef06ded3c0fdcdd..fe6eb99ea3d2deda317efe90ecb0987bb367313f 100644
 --- a/net/minecraft/world/entity/monster/piglin/Piglin.java
 +++ b/net/minecraft/world/entity/monster/piglin/Piglin.java
 @@ -382,8 +382,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
@@ -294,12 +301,12 @@ index 242b2545b6082f567d0bb7900ef06ded3c0fdcdd..85306d8f0fba3b5dcb244df54c949b45
      protected void customServerAiStep(ServerLevel level) {
 -        //if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
 -        if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
-+        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish // Purpur - only use brain if no rider // Leaf - Fix Pufferfish and Purpur patches
          this.getBrain().tick(level, this);
          PiglinAi.updateActivity(this);
          super.customServerAiStep(level);
 diff --git a/net/minecraft/world/entity/projectile/Projectile.java b/net/minecraft/world/entity/projectile/Projectile.java
-index bd93ee97982038789114f17ee369208fc6413796..0b1263000f872431e44abfdd57134b6efe245641 100644
+index bd93ee97982038789114f17ee369208fc6413796..aa201bd227dffb7442ec62b86b2435f025be732d 100644
 --- a/net/minecraft/world/entity/projectile/Projectile.java
 +++ b/net/minecraft/world/entity/projectile/Projectile.java
 @@ -74,7 +74,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
@@ -307,7 +314,7 @@ index bd93ee97982038789114f17ee369208fc6413796..0b1263000f872431e44abfdd57134b6e
                  if (maxChunkLoadsPerProjectile >= 0 && this.chunksLoadedByProjectile >= maxChunkLoadsPerProjectile) {
                      if (maxProjectileChunkLoadsConfig.perProjectile.removeFromWorldAfterReachLimit) {
 -                        this.discard();
-+                        this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD); // Leaf - Purpur
++                        this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD); // Leaf - Fix Pufferfish and Purpur patches - Purpur
                      } else if (maxProjectileChunkLoadsConfig.perProjectile.resetMovementAfterReachLimit) {
                          this.setDeltaMovement(0, this.getDeltaMovement().y, 0);
                      }
