@@ -5,7 +5,7 @@ Subject: [PATCH] Fix Pufferfish and Purpur patches
 
 
 diff --git a/src/main/java/org/galemc/gale/version/AbstractPaperVersionFetcher.java b/src/main/java/org/galemc/gale/version/AbstractPaperVersionFetcher.java
-index fab5d5af9ec6a20810ce5e437dd617684cc5768f..d0a031014ec410142d59c8edd577bf035b7e407b 100644
+index fab5d5af9ec6a20810ce5e437dd617684cc5768f..1d9acb46d69e34b7e0a38b6a02334b1a3472ff2b 100644
 --- a/src/main/java/org/galemc/gale/version/AbstractPaperVersionFetcher.java
 +++ b/src/main/java/org/galemc/gale/version/AbstractPaperVersionFetcher.java
 @@ -101,10 +101,10 @@ public abstract class AbstractPaperVersionFetcher implements VersionFetcher {
@@ -16,10 +16,10 @@ index fab5d5af9ec6a20810ce5e437dd617684cc5768f..d0a031014ec410142d59c8edd577bf03
 -            case 0 -> text("You are running the latest version", NamedTextColor.GREEN);
 -            case DISTANCE_UNKNOWN -> text("Unknown version", NamedTextColor.YELLOW);
 -            default -> text("You are " + distance + " version(s) behind", NamedTextColor.YELLOW)
-+            case DISTANCE_ERROR -> text("* Error obtaining version information", NamedTextColor.RED); // Purpur
-+            case 0 -> text("* You are running the latest version", NamedTextColor.GREEN); // Purpur
-+            case DISTANCE_UNKNOWN -> text("* Unknown version", NamedTextColor.YELLOW); // Purpur
-+            default -> text("* You are " + distance + " version(s) behind", NamedTextColor.YELLOW) // Purpur
++            case DISTANCE_ERROR -> text("* Error obtaining version information", NamedTextColor.RED); // Purpur - Rebrand
++            case 0 -> text("* You are running the latest version", NamedTextColor.GREEN); // Purpur - Rebrand
++            case DISTANCE_UNKNOWN -> text("* Unknown version", NamedTextColor.YELLOW); // Purpur - Rebrand
++            default -> text("* You are " + distance + " version(s) behind", NamedTextColor.YELLOW) // Purpur - Rebrand
                      .append(Component.newline())
                      .append(text("Download the new version at: ")
                              .append(text(this.downloadPage, NamedTextColor.GOLD) // Gale - branding changes - version fetcher
@@ -28,6 +28,6 @@ index fab5d5af9ec6a20810ce5e437dd617684cc5768f..d0a031014ec410142d59c8edd577bf03
          }
  
 -        return text("Previous version: " + oldVersion, NamedTextColor.GRAY, TextDecoration.ITALIC);
-+        return text("Previous: " + oldVersion, NamedTextColor.GRAY, TextDecoration.ITALIC); // Purpur
++        return text("Previous: " + oldVersion, NamedTextColor.GRAY, TextDecoration.ITALIC); // Purpur - Rebrand
      }
  }

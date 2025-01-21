@@ -76,7 +76,7 @@
 +    implementation(project(":leaf-api")) // Gale - project setup - Depend on own API // Leaf - project setup
 +
 +    // Leaf start - Libraries
-+    implementation("com.github.thatsmusic99:ConfigurationMaster-API:v2.0.0-rc.2") { // Leaf Config
++    implementation("com.github.thatsmusic99:ConfigurationMaster-API:v2.0.0-rc.2") { // Leaf config
 +        exclude(group = "org.yaml", module = "snakeyaml")
 +    }
 +    implementation("com.github.luben:zstd-jni:1.5.6-9") // LinearPaper
