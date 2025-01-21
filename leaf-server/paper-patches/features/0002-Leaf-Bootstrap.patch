@@ -6,7 +6,7 @@ Subject: [PATCH] Leaf Bootstrap
 org.bukkit.craftbukkit.Main#main -> LeafBootstrap -> PaperBootstrap -> ...
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index ecb0fcd1f3b3f3d7751eded3cdf0977c1889c9ed..1df9bed6d3dc1e28898af8d5ad6a854dd5ccab1b 100644
+index ecb0fcd1f3b3f3d7751eded3cdf0977c1889c9ed..d0becb56a9911ef4cc55ae8d7c47832f442ad52f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -278,7 +278,8 @@ public class Main {
@@ -14,8 +14,8 @@ index ecb0fcd1f3b3f3d7751eded3cdf0977c1889c9ed..1df9bed6d3dc1e28898af8d5ad6a854d
                  //System.out.println("Loading libraries, please wait...");
                  //net.minecraft.server.Main.main(options);
 -                io.papermc.paper.PaperBootstrap.boot(options);
-+                //io.papermc.paper.PaperBootstrap.boot(options); // Leaf - LeafBoostrap - diff on change
-+                org.dreeam.leaf.LeafBootstrap.boot(options); // Leaf - LeafBoostrap
++                //io.papermc.paper.PaperBootstrap.boot(options); // Leaf - Leaf Boostrap - diff on change
++                org.dreeam.leaf.LeafBootstrap.boot(options); // Leaf - Leaf Boostrap
              } catch (Throwable t) {
                  t.printStackTrace();
              }

@@ -7,7 +7,7 @@ Co-authored by: Martijn Muijsers <martijnmuijsers@live.nl>
 Co-authored by: MachineBreaker <machinebreaker>
 
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 78654e7ae26c0b2b2512f4e29a331e2ead2d6916..b7cbf1c7bb56668763c4f968ea0d69f730cb5285 100644
+index 78654e7ae26c0b2b2512f4e29a331e2ead2d6916..13edbcdabc159e3694e7dbe824ccb5bb447fe788 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1006,17 +1006,19 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
@@ -19,14 +19,14 @@ index 78654e7ae26c0b2b2512f4e29a331e2ead2d6916..b7cbf1c7bb56668763c4f968ea0d69f7
 -                continue;
 -            }
 -
-+            // Leaf - move up
++            // Leaf - Reduce canSee work - move up
              // !entity1.dead && entity1.i && (entity == null || !entity1.x(entity));
              // elide the last check since vanilla calls with entity = null
              // only we care about the source for the canSee check
              if (entity.isRemoved() || !entity.blocksBuilding) {
                  continue;
              }
-+            // Leaf end
++            // Leaf end - Reduce canSee work - move up
 +
 +            if (checkCanSee && source instanceof net.minecraft.server.level.ServerPlayer && entity instanceof net.minecraft.server.level.ServerPlayer
 +                && !((net.minecraft.server.level.ServerPlayer) source).getBukkitEntity().canSee(((net.minecraft.server.level.ServerPlayer) entity).getBukkitEntity())) {

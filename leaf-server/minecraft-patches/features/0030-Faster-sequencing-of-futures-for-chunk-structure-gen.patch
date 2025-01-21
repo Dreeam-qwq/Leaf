@@ -7,10 +7,10 @@ Replace `thenApply` with `thenCompose`. Once one task is completed then the next
 to prevent blocking threads while waiting to complete all tasks. But may cause the sequence of future compose disorder.
 
 diff --git a/net/minecraft/Util.java b/net/minecraft/Util.java
-index 80a7a85e1a03a1ca406259207e1ae3b909b3284f..ad41d6d5723d1194344fd9c5a9151356be8bb602 100644
+index 80a7a85e1a03a1ca406259207e1ae3b909b3284f..b097f685e826e70008e3a096ee5f1d4fccf25680 100644
 --- a/net/minecraft/Util.java
 +++ b/net/minecraft/Util.java
-@@ -607,17 +607,44 @@ public class Util {
+@@ -607,17 +607,42 @@ public class Util {
          return map;
      }
  
@@ -18,6 +18,7 @@ index 80a7a85e1a03a1ca406259207e1ae3b909b3284f..ad41d6d5723d1194344fd9c5a9151356
      public static <V> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<V>> futures) {
 +        return sequence(futures, false);
 +    }
++
 +    public static <V> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<V>> futures, boolean useFaster) {
 +        // Leaf end - Faster sequencing of futures for chunk structure gen
          if (futures.isEmpty()) {
@@ -26,11 +27,8 @@ index 80a7a85e1a03a1ca406259207e1ae3b909b3284f..ad41d6d5723d1194344fd9c5a9151356
              return futures.get(0).thenApply(List::of);
          } else {
              CompletableFuture<Void> completableFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-+            // Leaf start - Faster sequencing of futures for chunk structure gen
-+            if (org.dreeam.leaf.config.modules.opt.FasterStructureGenFutureSequencing.enabled && useFaster) {
-+                return sequenceFaster(futures, completableFuture);
-+            }
-+            // Leaf end - Faster sequencing of futures for chunk structure gen
++
++            if (useFaster) return sequenceFaster(futures, completableFuture); // Leaf - Faster sequencing of futures for chunk structure gen
 +
              return completableFuture.thenApply(_void -> futures.stream().map(CompletableFuture::join).toList());
          }
@@ -69,7 +67,7 @@ index d8c472b8c6aadcaadef14abd8ab43f466e94417e..bc079b6c3d751f2a63d089bf209cf7d8
              list2 -> createAndValidateFullContext(registryAccess, provider, (List<WritableRegistry<?>>)list2), backgroundExecutor
          );
 diff --git a/net/minecraft/world/level/chunk/ChunkGeneratorStructureState.java b/net/minecraft/world/level/chunk/ChunkGeneratorStructureState.java
-index 619b98e42e254c0c260c171a26a2472ddf59b885..4483d7764ddca635fb6fb841fdc2185357106fc5 100644
+index 619b98e42e254c0c260c171a26a2472ddf59b885..f07a5416e5dc7e9a798a78ce9573a0c42bc59d04 100644
 --- a/net/minecraft/world/level/chunk/ChunkGeneratorStructureState.java
 +++ b/net/minecraft/world/level/chunk/ChunkGeneratorStructureState.java
 @@ -255,7 +255,7 @@ public class ChunkGeneratorStructureState {
@@ -77,7 +75,7 @@ index 619b98e42e254c0c260c171a26a2472ddf59b885..4483d7764ddca635fb6fb841fdc21853
              }
  
 -            return Util.sequence(list).thenApply(completed -> {
-+            return Util.sequence(list, true).thenApply(completed -> { // Leaf - Faster sequencing of futures for chunk structure gen
++            return Util.sequence(list, org.dreeam.leaf.config.modules.opt.FasterStructureGenFutureSequencing.enabled).thenApply(completed -> { // Leaf - Faster sequencing of futures for chunk structure gen
                  double d2 = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS) / 1000.0;
                  LOGGER.debug("Calculation for {} took {}s", structureSet, d2);
                  return completed;
