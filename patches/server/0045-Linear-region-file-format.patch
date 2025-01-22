@@ -196,7 +196,7 @@ index b26a5b76cd30c96ce15ced5ac51222a8333bde52..dd42303de58274c24394da26bda52bf0
          }
          // Paper end - rewrite chunk system
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index 79aca7e7cd2f860464657e77e935391642981fad..6721adad3d227acba8daba80b0b7e1df3bc0b046 100644
+index 79aca7e7cd2f860464657e77e935391642981fad..1ae102bcf2dfd72ec36703aecd8f0deff132bcca 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 @@ -23,7 +23,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
@@ -248,7 +248,7 @@ index 79aca7e7cd2f860464657e77e935391642981fad..6721adad3d227acba8daba80b0b7e1df
  
          this.regionCache.putAndMoveToFirst(key, ret);
  
-@@ -119,7 +123,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -119,11 +123,11 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
          }
  
          final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
@@ -257,6 +257,11 @@ index 79aca7e7cd2f860464657e77e935391642981fad..6721adad3d227acba8daba80b0b7e1df
  
          // note: not required to keep regionfile loaded after this call, as the write param takes a regionfile as input
          // (and, the regionfile parameter is unused for writing until the write call)
+-        final ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData writeData = ((ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile)regionFile).moonrise$startWrite(compound, pos);
++        final ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData writeData = regionFile.moonrise$startWrite(compound, pos); // LinearPaper
+ 
+         try { // Paper - implement RegionFileSizeException
+         try {
 @@ -153,7 +157,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
      ) throws IOException {
          final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
@@ -510,10 +515,10 @@ index 0000000000000000000000000000000000000000..8eba172be9bce7cccd27d27bee2d6c6f
 +}
 diff --git a/src/main/java/org/stupidcraft/linearpaper/region/IRegionFile.java b/src/main/java/org/stupidcraft/linearpaper/region/IRegionFile.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..77a3629aeae5dfde37b8ea3da97ed008a30e1b94
+index 0000000000000000000000000000000000000000..6a9b8178cca07335fbe8244fd1859b241ae35034
 --- /dev/null
 +++ b/src/main/java/org/stupidcraft/linearpaper/region/IRegionFile.java
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,29 @@
 +package org.stupidcraft.linearpaper.region;
 +
 +import java.io.DataInputStream;
@@ -522,10 +527,11 @@ index 0000000000000000000000000000000000000000..77a3629aeae5dfde37b8ea3da97ed008
 +import java.nio.ByteBuffer;
 +import java.nio.file.Path;
 +
++import ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile;
 +import net.minecraft.nbt.CompoundTag;
 +import net.minecraft.world.level.ChunkPos;
 +
-+public interface IRegionFile {
++public interface IRegionFile extends AutoCloseable, ChunkSystemRegionFile {
 +    Path getPath();
 +    void flush() throws IOException;
 +    void clear(ChunkPos pos) throws IOException;
@@ -602,12 +608,13 @@ index 0000000000000000000000000000000000000000..70552d63a84a4d3a73348d0dffacd89c
 +}
 diff --git a/src/main/java/org/stupidcraft/linearpaper/region/LinearRegionFile.java b/src/main/java/org/stupidcraft/linearpaper/region/LinearRegionFile.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d2cbdd75f02d377a7680288bb1154d51dbc6bc51
+index 0000000000000000000000000000000000000000..ea4b9227da76143a6b1aef7924ab634899c81120
 --- /dev/null
 +++ b/src/main/java/org/stupidcraft/linearpaper/region/LinearRegionFile.java
-@@ -0,0 +1,299 @@
+@@ -0,0 +1,309 @@
 +package org.stupidcraft.linearpaper.region;
 +
++import ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO;
 +import com.github.luben.zstd.ZstdInputStream;
 +import com.github.luben.zstd.ZstdOutputStream;
 +import com.mojang.logging.LogUtils;
@@ -830,6 +837,15 @@ index 0000000000000000000000000000000000000000..d2cbdd75f02d377a7680288bb1154d51
 +
 +    public DataOutputStream getChunkDataOutputStream(ChunkPos pos) {
 +        return new DataOutputStream(new BufferedOutputStream(new ChunkBuffer(pos)));
++    }
++
++    @Override
++    public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(CompoundTag data, ChunkPos pos) throws IOException {
++        final DataOutputStream out = this.getChunkDataOutputStream(pos);
++        return new ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData(
++            data, ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData.WriteResult.WRITE,
++            out, regionFile -> out.close()
++        );
 +    }
 +
 +    private byte[] toByteArray(InputStream in) throws IOException {
