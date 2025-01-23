@@ -13,7 +13,7 @@ To avoid the hefty ArrayDeque's size() call, we check if we *really* need to exe
 Most entities won't have any scheduled tasks, so this is a nice performance bonus. These optimizations, however, wouldn't work in a Folia environment, but because in SparklyPaper executeTick is always executed on the main thread, it ain't an issue for us (yay).
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 742835ecfa0cba6dc3114dbe584409183ade9228..2ff6059d6bd3fe7c6814603c2ba0e6ccffe1873a 100644
+index cb7df3a09bfaa1791450628095e9788f1d5da6fc..d9d0a7dc0ccfa321c41dbdc51d0c3a7383a0f9fd 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -291,6 +291,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

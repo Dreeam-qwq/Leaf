@@ -5,7 +5,7 @@ Subject: [PATCH] Cache blockstate cache
 
 
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 7afaa15102eb625245c2ccb31deeb6d1df658284..35d95d5c2a61533d3588c45db8acdcb11f6e53e3 100644
+index 117c7cedb9f355b5139b9aa9b15f4459453e3675..7f46f33fa565fa1a3aedce5524f19be8ba420352 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -1050,6 +1050,10 @@ public abstract class BlockBehaviour implements FeatureElement {
@@ -22,7 +22,7 @@ index 7afaa15102eb625245c2ccb31deeb6d1df658284..35d95d5c2a61533d3588c45db8acdcb1
 @@ -1068,7 +1072,7 @@ public abstract class BlockBehaviour implements FeatureElement {
                      );
                  } else {
-                     // Leaf start - Remove stream
+                     // Leaf start - Remove stream in BlockBehaviour cache blockstate
 -                    for (Direction.Axis axis : Direction.Axis.values()) {
 +                    for (Direction.Axis axis : DIRECTION_AXIS_VALUES) { // Leaf - Cache blockstate cache array
                          if (this.collisionShape.min(axis) < 0.0 || this.collisionShape.max(axis) > 1.0) {

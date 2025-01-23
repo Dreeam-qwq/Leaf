@@ -9,7 +9,7 @@ Original project: https://github.com/Cryptite/Slice
 Co-authored-by: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index b7829a91a7ef79706ec6d90b8b2673fd369b9931..c798869665397de5b435e992873b566f766c2ff9 100644
+index 1173deb1aeb5abc225e7b5914cc3c325afdfab16..00c7afd995d179efe1c96fb6daf342b6b357fa65 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -396,6 +396,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc

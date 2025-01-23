@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Thu, 28 Mar 2024 14:04:35 -0400
-Subject: [PATCH] Prevent change non-editable sign warning spam in console
+Subject: [PATCH] Remove change non-editable sign warning
 
 
 diff --git a/net/minecraft/world/level/block/entity/SignBlockEntity.java b/net/minecraft/world/level/block/entity/SignBlockEntity.java

@@ -5,7 +5,7 @@ Subject: [PATCH] Configurable connection message
 
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index b98e854fb9fad65b176b4915214a0a4c5e424d6c..5fe6a295f5b5285a20c535a026e1342f89896fd7 100644
+index 6855076ef73bbfd23e75ba4ae8eaa0ea598c9d4e..3847df8a77d5ceece2541f4d459d0f61e3276c86 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -433,7 +433,7 @@ public abstract class PlayerList {
@@ -13,7 +13,7 @@ index b98e854fb9fad65b176b4915214a0a4c5e424d6c..5fe6a295f5b5285a20c535a026e1342f
          player.containerMenu.transferTo(player.containerMenu, bukkitPlayer);
  
 -        org.bukkit.event.player.PlayerJoinEvent playerJoinEvent = new org.bukkit.event.player.PlayerJoinEvent(bukkitPlayer, io.papermc.paper.adventure.PaperAdventure.asAdventure(mutableComponent)); // Paper - Adventure
-+        org.bukkit.event.player.PlayerJoinEvent playerJoinEvent = new org.bukkit.event.player.PlayerJoinEvent(bukkitPlayer, getJoinMsg(mutableComponent, bukkitPlayer)); // Paper - Adventure
++        org.bukkit.event.player.PlayerJoinEvent playerJoinEvent = new org.bukkit.event.player.PlayerJoinEvent(bukkitPlayer, getJoinMsg(mutableComponent, bukkitPlayer)); // Paper - Adventure // Leaf - Configurable connection message - join message
          this.cserver.getPluginManager().callEvent(playerJoinEvent);
  
          if (!player.connection.isAcceptingMessages()) {
@@ -31,11 +31,11 @@ index b98e854fb9fad65b176b4915214a0a4c5e424d6c..5fe6a295f5b5285a20c535a026e1342f
          }
  
 -        org.bukkit.event.player.PlayerQuitEvent playerQuitEvent = new org.bukkit.event.player.PlayerQuitEvent(player.getBukkitEntity(), leaveMessage, player.quitReason); // Paper - Adventure & Add API for quit reason
-+        org.bukkit.event.player.PlayerQuitEvent playerQuitEvent = new org.bukkit.event.player.PlayerQuitEvent(player.getBukkitEntity(),  getQuitMsg(leaveMessage, player.getBukkitEntity()), player.quitReason); // Paper - Adventure & Add API for quit reason
++        org.bukkit.event.player.PlayerQuitEvent playerQuitEvent = new org.bukkit.event.player.PlayerQuitEvent(player.getBukkitEntity(),  getQuitMsg(leaveMessage, player.getBukkitEntity()), player.quitReason); // Paper - Adventure & Add API for quit reason // Leaf - Configurable connection message - quit message
          this.cserver.getPluginManager().callEvent(playerQuitEvent);
          player.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
  
-@@ -1661,4 +1661,33 @@ public abstract class PlayerList {
+@@ -1661,4 +1661,34 @@ public abstract class PlayerList {
      public boolean isAllowCommandsForAllPlayers() {
          return this.allowCommandsForAllPlayers;
      }
@@ -48,12 +48,13 @@ index b98e854fb9fad65b176b4915214a0a4c5e424d6c..5fe6a295f5b5285a20c535a026e1342f
 +            }
 +
 +            return net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(org.dreeam.leaf.config.modules.misc.ConnectionMessage.joinMessage)
-+                .replaceText(net.kyori.adventure.text.TextReplacementConfig.builder().matchLiteral("%player_name%").replacement(craftPlayer.getName()).build())
-+                .replaceText(net.kyori.adventure.text.TextReplacementConfig.builder().matchLiteral("%player_displayname%").replacement(craftPlayer.displayName()).build());
++                .replaceText(net.kyori.adventure.text.TextReplacementConfig.builder().matchLiteral("<player_name>").replacement(craftPlayer.getName()).build())
++                .replaceText(net.kyori.adventure.text.TextReplacementConfig.builder().matchLiteral("<player_displayname>").replacement(craftPlayer.displayName()).build());
 +        }
 +
 +        return net.kyori.adventure.text.Component.empty();
 +    }
++
 +    private net.kyori.adventure.text.Component getQuitMsg(net.kyori.adventure.text.Component defaultJoinMsg, org.bukkit.craftbukkit.entity.CraftPlayer craftPlayer) {
 +        if (org.dreeam.leaf.config.modules.misc.ConnectionMessage.quitEnabled) {
 +            if ("default".equals(org.dreeam.leaf.config.modules.misc.ConnectionMessage.quitMessage)) {
@@ -61,8 +62,8 @@ index b98e854fb9fad65b176b4915214a0a4c5e424d6c..5fe6a295f5b5285a20c535a026e1342f
 +            }
 +
 +            return net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(org.dreeam.leaf.config.modules.misc.ConnectionMessage.quitMessage)
-+                    .replaceText(net.kyori.adventure.text.TextReplacementConfig.builder().matchLiteral("%player_name%").replacement(craftPlayer.getName()).build())
-+                    .replaceText(net.kyori.adventure.text.TextReplacementConfig.builder().matchLiteral("%player_displayname%").replacement(craftPlayer.displayName()).build());
++                .replaceText(net.kyori.adventure.text.TextReplacementConfig.builder().matchLiteral("<player_name>").replacement(craftPlayer.getName()).build())
++                .replaceText(net.kyori.adventure.text.TextReplacementConfig.builder().matchLiteral("<player_displayname>").replacement(craftPlayer.displayName()).build());
 +        }
 +
 +        return net.kyori.adventure.text.Component.empty();

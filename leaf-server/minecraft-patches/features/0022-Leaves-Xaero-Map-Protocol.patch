@@ -9,7 +9,7 @@ Original project: https://github.com/LeavesMC/Leaves
 This patch is Powered by Xaero Map
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index e8d458ab8094434d4af3441f6ade2bb47e30868f..f4ac7a383ea9732a915d100ec9a83e225a1a383d 100644
+index 3d1338b463466d833b53eff50ec1366f41329dd8..823a7c330ec7f0287b4f7a83e2c719a45cbedf6e 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -1216,6 +1216,7 @@ public abstract class PlayerList {

@@ -1,13 +1,13 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Fri, 18 Nov 2022 23:26:16 -0500
-Subject: [PATCH] Remove UseItemOnPacket Too Far Check
+Subject: [PATCH] Remove UseItemOnPacket Too Far check
 
 This Check is added in 1.17.x -> 1.18.x that updated by Mojang.
 By removing this check, it gives ability for hackers to use some modules of hack clients.
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index ec6276f3335fd963c8554dbc43adf5bdfe3d2412..cb0b9a13d744115f45489677912c854a64afc03a 100644
+index ec6276f3335fd963c8554dbc43adf5bdfe3d2412..c58a231183655e2910748a5ecdf3b2ce0d7b00a1 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1998,8 +1998,13 @@ public class ServerGamePacketListenerImpl
@@ -16,13 +16,13 @@ index ec6276f3335fd963c8554dbc43adf5bdfe3d2412..cb0b9a13d744115f45489677912c854a
                      Vec3 vec3 = location.subtract(Vec3.atCenterOf(blockPos));
 -                    double d = 1.0000001;
 -                    if (Math.abs(vec3.x()) < 1.0000001 && Math.abs(vec3.y()) < 1.0000001 && Math.abs(vec3.z()) < 1.0000001) {
-+                    // Leaf start - Remove UseItemOnPacket Too Far Check and make it configurable
++                    // Leaf start - Remove UseItemOnPacket Too Far check
 +                    //double d = 1.0000001;
 +                    final double maxDistance = org.dreeam.leaf.config.modules.gameplay.ConfigurableMaxUseItemDistance.maxUseItemDistance;
 +                    if (maxDistance <= 0
 +                        || (Math.abs(vec3.x()) < maxDistance && Math.abs(vec3.y()) < maxDistance && Math.abs(vec3.z()) < maxDistance)
 +                    ) {
-+                        // Leaf end - Remove UseItemOnPacket Too Far Check and make it configurable
++                        // Leaf end - Remove UseItemOnPacket Too Far check
                          Direction direction = hitResult.getDirection();
                          this.player.resetLastActionTime();
                          int maxY = this.player.level().getMaxY();

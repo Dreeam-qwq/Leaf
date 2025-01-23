@@ -37,5 +37,14 @@ public class ConnectionMessage extends ConfigModules {
         quitMessage = config.getString(getBasePath() + ".quit.message", quitMessage, config.pickStringRegionBased(
                 "Quit message of player",
                 "玩家退出服务器时的消息"));
+
+        // Legacy compatibility
+        // TODO: config migration
+        joinMessage = joinMessage
+            .replace("%player_name%", "<player_name>")
+            .replace("%player_displayname%", "<player_displayname>");
+        quitMessage = quitMessage
+            .replace("%player_name%", "<player_name>")
+            .replace("%player_displayname%", "<player_displayname>");
     }
 }

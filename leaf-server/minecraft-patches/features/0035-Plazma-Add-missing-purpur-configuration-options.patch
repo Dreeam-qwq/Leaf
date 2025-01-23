@@ -121,7 +121,7 @@ index 0fdda6b24aee95170e54079e53125b4aed19ac0b..b295b4f2f4e13dd7fd577d126cd0ae72
      protected PathNavigation createNavigation(Level level) {
          return new WaterBoundPathNavigation(this, level);
 diff --git a/net/minecraft/world/entity/animal/sniffer/Sniffer.java b/net/minecraft/world/entity/animal/sniffer/Sniffer.java
-index fec7ecfe6e692ee74762a6a53e51f92cf66a9177..8b30cb78eef2611ff8ff3973cafa87ccbdf64355 100644
+index fec7ecfe6e692ee74762a6a53e51f92cf66a9177..20ce6607ed1c1c00dea5c0e95a4327845d1fb3d5 100644
 --- a/net/minecraft/world/entity/animal/sniffer/Sniffer.java
 +++ b/net/minecraft/world/entity/animal/sniffer/Sniffer.java
 @@ -118,6 +118,18 @@ public class Sniffer extends Animal {
@@ -148,7 +148,7 @@ index fec7ecfe6e692ee74762a6a53e51f92cf66a9177..8b30cb78eef2611ff8ff3973cafa87cc
      @Override
      protected void customServerAiStep(ServerLevel level) {
 -        if (this.behaviorTick++ % this.activatedPriority == 0) // Leaf - Plazma - Add missing Pufferfish configurations
-+        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Leaf - Plazma - Add missing Pufferfish configurations // Leaf - Plazma+        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Leaf - Plazma - Add missing Pufferfish configurations // Leaf - Plazma - Add missing purpur configuration options
++        if ((getRider() == null || !this.isControllable()) && this.behaviorTick++ % this.activatedPriority == 0) // Leaf - Plazma - Add missing Pufferfish configurations // Leaf - Plazma - Add missing purpur configuration options
          this.getBrain().tick(level, this);
          SnifferAi.updateActivity(this);
          super.customServerAiStep(level);
@@ -264,7 +264,7 @@ index aca85686fb0b9ec78d4e83574bbfe6313785f40f..c168e9d2c395044a662efd2d9ccde8b2
          org.bukkit.event.inventory.InventoryType.ENDER_CHEST.setDefaultSize(enderChestSixRows ? 54 : 27);
          enderChestPermissionRows = getBoolean("settings.blocks.ender_chest.use-permissions-for-rows", enderChestPermissionRows);
 diff --git a/org/purpurmc/purpur/PurpurWorldConfig.java b/org/purpurmc/purpur/PurpurWorldConfig.java
-index 8fd8732149f9f134ed6f8666918432c4a160556e..97e66a48cef89a57209a8ddff6e912d15bb82359 100644
+index 14a2a57126279bb3f12d77773fe036eb713163fa..306998eeba4bbb0311697b42ae5e1b96292b72fc 100644
 --- a/org/purpurmc/purpur/PurpurWorldConfig.java
 +++ b/org/purpurmc/purpur/PurpurWorldConfig.java
 @@ -1137,12 +1137,20 @@ public class PurpurWorldConfig {

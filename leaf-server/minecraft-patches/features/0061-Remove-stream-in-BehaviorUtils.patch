@@ -3,7 +3,7 @@ From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 Date: Sat, 26 Oct 2024 00:56:24 +0800
 Subject: [PATCH] Remove stream in BehaviorUtils
 
-Dreeam TODO: Check this
+Dreeam TODO: Check this, `SectionPos.cube(sectionPos, radius).toList()`
 
 diff --git a/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java b/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
 index 800bc29502ed46bd77cb04c0a79143898f109a48..77fa472d970c0f187f228b06e0b459ebdcaeb7fd 100644
