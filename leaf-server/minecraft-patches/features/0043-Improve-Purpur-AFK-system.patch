@@ -19,7 +19,7 @@ index 967c01f9e40c2c73f266de281425c918472cf66e..d8464f77c54f547161356b78e7642992
              org.purpurmc.purpur.command.DemoCommand.register(this.dispatcher); // Purpur - Add demo command
              org.purpurmc.purpur.command.PingCommand.register(this.dispatcher); // Purpur - Add ping command
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 2da6609ab8398c5c537e9065b3a82693f43200e2..9db63f122539134003a5955aabae970645131c1c 100644
+index 2da6609ab8398c5c537e9065b3a82693f43200e2..c051884e5af270fc36ca2be44af8f841c92ca14c 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -2460,6 +2460,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -33,38 +33,34 @@ index 2da6609ab8398c5c537e9065b3a82693f43200e2..9db63f122539134003a5955aabae9706
  
      @Override
      public void setAfk(boolean afk) {
-@@ -2497,6 +2501,22 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2497,6 +2501,18 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
              String prefix = (split.length > 0 ? split[0] : "").replace(org.purpurmc.purpur.PurpurConfig.afkTabListPrefix, "");
              String suffix = (split.length > 1 ? split[1] : "").replace(org.purpurmc.purpur.PurpurConfig.afkTabListSuffix, "");
              if (afk) {
 +                // Leaf start - Improve Purpur AFK system
 +                String[] rawTitle = org.purpurmc.purpur.PurpurConfig.afkTitleAway.split(":");
-+                if (rawTitle.length == 5) {
-+                    String title = rawTitle[0];
-+                    String subTitle = rawTitle[1];
-+                    long fadeInTicks = Long.parseLong(rawTitle[2]);
-+                    long stayTicks = Long.parseLong(rawTitle[3]);
-+                    long fadeOutTicks = Long.parseLong(rawTitle[4]);
-+                    net.kyori.adventure.title.Title tile = net.kyori.adventure.title.Title.title(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(title), net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(subTitle), net.kyori.adventure.title.Title.Times.times(net.kyori.adventure.util.Ticks.duration(fadeInTicks), net.kyori.adventure.util.Ticks.duration(stayTicks), net.kyori.adventure.util.Ticks.duration(fadeOutTicks)));
-+                    getBukkitEntity().showTitle(tile);
-+                } else {
-+                    LOGGER.error("You put wrong format of afk-title-away in PurpurConfig, it should look like <gold><bold>AFK:<red>You are now AFK...:10:70:20");
-+                    LOGGER.error("'Title:Sub Title:Title Fade In Ticks:Title Stay Ticks:Title Fade Out Ticks', split with :");
-+                }
++                String title = rawTitle[0];
++                String subTitle = rawTitle[1];
++                long fadeInTicks = Long.parseLong(rawTitle[2]);
++                long stayTicks = Long.parseLong(rawTitle[3]);
++                long fadeOutTicks = Long.parseLong(rawTitle[4]);
++
++                net.kyori.adventure.title.Title tile = net.kyori.adventure.title.Title.title(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(title), net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(subTitle), net.kyori.adventure.title.Title.Times.times(net.kyori.adventure.util.Ticks.duration(fadeInTicks), net.kyori.adventure.util.Ticks.duration(stayTicks), net.kyori.adventure.util.Ticks.duration(fadeOutTicks)));
++                getBukkitEntity().showTitle(tile);
 +                // Leaf end - Improve Purpur AFK system
 +
                  getBukkitEntity().setPlayerListName(org.purpurmc.purpur.PurpurConfig.afkTabListPrefix + prefix + scoreboardName + suffix + org.purpurmc.purpur.PurpurConfig.afkTabListSuffix, true);
              } else {
                  getBukkitEntity().setPlayerListName(prefix + scoreboardName + suffix, true);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 356feb908e533d7f1cddf6eb8238823c9bf8250a..3085fa1c463b3652edb03d2b86fd43a564e4d1b4 100644
+index 356feb908e533d7f1cddf6eb8238823c9bf8250a..fd7f2049a836474e00a59e4f78b23fafac3e09fd 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -2254,6 +2254,8 @@ public class ServerGamePacketListenerImpl
          }
      }
  
-+    public static final Map<java.util.UUID, Long> afkCooldown = new java.util.concurrent.ConcurrentHashMap<>(); // Leaf - Improve Purpur AFK system
++    public static final Map<java.util.UUID, Long> afkCooldown = new it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<>(); // Leaf - Improve Purpur AFK system
 +
      @Override
      public void handleChatCommand(ServerboundChatCommandPacket packet) {
@@ -154,36 +150,34 @@ index 65f943dbbe6e30f0a299fdbd73b94ca60d4f406c..7d7343d4e2c206daf77a61050f2f4c22
          player.awardStat(Stats.LEAVE_GAME);
          // CraftBukkit start - Quitting must be before we do final save of data, in case plugins need to modify it
 diff --git a/org/purpurmc/purpur/PurpurConfig.java b/org/purpurmc/purpur/PurpurConfig.java
-index b084fcbe57a1f57e97919aaa0b0c7d4ab5436bdf..7da226524f726fefee1dcd4e048661948074b49b 100644
+index c168e9d2c395044a662efd2d9ccde8b20c070b22..ee254498e71d50d461b7d6716704df8c2733037e 100644
 --- a/org/purpurmc/purpur/PurpurConfig.java
 +++ b/org/purpurmc/purpur/PurpurConfig.java
-@@ -175,9 +175,14 @@ public class PurpurConfig {
+@@ -175,6 +175,11 @@ public class PurpurConfig {
      public static String cannotRideMob = "<red>You cannot mount that mob";
      public static String afkBroadcastAway = "<yellow><italic>%s is now AFK";
      public static String afkBroadcastBack = "<yellow><italic>%s is no longer AFK";
-+    public static String afkTitleAway = "<gold><bold>AFK:<red>You are now AFK...:10:70:20"; // Leaf - Improve Purpur AFK system
-     public static boolean afkBroadcastUseDisplayName = false;
-     public static String afkTabListPrefix = "[AFK] ";
-     public static String afkTabListSuffix = "";
 +    // Leaf start - Improve Purpur AFK system
++    public static String afkTitleAway = "<gold><bold>AFK:<red>You are now AFK...:10:70:20";
 +    public static int afkCommandCooldown = 0;
 +    public static String afkCooldown = "<gray>You need to wait %time%s to use /afk.";
 +    // Leaf end - Improve Purpur AFK system
-     public static String creditsCommandOutput = "<green>%s has been shown the end credits";
-     public static String demoCommandOutput = "<green>%s has been shown the demo screen";
-     public static String pingCommandOutput = "<green>%s's ping is %sms";
-@@ -194,9 +199,14 @@ public class PurpurConfig {
+     public static boolean afkBroadcastUseDisplayName = false;
+     public static String afkTabListPrefix = "[AFK] ";
+     public static String afkTabListSuffix = "";
+@@ -194,6 +199,15 @@ public class PurpurConfig {
          cannotRideMob = getString("settings.messages.cannot-ride-mob", cannotRideMob);
          afkBroadcastAway = getString("settings.messages.afk-broadcast-away", afkBroadcastAway);
          afkBroadcastBack = getString("settings.messages.afk-broadcast-back", afkBroadcastBack);
-+        afkTitleAway = getString("settings.messages.afk-title-away", afkTitleAway); // Leaf - Improve Purpur AFK system
-         afkBroadcastUseDisplayName = getBoolean("settings.messages.afk-broadcast-use-display-name", afkBroadcastUseDisplayName);
-         afkTabListPrefix = MiniMessage.miniMessage().serialize(MiniMessage.miniMessage().deserialize(getString("settings.messages.afk-tab-list-prefix", afkTabListPrefix)));
-         afkTabListSuffix = MiniMessage.miniMessage().serialize(MiniMessage.miniMessage().deserialize(getString("settings.messages.afk-tab-list-suffix", afkTabListSuffix)));
 +        // Leaf start - Improve Purpur AFK system
++        afkTitleAway = getString("settings.messages.afk-title-away", afkTitleAway);
++        if (afkTitleAway.split(":").length != 5) {
++            Bukkit.getLogger().log(Level.SEVERE, "You put wrong format of afk-title-away in PurpurConfig, it should look like <gold><bold>AFK:<red>You are now AFK...:10:70:20");
++            Bukkit.getLogger().log(Level.SEVERE, "'Title:Sub Title:Title Fade In Ticks:Title Stay Ticks:Title Fade Out Ticks', split with :");
++        }
 +        afkCommandCooldown = getInt("settings.messages.afk-command-cooldown", afkCommandCooldown);
 +        afkCooldown = MiniMessage.miniMessage().serialize(MiniMessage.miniMessage().deserialize(getString("settings.messages.afk-command-cooldown-msg", afkCooldown)));
 +        // Leaf end - Improve Purpur AFK system
-         creditsCommandOutput = getString("settings.messages.credits-command-output", creditsCommandOutput);
-         demoCommandOutput = getString("settings.messages.demo-command-output", demoCommandOutput);
-         pingCommandOutput = getString("settings.messages.ping-command-output", pingCommandOutput);
+         afkBroadcastUseDisplayName = getBoolean("settings.messages.afk-broadcast-use-display-name", afkBroadcastUseDisplayName);
+         afkTabListPrefix = MiniMessage.miniMessage().serialize(MiniMessage.miniMessage().deserialize(getString("settings.messages.afk-tab-list-prefix", afkTabListPrefix)));
+         afkTabListSuffix = MiniMessage.miniMessage().serialize(MiniMessage.miniMessage().deserialize(getString("settings.messages.afk-tab-list-suffix", afkTabListSuffix)));

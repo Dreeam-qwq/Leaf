@@ -11,19 +11,20 @@ Original license: GPLv3
 Original project: https://github.com/etil2jz/Mirai
 
 diff --git a/net/minecraft/network/FriendlyByteBuf.java b/net/minecraft/network/FriendlyByteBuf.java
-index e5e5d9bc095ccd9fbf1c8aaa09e5c4ebb1d1c920..6a9373ceb14733504c433b5ab10f1f9da7cbbb37 100644
+index e5e5d9bc095ccd9fbf1c8aaa09e5c4ebb1d1c920..7c2df09decf90f691d35516a2eb74e97370f6a37 100644
 --- a/net/minecraft/network/FriendlyByteBuf.java
 +++ b/net/minecraft/network/FriendlyByteBuf.java
-@@ -114,6 +114,16 @@ public class FriendlyByteBuf extends ByteBuf {
+@@ -114,6 +114,17 @@ public class FriendlyByteBuf extends ByteBuf {
      public <T> void writeJsonWithCodec(Codec<T> codec, T value, int maxLength) {
          // Paper end - Adventure; add max length parameter
          DataResult<JsonElement> dataResult = codec.encodeStart(JsonOps.INSTANCE, value);
 +        // Leaf start - Configurable chat message signatures
 +        if (!org.dreeam.leaf.config.modules.network.ChatMessageSignature.enabled && codec == net.minecraft.network.protocol.status.ServerStatus.CODEC) {
 +            JsonElement element = dataResult.getOrThrow(string -> new EncoderException("Failed to encode: " + string + " " + value));
-+            element.getAsJsonObject().addProperty("preventsChatReports", true);
 +
++            element.getAsJsonObject().addProperty("preventsChatReports", true);
 +            this.writeUtf(GSON.toJson(element));
++
 +            return;
 +        }
 +        // Leaf end - Configurable chat message signatures
@@ -102,10 +103,10 @@ index 22b0f33dc3ef9f51ba2ca3cb665b07a16bd1c9d9..7b1e5addd6a1b815498233ba9032f224
          // Paper start - Add setting for proxy online mode status
          return properties.enforceSecureProfile
 diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
-index ee8cdd532b73180cb484fcc37c36f09c40faacda..eb388c1c94bc6feda6c8757b1800d158fbf48a12 100644
+index ee8cdd532b73180cb484fcc37c36f09c40faacda..becadda1642c1b9342f2fdff1fc062a27d8a04f5 100644
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
-@@ -318,10 +318,29 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+@@ -318,10 +318,30 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
      }
  
      public void send(Packet<?> packet) {
@@ -113,8 +114,9 @@ index ee8cdd532b73180cb484fcc37c36f09c40faacda..eb388c1c94bc6feda6c8757b1800d158
 +        if (!org.dreeam.leaf.config.modules.network.ChatMessageSignature.enabled) {
 +            if (packet instanceof net.minecraft.network.protocol.game.ClientboundPlayerChatPacket chat) {
 +                packet = new net.minecraft.network.protocol.game.ClientboundSystemChatPacket(
-+                    chat.chatType().decorate(chat.unsignedContent() != null ? chat.unsignedContent() : Component.literal(chat.body().content())), false);
-+
++                    chat.chatType().decorate(chat.unsignedContent() != null ? chat.unsignedContent() : Component.literal(chat.body().content())),
++                    false
++                );
 +                this.send(packet);
 +                return;
 +            }

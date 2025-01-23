@@ -36,7 +36,7 @@
 
 ## 📫 Donation
 If you love my work, feel free to donate :)
-- afdian: https://afdian.com/a/Dreeam
+- AFDIAN: https://afdian.com/a/Dreeam
 
 ## 📥 Download
 You can find the latest successful build in [GitHub Action](https://github.com/Winds-Studio/Leaf/actions) or [Releases](https://github.com/Winds-Studio/Leaf/releases)
@@ -87,9 +87,9 @@ java {
 ```
 
 ## ⚖️ License
-Paperweight files are licensed under MIT.
-Patches are licensed under MIT, unless indicated differently in their header.
-Binaries are licensed under GPL-3.0.
+Paperweight files are licensed under [MIT](licenses/MIT.txt).
+Patches are licensed under [MIT](licenses/MIT.txt), unless indicated differently in their header.
+Binaries are licensed under [GPL-3.0](licenses/GPL-3.0.txt).
 
 Also see [PaperMC/Paper](https://github.com/PaperMC/Paper) and [PaperMC/Paperweight](https://github.com/PaperMC/paperweight) for the license of some material used by this project.
 

@@ -5,18 +5,9 @@ Subject: [PATCH] Remove stream in BlockBehaviour cache blockstate
 
 
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index b631e35e965b1914cdeeddab8bd6bdbfd2465079..c13c8c82bf7bd0a9a33fd4027884ad852a7c64b6 100644
+index bf77d02d8fc58b5a16c67a305fe0991ad08a795c..7afaa15102eb625245c2ccb31deeb6d1df658284 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
-@@ -1051,7 +1051,7 @@ public abstract class BlockBehaviour implements FeatureElement {
-             private static final Direction[] DIRECTIONS = Direction.values();
-             private static final int SUPPORT_TYPE_COUNT = SupportType.values().length;
-             protected final VoxelShape collisionShape;
--            protected final boolean largeCollisionShape;
-+            protected boolean largeCollisionShape; // Leaf - not final
-             private final boolean[] faceSturdy;
-             protected final boolean isCollisionShapeFullBlock;
- 
 @@ -1067,8 +1067,14 @@ public abstract class BlockBehaviour implements FeatureElement {
                          )
                      );

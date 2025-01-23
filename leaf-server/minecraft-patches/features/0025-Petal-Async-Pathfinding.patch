@@ -580,7 +580,7 @@ index 57c50ce5724b073b1aedf4df3129285143097303..91635b344ac02b66e51aa5620acf9ca4
          }
      }
 diff --git a/net/minecraft/world/entity/animal/frog/Frog.java b/net/minecraft/world/entity/animal/frog/Frog.java
-index a962b06ac3fc15604b7fbf5e2109f1cc8d238ac7..035e7eac88ded12f9ca8f7e2a4d99c4156eb311f 100644
+index 4aadf347811df904e634ea7ebcc5361ea6cb7e7a..2eb664047eab21a16627fece83ad4a4e5d4bf46f 100644
 --- a/net/minecraft/world/entity/animal/frog/Frog.java
 +++ b/net/minecraft/world/entity/animal/frog/Frog.java
 @@ -478,9 +478,25 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
@@ -836,16 +836,3 @@ index d48057d387b6937a0194e5300eb1cb46dec2896b..9912ba3bc165dfbdd55fbf02dcec28dc
          return best;
          // Paper end - Perf: remove streams and optimize collection
      }
-diff --git a/net/minecraft/world/level/pathfinder/SwimNodeEvaluator.java b/net/minecraft/world/level/pathfinder/SwimNodeEvaluator.java
-index f18aa938692a1c29228ff5e98ab9d58c4bfff094..6495dd7ace05dda1e8e39fa5ae682797dd5980bf 100644
---- a/net/minecraft/world/level/pathfinder/SwimNodeEvaluator.java
-+++ b/net/minecraft/world/level/pathfinder/SwimNodeEvaluator.java
-@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
- import net.minecraft.world.level.material.FluidState;
- 
- public class SwimNodeEvaluator extends NodeEvaluator {
--    private final boolean allowBreaching;
-+    public final boolean allowBreaching; // Kaiiju - make this public
-     private final Long2ObjectMap<PathType> pathTypesByPosCache = new Long2ObjectOpenHashMap<>();
- 
-     public SwimNodeEvaluator(boolean allowBreaching) {

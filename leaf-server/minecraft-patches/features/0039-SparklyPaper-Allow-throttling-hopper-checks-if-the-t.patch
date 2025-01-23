@@ -7,18 +7,18 @@ Subject: [PATCH] SparklyPaper: Allow throttling hopper checks if the target
 Original project: https://github.com/SparklyPower/SparklyPaper
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 276cb0dffaa253a6c13b4c68d8c703732118d0d1..23848df90e7127b1ec11d2aaac68fad17bda238a 100644
+index 276cb0dffaa253a6c13b4c68d8c703732118d0d1..962c870bc2ccff52c70be991850fec4663fa7f32 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -419,6 +419,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          } else {
              Direction opposite = blockEntity.facing.getOpposite();
              if (isFullContainer(attachedContainer, opposite)) {
-+                // Leaf start - Throttle hopper when full
++                // Leaf start - SparklyPaper - Throttle hopper when full
 +                if (org.dreeam.leaf.config.modules.opt.ThrottleHopperWhenFull.enabled && org.dreeam.leaf.config.modules.opt.ThrottleHopperWhenFull.skipTicks > 0) {
 +                    blockEntity.setCooldown(org.dreeam.leaf.config.modules.opt.ThrottleHopperWhenFull.skipTicks);
 +                }
-+                // Leaf end - Throttle hopper when full
++                // Leaf end - SparklyPaper - Throttle hopper when full
                  return false;
              } else {
                  // Paper start - Perf: Optimize Hoppers

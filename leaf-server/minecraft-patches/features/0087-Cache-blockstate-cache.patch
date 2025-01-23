@@ -5,7 +5,7 @@ Subject: [PATCH] Cache blockstate cache
 
 
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index c13c8c82bf7bd0a9a33fd4027884ad852a7c64b6..36ac6114cc3449a3b344baac5f3034288cf77a63 100644
+index 7afaa15102eb625245c2ccb31deeb6d1df658284..35d95d5c2a61533d3588c45db8acdcb11f6e53e3 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -1050,6 +1050,10 @@ public abstract class BlockBehaviour implements FeatureElement {
@@ -17,7 +17,7 @@ index c13c8c82bf7bd0a9a33fd4027884ad852a7c64b6..36ac6114cc3449a3b344baac5f303428
 +            private static final Direction.Axis[] DIRECTION_AXIS_VALUES = Direction.Axis.values();
 +            // Leaf end - Cache blockstate cache array
              protected final VoxelShape collisionShape;
-             protected boolean largeCollisionShape; // Leaf - not final
+             protected boolean largeCollisionShape;
              private final boolean[] faceSturdy;
 @@ -1068,7 +1072,7 @@ public abstract class BlockBehaviour implements FeatureElement {
                      );
