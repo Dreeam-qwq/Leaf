@@ -14,7 +14,7 @@ index 2857e71ddb37f2a98c72df8cb439e2eab97d6f67..23092d6f6bca4eff4aaceabed51927e1
  
      // Purpur start - AFK API
 -    private final com.google.common.cache.LoadingCache<org.bukkit.craftbukkit.entity.CraftPlayer, Boolean> kickPermissionCache = com.google.common.cache.CacheBuilder.newBuilder()
-+    // Leaf start - Use caffeine cache kickPermission instead of using google.common.cache
++    // Leaf start - Use caffeine cache for kickPermission instead of using google.common.cache
 +    private final com.github.benmanes.caffeine.cache.LoadingCache<org.bukkit.craftbukkit.entity.CraftPlayer, Boolean> kickPermissionCache = com.github.benmanes.caffeine.cache.Caffeine.newBuilder()
          .maximumSize(1000)
          .expireAfterWrite(1, java.util.concurrent.TimeUnit.MINUTES)
@@ -27,7 +27,7 @@ index 2857e71ddb37f2a98c72df8cb439e2eab97d6f67..23092d6f6bca4eff4aaceabed51927e1
 -            }
 -        );
 +        .build(player -> player.hasPermission("purpur.bypassIdleKick"));
-+    // Leaf end - Use caffeine cache kickPermission instead of using google.common.cache
++    // Leaf end - Use caffeine cache for kickPermission instead of using google.common.cache
      // Purpur end - AFK API
  
      public final org.leavesmc.leaves.protocol.syncmatica.exchange.ExchangeTarget exchangeTarget; // Leaves - Syncmatica Protocol
@@ -36,7 +36,7 @@ index 2857e71ddb37f2a98c72df8cb439e2eab97d6f67..23092d6f6bca4eff4aaceabed51927e1
              // Purpur start - AFK API
              this.player.setAfk(true);
 -            if (!this.player.level().purpurConfig.idleTimeoutKick || (!Boolean.parseBoolean(System.getenv("PURPUR_FORCE_IDLE_KICK")) && kickPermissionCache.getUnchecked(this.player.getBukkitEntity()))) {
-+            if (!this.player.level().purpurConfig.idleTimeoutKick || (!Boolean.parseBoolean(System.getenv("PURPUR_FORCE_IDLE_KICK")) && kickPermissionCache.get(this.player.getBukkitEntity()))) { // Leaf - Use caffeine cache kickPermission instead of using google.common.cache
++            if (!this.player.level().purpurConfig.idleTimeoutKick || (!Boolean.parseBoolean(System.getenv("PURPUR_FORCE_IDLE_KICK")) && kickPermissionCache.get(this.player.getBukkitEntity()))) { // Leaf - Use caffeine cache for kickPermission instead of using google.common.cache
                  return;
              }
              // Purpur end - AFK API
