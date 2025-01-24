@@ -292,7 +292,7 @@ index 208efae06c7c44f220d4192219a86ec55c98a2fe..3baf29818d82aa7ba1cc565aaeb26288
          }
          // Paper end - Buffer joins to world
 diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index 841546cef2a98427ae78ca2a07693391eb0d3035..d6ab395d1081196fb690dc872b243524e684e70c 100644
+index 748816e3f325468f523bdb8dfb94992883ed1989..427788e8747ae8d3a49c0dc094e04b6d7727daa2 100644
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
 @@ -108,6 +108,12 @@ public class Main {
@@ -309,7 +309,7 @@ index 841546cef2a98427ae78ca2a07693391eb0d3035..d6ab395d1081196fb690dc872b243524
              Bootstrap.bootStrap();
              Bootstrap.validate();
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 5f0fa04a4ed2b0073240edbf39aeed9007911e63..f348202ae2cc78586cf4b7926180c659b5fca56f 100644
+index 0837c765d9e8833347c9c0c1254da8249daf42c3..73d052596310098abe69b247f45cdb118297f1ee 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -267,6 +267,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -1698,7 +1698,7 @@ index d3de87eaf0eb84af77165391c7b94085d425f21d..edaa6f66f33b6a9bfb4862ec5557080b
              }
          }
 diff --git a/net/minecraft/world/damagesource/DamageSource.java b/net/minecraft/world/damagesource/DamageSource.java
-index 3d8d7460ab31e9183e26ada76ad05378f8bb925d..ee2ef8ba44d699647216ab67d3b1ad76a63a9704 100644
+index ac7352a2b264abf4db4b89f39a2c86f390776336..0a596e20393936d8fc9f03ba0891d0c223279247 100644
 --- a/net/minecraft/world/damagesource/DamageSource.java
 +++ b/net/minecraft/world/damagesource/DamageSource.java
 @@ -28,6 +28,8 @@ public class DamageSource {
@@ -8053,12 +8053,12 @@ index afe43600c4976e01e61d716034a2823d50fb55cb..2d9f64cddbec782de1775ec6da67b162
      }
  
 diff --git a/net/minecraft/world/entity/decoration/ArmorStand.java b/net/minecraft/world/entity/decoration/ArmorStand.java
-index a3cc0001a949597e345d7919c3f6109fa4a949ad..8c0ab32487c56e2caf42404184f86c9bcf5f8b41 100644
+index 3e0830c70c0b3fda8631679c7426cc303600d1fa..a31bbd8f3fff4fb4b1b33877d5835b93fc248f65 100644
 --- a/net/minecraft/world/entity/decoration/ArmorStand.java
 +++ b/net/minecraft/world/entity/decoration/ArmorStand.java
 @@ -93,10 +93,13 @@ public class ArmorStand extends LivingEntity {
      private boolean noTickPoseDirty = false;
-     private boolean noTickEquipmentDirty = false;
+     public boolean noTickEquipmentDirty = false;
      // Paper end - Allow ArmorStands not to tick
 +    public boolean canMovementTick = true; // Purpur - Movement options for armor stands
  
@@ -16600,7 +16600,7 @@ index c792483860d31ce663e7de34e9f79ff46de75b8c..b9fdd5518ee1fe743485abb3557a2110
                                              for (int i4 = 0; i4 < i3; i4++) {
                                                  // Paper start - PhantomPreSpawnEvent
 diff --git a/net/minecraft/world/level/material/FlowingFluid.java b/net/minecraft/world/level/material/FlowingFluid.java
-index c47a33a989d7ffea4f0bbae39fd64869369e9bda..c535cd03c577d76c3b19da5a8426d0cbee3069f0 100644
+index e9e93a6b0866c816609ff0620d242c31f064d18b..738defb8cbd9c63dc85c479911ebe2f795d0a815 100644
 --- a/net/minecraft/world/level/material/FlowingFluid.java
 +++ b/net/minecraft/world/level/material/FlowingFluid.java
 @@ -232,7 +232,7 @@ public abstract class FlowingFluid extends Fluid {

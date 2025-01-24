@@ -24,7 +24,7 @@ As part of: Lithium (https://github.com/CaffeineMC/lithium-fabric)
 Licensed under: LGPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
 
 diff --git a/net/minecraft/core/component/PatchedDataComponentMap.java b/net/minecraft/core/component/PatchedDataComponentMap.java
-index a8c6549f772208cd543607224fef2c2389b14f24..f0b9bb52763b994c34048eb540ac60e73dcb227a 100644
+index a8c6549f772208cd543607224fef2c2389b14f24..709631db548a16a969a373e26ebbcd6983e35590 100644
 --- a/net/minecraft/core/component/PatchedDataComponentMap.java
 +++ b/net/minecraft/core/component/PatchedDataComponentMap.java
 @@ -14,10 +14,11 @@ import java.util.Map.Entry;
@@ -32,29 +32,31 @@ index a8c6549f772208cd543607224fef2c2389b14f24..f0b9bb52763b994c34048eb540ac60e7
  import javax.annotation.Nullable;
  
 -public final class PatchedDataComponentMap implements DataComponentMap {
-+public final class PatchedDataComponentMap implements DataComponentMap, net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<PatchedDataComponentMap> { // Leaf - Lithium equipment tracking
++public final class PatchedDataComponentMap implements DataComponentMap, net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<PatchedDataComponentMap> { // Leaf - Lithium - equipment tracking
      private final DataComponentMap prototype;
      private Reference2ObjectMap<DataComponentType<?>, Optional<?>> patch;
      private boolean copyOnWrite;
-+    private net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<PatchedDataComponentMap> subscriber; // Leaf - Lithium equipment tracking
++    private net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<PatchedDataComponentMap> subscriber; // Leaf - Lithium - equipment tracking
  
      public PatchedDataComponentMap(DataComponentMap prototype) {
          this(prototype, Reference2ObjectMaps.emptyMap(), true);
-@@ -135,6 +136,9 @@ public final class PatchedDataComponentMap implements DataComponentMap {
+@@ -135,6 +136,11 @@ public final class PatchedDataComponentMap implements DataComponentMap {
      }
  
      private void ensureMapOwnership() {
++        // Leaf start - Lithium - equipment tracking
 +        if (this.subscriber != null) {
 +            this.subscriber.notify(this, 0);
 +        }
++        // Leaf end - Lithium - equipment tracking
          if (this.copyOnWrite) {
              this.patch = new Reference2ObjectArrayMap<>(this.patch);
              this.copyOnWrite = false;
-@@ -221,6 +225,22 @@ public final class PatchedDataComponentMap implements DataComponentMap {
+@@ -221,6 +227,22 @@ public final class PatchedDataComponentMap implements DataComponentMap {
          return (DataComponentMap)(this.patch.isEmpty() ? this.prototype : this.copy());
      }
  
-+    // Leaf start - Lithium equipment tracking
++    // Leaf start - Lithium - equipment tracking
 +    @Override
 +    public void subscribe(net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<PatchedDataComponentMap> subscriber, int subscriberData) {
 +        if (subscriberData != 0) {
@@ -68,13 +70,13 @@ index a8c6549f772208cd543607224fef2c2389b14f24..f0b9bb52763b994c34048eb540ac60e7
 +        this.subscriber = net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber.without(this.subscriber, subscriber);
 +        return 0;
 +    }
-+    // Leaf end - Lithium equipment tracking
++    // Leaf end - Lithium - equipment tracking
 +
      @Override
      public boolean equals(Object other) {
          return this == other
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 4819ff258b3abffcbf8a443b157c3a28afd1c52a..e216bb1cf728698fea018b9064c71f7733e7836d 100644
+index ead6a4823d7681109bc0888d0a1fc0d73dad3c98..9a3b27457ff62dfb2ead9c114c287f55504f19f6 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -159,7 +159,7 @@ import org.bukkit.event.entity.EntityTeleportEvent;
@@ -82,7 +84,7 @@ index 4819ff258b3abffcbf8a443b157c3a28afd1c52a..e216bb1cf728698fea018b9064c71f77
  // CraftBukkit end
  
 -public abstract class LivingEntity extends Entity implements Attackable {
-+public abstract class LivingEntity extends Entity implements Attackable, net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber.CountChangeSubscriber<ItemStack>, net.caffeinemc.mods.lithium.common.entity.EquipmentEntity, net.caffeinemc.mods.lithium.common.entity.EquipmentEntity.TickableEnchantmentTrackingEntity, net.caffeinemc.mods.lithium.common.entity.EquipmentEntity.EquipmentTrackingEntity { // Leaf - Lithium equipment tracking
++public abstract class LivingEntity extends Entity implements Attackable, net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber.CountChangeSubscriber<ItemStack>, net.caffeinemc.mods.lithium.common.entity.EquipmentEntity, net.caffeinemc.mods.lithium.common.entity.EquipmentEntity.TickableEnchantmentTrackingEntity, net.caffeinemc.mods.lithium.common.entity.EquipmentEntity.EquipmentTrackingEntity { // Leaf - Lithium - equipment tracking
      private static final Logger LOGGER = LogUtils.getLogger();
      private static final String TAG_ACTIVE_EFFECTS = "active_effects";
      private static final ResourceLocation SPEED_MODIFIER_POWDER_SNOW_ID = ResourceLocation.withDefaultNamespace("powder_snow");
@@ -90,10 +92,10 @@ index 4819ff258b3abffcbf8a443b157c3a28afd1c52a..e216bb1cf728698fea018b9064c71f77
      public net.kyori.adventure.util.TriState frictionState = net.kyori.adventure.util.TriState.NOT_SET; // Paper - Friction API
      protected boolean shouldBurnInDay = false; public boolean shouldBurnInDay() { return this.shouldBurnInDay; } public void setShouldBurnInDay(boolean shouldBurnInDay) { this.shouldBurnInDay = shouldBurnInDay; } // Purpur - API for any mob to burn daylight
  
-+    // Leaf start - Lithium equipment tracking
++    // Leaf start - Lithium - equipment tracking
 +    private boolean maybeHasTickableEnchantments = this instanceof net.minecraft.world.entity.player.Player;
 +    private boolean equipmentChanged = true;
-+    // Leaf end - Lithium equipment tracking
++    // Leaf end - Lithium - equipment tracking
      @Override
      public float getBukkitYaw() {
          return this.getYHeadRot();
@@ -102,7 +104,7 @@ index 4819ff258b3abffcbf8a443b157c3a28afd1c52a..e216bb1cf728698fea018b9064c71f77
          }
  
 -        if (this.level() instanceof ServerLevel serverLevel) {
-+        if (this.maybeHasTickableEnchantments && this.level() instanceof ServerLevel serverLevel) { // Leaf - Lithium equipment tracking
++        if (this.maybeHasTickableEnchantments && this.level() instanceof ServerLevel serverLevel) { // Leaf - Lithium - equipment tracking
              EnchantmentHelper.tickEffects(serverLevel, this);
          }
  
@@ -110,7 +112,7 @@ index 4819ff258b3abffcbf8a443b157c3a28afd1c52a..e216bb1cf728698fea018b9064c71f77
          if (!this.level().isClientSide() && !this.isSpectator()) {
              boolean flag = newItem.isEmpty() && oldItem.isEmpty();
              if (!flag && !ItemStack.isSameItemSameComponents(oldItem, newItem) && !this.firstTick) {
-+                this.onEquipmentReplaced(oldItem, newItem); // Leaf - Lithium equipment tracking
++                this.onEquipmentReplaced(oldItem, newItem); // Leaf - Lithium - equipment tracking
                  Equippable equippable = newItem.get(DataComponents.EQUIPPABLE);
                  if (!this.isSilent() && equippable != null && slot == equippable.slot() && !silent) { // CraftBukkit
                      this.level()
@@ -118,7 +120,7 @@ index 4819ff258b3abffcbf8a443b157c3a28afd1c52a..e216bb1cf728698fea018b9064c71f77
      public void detectEquipmentUpdatesPublic() { // CraftBukkit
          Map<EquipmentSlot, ItemStack> map = this.collectEquipmentChanges();
          if (map != null) {
-+            if (!(this instanceof net.minecraft.world.entity.player.Player)) this.equipmentChanged = false; // Leaf - Lithium equipment tracking
++            if (!(this instanceof net.minecraft.world.entity.player.Player)) this.equipmentChanged = false; // Leaf - Lithium - equipment tracking
              this.handleHandSwap(map);
              if (!map.isEmpty()) {
                  this.handleEquipmentChanges(map);
@@ -126,10 +128,10 @@ index 4819ff258b3abffcbf8a443b157c3a28afd1c52a..e216bb1cf728698fea018b9064c71f77
  
      @Nullable
      private Map<EquipmentSlot, ItemStack> collectEquipmentChanges() {
-+        // Leaf start - Lithium equipment tracking
++        // Leaf start - Lithium - equipment tracking
 +        final boolean isArmorStandUpdateNoTick = this instanceof net.minecraft.world.entity.decoration.ArmorStand stand && !stand.canTick && stand.noTickEquipmentDirty;
 +        if (!isArmorStandUpdateNoTick && !this.equipmentChanged) return null;
-+        // Leaf end - Lithium equipment tracking
++        // Leaf end - Lithium - equipment tracking
          Map<EquipmentSlot, ItemStack> map = null;
  
          for (EquipmentSlot equipmentSlot : EquipmentSlot.VALUES) {
@@ -137,7 +139,7 @@ index 4819ff258b3abffcbf8a443b157c3a28afd1c52a..e216bb1cf728698fea018b9064c71f77
          return this.lastHurtByPlayerTime;
      }
  
-+    // Leaf start - Lithium entity equipment tracking
++    // Leaf start - Lithium - equipment tracking
 +    @Override
 +    public void updateHasTickableEnchantments(ItemStack oldStack, ItemStack newStack) {
 +        if (!this.maybeHasTickableEnchantments) {
@@ -210,13 +212,13 @@ index 4819ff258b3abffcbf8a443b157c3a28afd1c52a..e216bb1cf728698fea018b9064c71f77
 +            newStack.subscribe(this, 0);
 +        }
 +    }
-+    // Leaf end - Lithium entity equipment tracking
++    // Leaf end - Lithium - equipment tracking
 +
      public record Fallsounds(SoundEvent small, SoundEvent big) {
      }
  }
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index c32086ddf90fafcc55600f9e0724b9f915671482..5e03f3536010951ac378c1856ac355a18dec9dd6 100644
+index c32086ddf90fafcc55600f9e0724b9f915671482..b541236c39e3f36bcc619fffe83e32987df20adf 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -94,7 +94,7 @@ import org.bukkit.event.entity.EntityUnleashEvent;
@@ -224,7 +226,7 @@ index c32086ddf90fafcc55600f9e0724b9f915671482..5e03f3536010951ac378c1856ac355a1
  // CraftBukkit end
  
 -public abstract class Mob extends LivingEntity implements EquipmentUser, Leashable, Targeting {
-+public abstract class Mob extends LivingEntity implements EquipmentUser, Leashable, Targeting, net.caffeinemc.mods.lithium.common.entity.EquipmentEntity { // Leaf - Lithium equipment tracking
++public abstract class Mob extends LivingEntity implements EquipmentUser, Leashable, Targeting, net.caffeinemc.mods.lithium.common.entity.EquipmentEntity { // Leaf - Lithium - equipment tracking
      private static final EntityDataAccessor<Byte> DATA_MOB_FLAGS_ID = SynchedEntityData.defineId(Mob.class, EntityDataSerializers.BYTE);
      private static final int MOB_FLAG_NO_AI = 1;
      private static final int MOB_FLAG_LEFTHANDED = 2;
@@ -232,7 +234,7 @@ index c32086ddf90fafcc55600f9e0724b9f915671482..5e03f3536010951ac378c1856ac355a1
  
      @Override
      public void readAdditionalSaveData(CompoundTag compound) {
-+        ItemStack prevBodyArmor = this.bodyArmorItem; // Leaf - Lithium equipment tracking
++        ItemStack prevBodyArmor = this.bodyArmorItem; // Leaf - Lithium - equipment tracking
          super.readAdditionalSaveData(compound);
          // CraftBukkit start - If looting or persistence is false only use it if it was set after we started using it
          if (compound.contains("CanPickUpLoot", 99)) {
@@ -241,11 +243,11 @@ index c32086ddf90fafcc55600f9e0724b9f915671482..5e03f3536010951ac378c1856ac355a1
              for (int i = 0; i < this.armorItems.size(); i++) {
                  CompoundTag compound1 = list.getCompound(i);
 -                this.armorItems.set(i, ItemStack.parseOptional(this.registryAccess(), compound1));
-+                // Leaf start - Lithium equipment tracking
++                // Leaf start - Lithium - equipment tracking
 +                ItemStack currStack = ItemStack.parseOptional(this.registryAccess(), compound1);
 +                ItemStack prevStack = this.armorItems.set(i, currStack);
 +                this.trackEquipChange(prevStack, currStack);
-+                // Leaf end - Lithium equipment tracking
++                // Leaf end - Lithium - equipment tracking
              }
          } else {
              this.armorItems.replaceAll(itemStack -> ItemStack.EMPTY);
@@ -254,11 +256,11 @@ index c32086ddf90fafcc55600f9e0724b9f915671482..5e03f3536010951ac378c1856ac355a1
              for (int i = 0; i < this.handItems.size(); i++) {
                  CompoundTag compound1 = list.getCompound(i);
 -                this.handItems.set(i, ItemStack.parseOptional(this.registryAccess(), compound1));
-+                // Leaf start - Lithium equipment tracking
++                // Leaf start - Lithium - equipment tracking
 +                ItemStack currStack = ItemStack.parseOptional(this.registryAccess(), compound1);
 +                ItemStack prevStack = this.handItems.set(i, currStack);
 +                this.trackEquipChange(prevStack, currStack);
-+                // Leaf end - Lithium equipment tracking
++                // Leaf end - Lithium - equipment tracking
              }
          } else {
              this.handItems.replaceAll(itemStack -> ItemStack.EMPTY);
@@ -266,11 +268,11 @@ index c32086ddf90fafcc55600f9e0724b9f915671482..5e03f3536010951ac378c1856ac355a1
              this.ticksSinceLastInteraction = compound.getInt("Purpur.ticksSinceLastInteraction");
          }
          // Purpur end - Entity lifespan
-+        // Leaf start - Lithium equipment tracking
++        // Leaf start - Lithium - equipment tracking
 +        if (prevBodyArmor != this.bodyArmorItem) {
 +            this.trackEquipChange(prevBodyArmor, this.bodyArmorItem);
 +        }
-+        // Leaf end - Lithium equipment tracking
++        // Leaf end - Lithium - equipment tracking
      }
  
      @Override
@@ -279,14 +281,14 @@ index c32086ddf90fafcc55600f9e0724b9f915671482..5e03f3536010951ac378c1856ac355a1
      }
      // Purpur end - Ridables
 +
-+    // Leaf start - Lithium equipment tracking
++    // Leaf start - Lithium - equipment tracking
 +    private void trackEquipChange(ItemStack prevStack, ItemStack currStack) {
 +        this.onEquipmentReplaced(prevStack, currStack);
 +    }
-+    // Leaf end - Lithium equipment tracking
++    // Leaf end - Lithium - equipment tracking
  }
 diff --git a/net/minecraft/world/entity/decoration/ArmorStand.java b/net/minecraft/world/entity/decoration/ArmorStand.java
-index 8c0ab32487c56e2caf42404184f86c9bcf5f8b41..ccdbc67a50056ea1033f1f963c9f9a95326800a0 100644
+index a31bbd8f3fff4fb4b1b33877d5835b93fc248f65..21153f37c169e987d7876d1b914105223ac10ee7 100644
 --- a/net/minecraft/world/entity/decoration/ArmorStand.java
 +++ b/net/minecraft/world/entity/decoration/ArmorStand.java
 @@ -46,7 +46,7 @@ import net.minecraft.world.level.material.PushReaction;
@@ -294,29 +296,20 @@ index 8c0ab32487c56e2caf42404184f86c9bcf5f8b41..ccdbc67a50056ea1033f1f963c9f9a95
  import net.minecraft.world.phys.Vec3;
  
 -public class ArmorStand extends LivingEntity {
-+public class ArmorStand extends LivingEntity implements net.caffeinemc.mods.lithium.common.entity.EquipmentEntity { // Leaf - Lithium equipment tracking
++public class ArmorStand extends LivingEntity implements net.caffeinemc.mods.lithium.common.entity.EquipmentEntity { // Leaf - Lithium - equipment tracking
      public static final int WOBBLE_TIME = 5;
      private static final boolean ENABLE_ARMS = true;
      public static final Rotations DEFAULT_HEAD_POSE = new Rotations(0.0F, 0.0F, 0.0F);
-@@ -91,7 +91,7 @@ public class ArmorStand extends LivingEntity {
-     public boolean canTick = true;
-     public boolean canTickSetByAPI = false;
-     private boolean noTickPoseDirty = false;
--    private boolean noTickEquipmentDirty = false;
-+    public boolean noTickEquipmentDirty = false; // Leaf - Lithium equipment tracking - private -> public
-     // Paper end - Allow ArmorStands not to tick
-     public boolean canMovementTick = true; // Purpur - Movement options for armor stands
- 
 @@ -233,7 +233,11 @@ public class ArmorStand extends LivingEntity {
  
              for (int i = 0; i < this.armorItems.size(); i++) {
                  CompoundTag compound1 = list.getCompound(i);
 -                this.armorItems.set(i, ItemStack.parseOptional(this.registryAccess(), compound1));
-+                // Leaf start - Lithium equipment tracking
++                // Leaf start - Lithium - equipment tracking
 +                ItemStack currElement = ItemStack.parseOptional(this.registryAccess(), compound1);
 +                ItemStack prevElement = this.armorItems.set(i, currElement);
 +                this.trackEquipChange(prevElement, currElement);
-+                // Leaf end - Lithium equipment tracking
++                // Leaf end - Lithium - equipment tracking
              }
          }
  
@@ -325,11 +318,11 @@ index 8c0ab32487c56e2caf42404184f86c9bcf5f8b41..ccdbc67a50056ea1033f1f963c9f9a95
              for (int i = 0; i < this.handItems.size(); i++) {
                  CompoundTag compound1 = list.getCompound(i);
 -                this.handItems.set(i, ItemStack.parseOptional(this.registryAccess(), compound1));
-+                // Leaf start - Lithium equipment tracking
++                // Leaf start - Lithium - equipment tracking
 +                ItemStack currStack = ItemStack.parseOptional(this.registryAccess(), compound1);
 +                ItemStack prevStack = this.handItems.set(i, currStack);
 +                this.trackEquipChange(prevStack, currStack);
-+                // Leaf end - Lithium equipment tracking
++                // Leaf end - Lithium - equipment tracking
              }
          }
  
@@ -338,11 +331,11 @@ index 8c0ab32487c56e2caf42404184f86c9bcf5f8b41..ccdbc67a50056ea1033f1f963c9f9a95
              if (!itemStack.isEmpty()) {
                  this.drops.add(new DefaultDrop(itemStack, stack -> Block.popResource(this.level(), this.blockPosition().above(), stack))); // CraftBukkit - add to drops // Paper - Restore vanilla drops behavior; mirror so we can destroy it later - though this call site was safe & spawn drops correctly
 -                this.handItems.set(i, ItemStack.EMPTY);
-+                // Leaf start - Lithium equipment tracking
++                // Leaf start - Lithium - equipment tracking
 +                ItemStack emptyStack = ItemStack.EMPTY;
 +                ItemStack prevStack = this.handItems.set(i, emptyStack);
 +                this.trackEquipChange(prevStack, emptyStack);
-+                // Leaf end - Lithium equipment tracking
++                // Leaf end - Lithium - equipment tracking
              }
          }
  
@@ -351,11 +344,11 @@ index 8c0ab32487c56e2caf42404184f86c9bcf5f8b41..ccdbc67a50056ea1033f1f963c9f9a95
              if (!itemStack.isEmpty()) {
                  this.drops.add(new DefaultDrop(itemStack, stack -> Block.popResource(this.level(), this.blockPosition().above(), stack))); // CraftBukkit - add to drops // Paper - Restore vanilla drops behavior; mirror so we can destroy it later - though this call site was safe & spawn drops correctly
 -                this.armorItems.set(ix, ItemStack.EMPTY);
-+                // Leaf start - Lithium equipment tracking
++                // Leaf start - Lithium - equipment tracking
 +                ItemStack emptyStack = ItemStack.EMPTY;
 +                ItemStack prevStack = this.armorItems.set(ix, ItemStack.EMPTY);
 +                this.trackEquipChange(prevStack, emptyStack);
-+                // Leaf end - Lithium equipment tracking
++                // Leaf end - Lithium - equipment tracking
              }
          }
          return this.dropAllDeathLoot(level, damageSource); // CraftBukkit - moved from above // Paper
@@ -363,13 +356,13 @@ index 8c0ab32487c56e2caf42404184f86c9bcf5f8b41..ccdbc67a50056ea1033f1f963c9f9a95
                  this.updatePose();
              }
  
-+            // Leaf start - Lithium equipment tracking
++            // Leaf start - Lithium - equipment tracking
              if (this.noTickEquipmentDirty) {
 -                this.noTickEquipmentDirty = false;
                  this.detectEquipmentUpdatesPublic();
-+                this.noTickEquipmentDirty = false;
++                this.noTickEquipmentDirty = false; // Remove dirty mark after handling equipment update for armor stand
              }
-+            // Leaf end - Lithium equipment tracking
++            // Leaf end - Lithium - equipment tracking
  
              return;
          }
@@ -378,14 +371,14 @@ index 8c0ab32487c56e2caf42404184f86c9bcf5f8b41..ccdbc67a50056ea1033f1f963c9f9a95
      }
      // Purpur end - Movement options for armor stands
 +
-+    // Leaf start - Lithium equipment tracking
++    // Leaf start - Lithium - equipment tracking
 +    private void trackEquipChange(ItemStack prevStack, ItemStack currStack) {
 +        this.onEquipmentReplaced(prevStack, currStack);
 +    }
-+    // Leaf end - Lithium equipment tracking
++    // Leaf end - Lithium - equipment tracking
  }
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index aa2c00be86f42a6674694a20545399e441b75199..e183298a7fb538ee35ea1dc4f46d052be3d117ae 100644
+index aa2c00be86f42a6674694a20545399e441b75199..fd7c1e800cbd4919a1a47f6c468c8776535bd028 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -95,7 +95,7 @@ import net.minecraft.world.level.saveddata.maps.MapId;
@@ -393,7 +386,7 @@ index aa2c00be86f42a6674694a20545399e441b75199..e183298a7fb538ee35ea1dc4f46d052b
  import org.slf4j.Logger;
  
 -public final class ItemStack implements DataComponentHolder {
-+public final class ItemStack implements DataComponentHolder, net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<ItemStack>, net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<PatchedDataComponentMap> { // Leaf - Lithium equipment tracking
++public final class ItemStack implements DataComponentHolder, net.caffeinemc.mods.lithium.common.util.change_tracking.ChangePublisher<ItemStack>, net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<PatchedDataComponentMap> { // Leaf - Lithium - equipment tracking
      private static final List<Component> OP_NBT_WARNING = List.of(
          Component.translatable("item.op_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD),
          Component.translatable("item.op_warning.line2").withStyle(ChatFormatting.RED),
@@ -401,11 +394,11 @@ index aa2c00be86f42a6674694a20545399e441b75199..e183298a7fb538ee35ea1dc4f46d052b
      PatchedDataComponentMap components;
      @Nullable
      private Entity entityRepresentation;
-+    // Leaf start - Lithium equipment tracking
++    // Leaf start - Lithium - equipment tracking
 +    @Nullable
 +    private net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<ItemStack> subscriber;
 +    private int subscriberData;
-+    // Leaf end - Lithium equipment tracking
++    // Leaf end - Lithium - equipment tracking
  
      private static DataResult<ItemStack> validateStrict(ItemStack stack) {
          DataResult<Unit> dataResult = validateComponents(stack.getComponents());
@@ -413,7 +406,7 @@ index aa2c00be86f42a6674694a20545399e441b75199..e183298a7fb538ee35ea1dc4f46d052b
      }
  
      public void setCount(int count) {
-+        // Leaf start - Lithium equipment tracking
++        // Leaf start - Lithium - equipment tracking
 +        if (count != this.count) {
 +            if (this.subscriber instanceof net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber.CountChangeSubscriber<ItemStack> countChangeSubscriber) {
 +                countChangeSubscriber.notifyCount(this, this.subscriberData, count);
@@ -427,7 +420,7 @@ index aa2c00be86f42a6674694a20545399e441b75199..e183298a7fb538ee35ea1dc4f46d052b
 +                }
 +            }
 +        }
-+        // Leaf end - Lithium equipment tracking
++        // Leaf end - Lithium - equipment tracking
          this.count = count;
      }
  
@@ -436,7 +429,7 @@ index aa2c00be86f42a6674694a20545399e441b75199..e183298a7fb538ee35ea1dc4f46d052b
          return repairable != null && repairable.isValidRepairItem(item);
      }
 +
-+    // Leaf start - Lithium equipment tracking
++    // Leaf start - Lithium - equipment tracking
 +    @Override
 +    public void subscribe(net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<ItemStack> subscriber, int subscriberData) {
 +        if (this.isEmpty()) {
@@ -517,5 +510,5 @@ index aa2c00be86f42a6674694a20545399e441b75199..e183298a7fb538ee35ea1dc4f46d052b
 +    private void startTrackingChanges() {
 +        this.components.subscribe(this, 0);
 +    }
-+    // Leaf end - Lithium equipment tracking
++    // Leaf end - Lithium - equipment tracking
  }

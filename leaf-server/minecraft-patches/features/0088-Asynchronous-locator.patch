@@ -7,19 +7,19 @@ Original license: MIT
 Original project: https://github.com/thebrightspark/AsyncLocator
 
 diff --git a/net/minecraft/server/commands/LocateCommand.java b/net/minecraft/server/commands/LocateCommand.java
-index 13bcd8653d766cd0b754a22e9aab261fbc62b0a5..8fcc33505b86ff686dfe3049631044b2b50789d5 100644
+index 13bcd8653d766cd0b754a22e9aab261fbc62b0a5..e3e7c4e4da0bc95b015bb84e470477782bdb691c 100644
 --- a/net/minecraft/server/commands/LocateCommand.java
 +++ b/net/minecraft/server/commands/LocateCommand.java
-@@ -109,6 +109,37 @@ public class LocateCommand {
+@@ -109,6 +109,38 @@ public class LocateCommand {
          BlockPos blockPos = BlockPos.containing(source.getPosition());
          ServerLevel level = source.getLevel();
          Stopwatch stopwatch = Stopwatch.createStarted(Util.TICKER);
-+        // Leaf start - Async locator
++        // Leaf start - Asynchronous locator
 +        if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled) {
 +            net.minecraft.commands.CommandSource locatorSource = source.source;
-+            if (locatorSource instanceof net.minecraft.server.level.ServerPlayer ||
-+                locatorSource instanceof net.minecraft.server.MinecraftServer) {
++            if (locatorSource instanceof net.minecraft.server.level.ServerPlayer || locatorSource instanceof net.minecraft.server.MinecraftServer) {
 +                BlockPos originPos = BlockPos.containing(source.getPosition());
++
 +                org.dreeam.leaf.async.locate.AsyncLocator.locate(source.getLevel(), holderSet, originPos, 100, false)
 +                    .thenOnServerThread(pair -> {
 +                        stopwatch.stop();
@@ -41,43 +41,46 @@ index 13bcd8653d766cd0b754a22e9aab261fbc62b0a5..8fcc33505b86ff686dfe3049631044b2
 +                            );
 +                        }
 +                    });
++
 +                return 0;
 +            }
 +        }
-+        // Leaf end - Async locator
++        // Leaf end - Asynchronous locator
          Pair<BlockPos, Holder<Structure>> pair = level.getChunkSource().getGenerator().findNearestMapStructure(level, holderSet, blockPos, 100, false);
          stopwatch.stop();
          if (pair == null) {
 diff --git a/net/minecraft/world/entity/animal/Dolphin.java b/net/minecraft/world/entity/animal/Dolphin.java
-index 7003b532182737a745491e397a967b72e6b308aa..4f2baa764362c1cfa8ba84b52c54cf820db55ea5 100644
+index 7003b532182737a745491e397a967b72e6b308aa..3ed9652510976770f5661dd7b317f27f046700d4 100644
 --- a/net/minecraft/world/entity/animal/Dolphin.java
 +++ b/net/minecraft/world/entity/animal/Dolphin.java
-@@ -500,6 +500,8 @@ public class Dolphin extends AgeableWaterCreature {
+@@ -500,6 +500,10 @@ public class Dolphin extends AgeableWaterCreature {
      static class DolphinSwimToTreasureGoal extends Goal {
          private final Dolphin dolphin;
          private boolean stuck;
++        // Leaf start - Asynchronous locator
 +        @Nullable
 +        private org.dreeam.leaf.async.locate.AsyncLocator.LocateTask<?> asyncLocator$locateTask;
++        // Leaf end - Asynchronous locator
  
          DolphinSwimToTreasureGoal(Dolphin dolphin) {
              this.dolphin = dolphin;
-@@ -519,6 +521,11 @@ public class Dolphin extends AgeableWaterCreature {
+@@ -519,6 +523,11 @@ public class Dolphin extends AgeableWaterCreature {
  
          @Override
          public boolean canContinueToUse() {
-+            // Leaf start - Async locator
++            // Leaf start - Asynchronous locator
 +            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.asyncLocator$locateTask != null) {
 +                return true;
 +            }
-+            // Leaf end - Async locator
++            // Leaf end - Asynchronous locator
              BlockPos treasurePos = this.dolphin.getTreasurePos();
              return !BlockPos.containing(treasurePos.getX(), this.dolphin.getY(), treasurePos.getZ()).closerToCenterThan(this.dolphin.position(), 4.0)
                  && !this.stuck
-@@ -532,6 +539,21 @@ public class Dolphin extends AgeableWaterCreature {
+@@ -532,6 +541,22 @@ public class Dolphin extends AgeableWaterCreature {
                  this.stuck = false;
                  this.dolphin.getNavigation().stop();
                  BlockPos blockPos = this.dolphin.blockPosition();
-+                // Leaf start - Async locator
++                // Leaf start - Asynchronous locator
 +                if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled) {
 +                    asyncLocator$locateTask = org.dreeam.leaf.async.locate.AsyncLocator.locate(serverLevel, StructureTags.DOLPHIN_LOCATED, blockPos, 50, false)
 +                        .thenOnServerThread(pos -> {
@@ -89,46 +92,47 @@ index 7003b532182737a745491e397a967b72e6b308aa..4f2baa764362c1cfa8ba84b52c54cf82
 +                                this.stuck = true;
 +                            }
 +                        });
++
 +                    return;
 +                }
-+                // Leaf end - Async locator
++                // Leaf end - Asynchronous locator
                  BlockPos blockPos1 = serverLevel.findNearestMapStructure(StructureTags.DOLPHIN_LOCATED, blockPos, 50, false);
                  if (blockPos1 != null) {
                      this.dolphin.setTreasurePos(blockPos1);
-@@ -544,6 +566,12 @@ public class Dolphin extends AgeableWaterCreature {
+@@ -544,6 +569,12 @@ public class Dolphin extends AgeableWaterCreature {
  
          @Override
          public void stop() {
-+            // Leaf start - Async locator
++            // Leaf start - Asynchronous locator
 +            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.asyncLocator$locateTask != null) {
 +                this.asyncLocator$locateTask.cancel();
 +                this.asyncLocator$locateTask = null;
 +            }
-+            // Leaf end - Async locator
++            // Leaf end - Asynchronous locator
              BlockPos treasurePos = this.dolphin.getTreasurePos();
              if (BlockPos.containing(treasurePos.getX(), this.dolphin.getY(), treasurePos.getZ()).closerToCenterThan(this.dolphin.position(), 4.0) || this.stuck
                  )
-@@ -554,6 +582,11 @@ public class Dolphin extends AgeableWaterCreature {
+@@ -554,6 +585,11 @@ public class Dolphin extends AgeableWaterCreature {
  
          @Override
          public void tick() {
-+            // Leaf start - Async locator
++            // Leaf start - Asynchronous locator
 +            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.asyncLocator$locateTask != null) {
 +                return;
 +            }
-+            // Leaf end - Async locator
++            // Leaf end - Asynchronous locator
              Level level = this.dolphin.level();
              if (this.dolphin.closeToNextPos() || this.dolphin.getNavigation().isDone()) {
                  Vec3 vec3 = Vec3.atCenterOf(this.dolphin.getTreasurePos());
 diff --git a/net/minecraft/world/entity/projectile/EyeOfEnder.java b/net/minecraft/world/entity/projectile/EyeOfEnder.java
-index 01a9bad80a30a7879a69b800258b616b4d986108..5b6d6afd64181d095d61ce233d6f549710648ada 100644
+index 01a9bad80a30a7879a69b800258b616b4d986108..d4f49e40461a165ebd6635e9fec8fe56d7f1acf6 100644
 --- a/net/minecraft/world/entity/projectile/EyeOfEnder.java
 +++ b/net/minecraft/world/entity/projectile/EyeOfEnder.java
 @@ -26,6 +26,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
      public double tz;
      public int life;
      public boolean surviveAfterDeath;
-+    public boolean asyncLocator$locateTaskOngoing = false; // Leaf - Async locator
++    public boolean asyncLocator$locateTaskOngoing = false; // Leaf - Asynchronous locator
  
      public EyeOfEnder(EntityType<? extends EyeOfEnder> entityType, Level level) {
          super(entityType, level);
@@ -136,16 +140,16 @@ index 01a9bad80a30a7879a69b800258b616b4d986108..5b6d6afd64181d095d61ce233d6f5497
      @Override
      public void tick() {
          super.tick();
-+        // Leaf start - Async locator
++        // Leaf start - Asynchronous locator
 +        if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled && this.asyncLocator$locateTaskOngoing) {
 +            return;
 +        }
-+        // Leaf end - Async locator
++        // Leaf end - Asynchronous locator
          Vec3 deltaMovement = this.getDeltaMovement();
          double d = this.getX() + deltaMovement.x;
          double d1 = this.getY() + deltaMovement.y;
 diff --git a/net/minecraft/world/item/EnderEyeItem.java b/net/minecraft/world/item/EnderEyeItem.java
-index 02f2c38b5f9a503097dea44d5c79518b03b63f9a..a2e701d671088a40f15e49a5343598a921d9a651 100644
+index 02f2c38b5f9a503097dea44d5c79518b03b63f9a..a7aa09d7c9d5f95706349e426cd54a79e963c6f9 100644
 --- a/net/minecraft/world/item/EnderEyeItem.java
 +++ b/net/minecraft/world/item/EnderEyeItem.java
 @@ -103,14 +103,47 @@ public class EnderEyeItem extends Item {
@@ -153,21 +157,21 @@ index 02f2c38b5f9a503097dea44d5c79518b03b63f9a..a2e701d671088a40f15e49a5343598a9
              player.startUsingItem(hand);
              if (level instanceof ServerLevel serverLevel) {
 -                BlockPos blockPos = serverLevel.findNearestMapStructure(StructureTags.EYE_OF_ENDER_LOCATED, player.blockPosition(), 100, false);
-+                // Leaf start - Async locator
++                // Leaf start - Asynchronous locator
 +                BlockPos blockPos;
 +                if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled) {
 +                    blockPos = BlockPos.ZERO;
 +                } else {
 +                    blockPos = serverLevel.findNearestMapStructure(StructureTags.EYE_OF_ENDER_LOCATED, player.blockPosition(), 100, false);
 +                }
-+                // Leaf end - Async locator
++                // Leaf end - Asynchronous locator
                  if (blockPos == null) {
                      return InteractionResult.CONSUME;
                  }
  
                  EyeOfEnder eyeOfEnder = new EyeOfEnder(level, player.getX(), player.getY(0.5), player.getZ());
 +
-+                // Leaf start - Async locator
++                // Leaf start - Asynchronous locator
 +                final boolean isAsyncLocatorEnabled = org.dreeam.leaf.config.modules.async.AsyncLocator.enabled;
 +
 +                if (isAsyncLocatorEnabled) {
@@ -190,11 +194,11 @@ index 02f2c38b5f9a503097dea44d5c79518b03b63f9a..a2e701d671088a40f15e49a5343598a9
 +                        }
 +                    });
 +                }
-+                // Leaf end - Async locator
++                // Leaf end - Asynchronous locator
 +
                  eyeOfEnder.setItem(itemInHand);
 -                eyeOfEnder.signalTo(blockPos);
-+                if (!isAsyncLocatorEnabled) eyeOfEnder.signalTo(blockPos); // Leaf - Async locator
++                if (!isAsyncLocatorEnabled) eyeOfEnder.signalTo(blockPos); // Leaf - Asynchronous locator
                  level.gameEvent(GameEvent.PROJECTILE_SHOOT, eyeOfEnder.position(), GameEvent.Context.of(player));
                  // CraftBukkit start
                  if (!level.addFreshEntity(eyeOfEnder)) {
@@ -203,7 +207,7 @@ index 02f2c38b5f9a503097dea44d5c79518b03b63f9a..a2e701d671088a40f15e49a5343598a9
                  level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, f);
                  itemInHand.consume(1, player);
 -                player.awardStat(Stats.ITEM_USED.get(this));
-+                if (!isAsyncLocatorEnabled) player.awardStat(Stats.ITEM_USED.get(this)); // Leaf - Async locator
++                if (!isAsyncLocatorEnabled) player.awardStat(Stats.ITEM_USED.get(this)); // Leaf - Asynchronous locator
              }
  
              return InteractionResult.SUCCESS_SERVER;

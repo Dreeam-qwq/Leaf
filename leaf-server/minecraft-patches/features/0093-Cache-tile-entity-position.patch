@@ -3,17 +3,17 @@ From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Fri, 25 Oct 2024 22:27:07 -0400
 Subject: [PATCH] Cache tile entity position
 
-Check if there is a way to cache isRemoved without problem
+Dreeam TODO: Check if there is a way to cache isRemoved without problem
 
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index d97d8e79034eb1484d4e3646faacc6f11289bb28..a58a36a8a473e610f604fa778df860470caf7176 100644
+index 265e890557dd6557b327b6252dd3177fdd112777..465cd4f6214c949040a35bc9e1e969c33469f2a6 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -938,10 +938,12 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
          private final T blockEntity;
          private final BlockEntityTicker<T> ticker;
          private boolean loggedInvalidBlockState;
-+        private BlockPos cachedPos; // Leaf - Cache tile entity position
++        private final BlockPos cachedPos; // Leaf - Cache tile entity position
  
          BoundTickingBlockEntity(final T blockEntity, final BlockEntityTicker<T> ticker) {
              this.blockEntity = blockEntity;
