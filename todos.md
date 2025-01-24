@@ -6,11 +6,10 @@
 
 # Leaf TODOs
 - [ ] refactor leaves protocol manager opt and pr it.
-- [ ] check multithreaded tracker, that moonrise change
 - [ ] Check and apply work patches
 - [ ] Transfer patch notes to file for Gale and Leaf
 - [ ] Add spigot config unknown message to leaf docs
-- [ ] Add server full join config explaination to docs
+- [ ] Add server full join config explanation to docs
 - [ ] leaf at
 - [ ] Add purpur config changes to docs moved config
 - [ ] Merge changes from Tramontane
