@@ -13,7 +13,7 @@ This offers a 10~15% performance improvement in average.
 In best situation, this can give an up to 50% improvement.
 
 diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..9b34ea111f43e2e103f2be6ecb186175aed7e175 100644
+index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..bcfbb03a75c4e5c80517f9acd24588f1ac703e67 100644
 --- a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 @@ -13,6 +13,10 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
@@ -21,7 +21,7 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..9b34ea111f43e2e103f2be6ecb186175
  
  public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T> {
 +    // Leaf start - Smart sort entities in NearestLivingEntitySensor
-+    private static final int NUM_BUCKETS = org.apache.commons.lang3.math.NumberUtils.toInt((System.getProperty("Leaf.nearestEntitySensorBucketCount", "10")), 10);
++    private static final int NUM_BUCKETS = Integer.getInteger("Leaf.nearestEntitySensorBucketCount", 10);
 +    private static final int BUCKET_SORT_THRESHOLD = (int) Math.floor(NUM_BUCKETS * org.apache.commons.lang3.math.NumberUtils.toDouble(System.getProperty("Leaf.nearestEntitySensorBucketSortThresholdRatio", "2.0"), 2.0D));
 +    // Leaf end - Smart sort entities in NearestLivingEntitySensor
      @Override
