@@ -14,6 +14,7 @@
 - [ ] leaf at
 - [ ] Add purpur config changes to docs moved config
 - [ ] Merge changes from Tramontane
+- [ ] check Dont send useless entity packets
 
 # Cleanup
 - [ ] 检查注释都应该start end - patch名或者合理注释

@@ -8,10 +8,10 @@ avoids multiple casting in Entity#distanceTo, using Math#sqrt directly instead o
 these methods more able to be inlined by the JIT compiler.
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index e6e347cf7e58d5e088057bce60464fab05dcde88..f344e24faee04c1657affba2a6adb8c27fb2d56b 100644
+index 1a0b7148c48a767b3a33f6377ba7d26239cda0c2..4ccb0ad241f6692cf1b37a6d888a82eda3bacd05 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -2195,30 +2195,38 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -2194,30 +2194,38 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return new Vec3(this.xOld, this.yOld, this.zOld);
      }
  

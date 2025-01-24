@@ -5,7 +5,7 @@ Subject: [PATCH] Remove stream in Brain
 
 
 diff --git a/net/minecraft/world/entity/ai/Brain.java b/net/minecraft/world/entity/ai/Brain.java
-index 450396468b23fd90cb8036dbbdd0927051f907af..402279ff78f9e9eb74c63d35ec1968d239228d70 100644
+index 450396468b23fd90cb8036dbbdd0927051f907af..083eb9a7a0bc14d30db944f356d98ca552fa1784 100644
 --- a/net/minecraft/world/entity/ai/Brain.java
 +++ b/net/minecraft/world/entity/ai/Brain.java
 @@ -70,13 +70,22 @@ public class Brain<E extends LivingEntity> {
@@ -38,42 +38,28 @@ index 450396468b23fd90cb8036dbbdd0927051f907af..402279ff78f9e9eb74c63d35ec1968d2
                      }
  
                      @Override
-@@ -111,7 +120,7 @@ public class Brain<E extends LivingEntity> {
+@@ -111,7 +120,14 @@ public class Brain<E extends LivingEntity> {
  
                      @Override
                      public <T> RecordBuilder<T> encode(Brain<E> input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
 -                        input.memories().forEach(memoryValue -> memoryValue.serialize(ops, prefix));
-+                        input.serializeMemories(ops, prefix); // Leaf - Remove stream in Brain
++                        // Leaf start - Remove stream in Brain
++                        for (Entry<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> memory : input.memories.entrySet()) {
++                            final Brain.MemoryValue<?> result = Brain.MemoryValue.createUnchecked(memory.getKey(), memory.getValue());
++
++                            result.serialize(ops, prefix);
++                        }
++                        // Leaf end - Remove stream in Brain
++
                          return prefix;
                      }
                  })
-@@ -153,8 +162,28 @@ public class Brain<E extends LivingEntity> {
+@@ -153,7 +169,7 @@ public class Brain<E extends LivingEntity> {
      }
  
      Stream<Brain.MemoryValue<?>> memories() {
 -        return this.memories.entrySet().stream().map(memory -> Brain.MemoryValue.createUnchecked(memory.getKey(), memory.getValue()));
-+        // Leaf start - Remove stream in Brain
-+        return memoriesList().stream();
-+    }
-+
-+    List<Brain.MemoryValue<?>> memoriesList() {
-+        List<Brain.MemoryValue<?>> result = new java.util.ArrayList<>();
-+
-+        for (Entry<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> memory : this.memories.entrySet()) {
-+            result.add(Brain.MemoryValue.createUnchecked(memory.getKey(), memory.getValue()));
-+        }
-+
-+        return result;
-+    }
-+
-+    <T> void serializeMemories(DynamicOps<T> dynamicOps, RecordBuilder<T> recordBuilder) {
-+        for (Entry<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> memory : this.memories.entrySet()) {
-+            final Brain.MemoryValue<?> result = Brain.MemoryValue.createUnchecked(memory.getKey(), memory.getValue());
-+
-+            result.serialize(dynamicOps, recordBuilder);
-+        }
++        return this.memories.entrySet().stream().map(memory -> Brain.MemoryValue.createUnchecked(memory.getKey(), memory.getValue())); // Leaf - Remove stream in Brain - diff on change
      }
-+    // Leaf end - Remove stream in Brain
  
      public boolean hasMemoryValue(MemoryModuleType<?> type) {
-         return this.checkMemory(type, MemoryStatus.VALUE_PRESENT);

@@ -6,7 +6,7 @@ Subject: [PATCH] Fix-MC-200418
 Related MC issue: https://bugs.mojang.com/browse/MC-200418
 
 diff --git a/net/minecraft/world/entity/monster/ZombieVillager.java b/net/minecraft/world/entity/monster/ZombieVillager.java
-index 750f63e337661b5448d0d863ab4dc99398fd5655..4adbdf7e1151383bad8b877171b562952ab0c9c9 100644
+index 970f6bdb0d0c15f7d814926472daec689beb82f4..13bcfaa0dd78a72544859dc1a27734e9132a92ae 100644
 --- a/net/minecraft/world/entity/monster/ZombieVillager.java
 +++ b/net/minecraft/world/entity/monster/ZombieVillager.java
 @@ -321,6 +321,12 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
@@ -18,7 +18,7 @@ index 750f63e337661b5448d0d863ab4dc99398fd5655..4adbdf7e1151383bad8b877171b56295
 +                if (villager.isPassenger() && villager.getVehicle() instanceof net.minecraft.world.entity.animal.Chicken && villager.isBaby()) {
 +                    villager.removeVehicle();
 +                }
-+                // Leaf end
++                // Leaf end - Fix MC-200418
                  // CraftBukkit start
              }, org.bukkit.event.entity.EntityTransformEvent.TransformReason.CURED, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CURED // CraftBukkit
          );

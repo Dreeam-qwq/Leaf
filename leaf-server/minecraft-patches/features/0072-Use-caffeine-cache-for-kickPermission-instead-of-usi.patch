@@ -1,12 +1,12 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Sun, 23 Jun 2024 11:26:20 +0800
-Subject: [PATCH] Use caffeine cache kickPermission instead of using
+Subject: [PATCH] Use caffeine cache for kickPermission instead of using
  google.common.cache
 
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 39b01b3d96d03bca4c33eaddfc54edef23c3df0c..14c75c85c062fb9d2b576bb1cd24f942642fbf8c 100644
+index 2857e71ddb37f2a98c72df8cb439e2eab97d6f67..23092d6f6bca4eff4aaceabed51927e13156b30d 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -328,17 +328,12 @@ public class ServerGamePacketListenerImpl
@@ -27,7 +27,7 @@ index 39b01b3d96d03bca4c33eaddfc54edef23c3df0c..14c75c85c062fb9d2b576bb1cd24f942
 -            }
 -        );
 +        .build(player -> player.hasPermission("purpur.bypassIdleKick"));
-+    // Leaf - Use caffeine cache kickPermission instead of using google.common.cache
++    // Leaf end - Use caffeine cache kickPermission instead of using google.common.cache
      // Purpur end - AFK API
  
      public final org.leavesmc.leaves.protocol.syncmatica.exchange.ExchangeTarget exchangeTarget; // Leaves - Syncmatica Protocol

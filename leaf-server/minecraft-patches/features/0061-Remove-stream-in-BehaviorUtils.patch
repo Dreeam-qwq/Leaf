@@ -3,13 +3,12 @@ From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 Date: Sat, 26 Oct 2024 00:56:24 +0800
 Subject: [PATCH] Remove stream in BehaviorUtils
 
-Dreeam TODO: Check this, `SectionPos.cube(sectionPos, radius).toList()`
 
 diff --git a/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java b/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
-index 800bc29502ed46bd77cb04c0a79143898f109a48..77fa472d970c0f187f228b06e0b459ebdcaeb7fd 100644
+index 800bc29502ed46bd77cb04c0a79143898f109a48..a65d43087e46c77bc4fcb0617f256145bcbc203b 100644
 --- a/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
 +++ b/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
-@@ -109,10 +109,20 @@ public class BehaviorUtils {
+@@ -109,10 +109,33 @@ public class BehaviorUtils {
  
      public static SectionPos findSectionClosestToVillage(ServerLevel serverLevel, SectionPos sectionPos, int radius) {
          int i = serverLevel.sectionsToVillage(sectionPos);
@@ -21,11 +20,24 @@ index 800bc29502ed46bd77cb04c0a79143898f109a48..77fa472d970c0f187f228b06e0b459eb
 +        SectionPos closestSection = sectionPos;
 +        int closestDistance = i;
 +
-+        for (SectionPos pos : SectionPos.cube(sectionPos, radius).toList()) {
-+            int distance = serverLevel.sectionsToVillage(pos);
-+            if (distance < closestDistance) {
-+                closestDistance = distance;
-+                closestSection = pos;
++        final int lowerX = sectionPos.getX() - radius;
++        final int lowerY = sectionPos.getY() - radius;
++        final int lowerZ = sectionPos.getZ() - radius;
++        final int upperX = sectionPos.getX() + radius;
++        final int upperY = sectionPos.getY() + radius;
++        final int upperZ = sectionPos.getZ() + radius;
++
++        for (int x = lowerX; x <= upperX; x++) {
++            for (int z = lowerZ; z <= upperZ; z++) {
++                for (int y = lowerY; y <= upperY; y++) {
++                    SectionPos pos = SectionPos.of(x, y, z);
++                    int distance = serverLevel.sectionsToVillage(pos);
++
++                    if (distance < closestDistance) {
++                        closestDistance = distance;
++                        closestSection = pos;
++                    }
++                }
 +            }
 +        }
 +

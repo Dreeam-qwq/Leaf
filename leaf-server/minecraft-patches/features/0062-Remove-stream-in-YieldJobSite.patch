@@ -5,10 +5,10 @@ Subject: [PATCH] Remove stream in YieldJobSite
 
 
 diff --git a/net/minecraft/world/entity/ai/behavior/YieldJobSite.java b/net/minecraft/world/entity/ai/behavior/YieldJobSite.java
-index 37ad79e201e36a1a9520219e3faa4dcffa7b4dfd..ccfbbdfe6860d6a211b07d384eba03f857ebf6b0 100644
+index 37ad79e201e36a1a9520219e3faa4dcffa7b4dfd..d174bb065911c22526b8d6c58f2c748e4f816894 100644
 --- a/net/minecraft/world/entity/ai/behavior/YieldJobSite.java
 +++ b/net/minecraft/world/entity/ai/behavior/YieldJobSite.java
-@@ -38,23 +38,27 @@ public class YieldJobSite {
+@@ -38,23 +38,26 @@ public class YieldJobSite {
                              if (type.isEmpty()) {
                                  return true;
                              } else {
@@ -40,7 +40,6 @@ index 37ad79e201e36a1a9520219e3faa4dcffa7b4dfd..ccfbbdfe6860d6a211b07d384eba03f8
 +                                                BehaviorUtils.setWalkAndLookTargetMemories(nearVillager, blockPos, speedModifier, 1);
 +                                                nearVillager.getBrain().setMemory(MemoryModuleType.POTENTIAL_JOB_SITE, GlobalPos.of(level.dimension(), blockPos));
 +                                                DebugPackets.sendPoiTicketCountPacket(level, blockPos);
-+
 +                                            }
 +
 +                                            break;

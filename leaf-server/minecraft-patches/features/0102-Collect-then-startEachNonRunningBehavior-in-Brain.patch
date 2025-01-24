@@ -5,10 +5,10 @@ Subject: [PATCH] Collect then startEachNonRunningBehavior in Brain
 
 
 diff --git a/net/minecraft/world/entity/ai/Brain.java b/net/minecraft/world/entity/ai/Brain.java
-index 5eaa1dec9fbe72a22c34331a28f7b7115fb3aeba..a67f72169d6f4dfbe1dc17918e1bdbeb558d3869 100644
+index c561b749fb9b76ba9b1e9689089b743248c65d50..2f261294ddb82231b6cf423c27c0620876d51cdf 100644
 --- a/net/minecraft/world/entity/ai/Brain.java
 +++ b/net/minecraft/world/entity/ai/Brain.java
-@@ -466,20 +466,29 @@ public class Brain<E extends LivingEntity> {
+@@ -453,20 +453,29 @@ public class Brain<E extends LivingEntity> {
      }
  
      private void startEachNonRunningBehavior(ServerLevel level, E entity) {
