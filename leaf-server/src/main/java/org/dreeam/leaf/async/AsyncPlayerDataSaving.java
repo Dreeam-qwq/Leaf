@@ -18,6 +18,7 @@ public class AsyncPlayerDataSaving {
         }
 
         ExecutorService ioExecutor = Util.backgroundExecutor().service();
+
         CompletableFuture.runAsync(runnable, ioExecutor);
     }
 }

@@ -8,14 +8,14 @@ and the results are always same, thus there is no need to do the convert process
 Save ~0.16ms per tick, and improve 11660ms -> 60ms in around 1 hour.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntityType.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntityType.java
-index 47db4546242974a40f7fc1e34f237fd1f06d5f37..5efe81d85ffb91614308c442ec1afcff4c7855a9 100644
+index 47db4546242974a40f7fc1e34f237fd1f06d5f37..8ffc90b579338d3cf26046ecb497438ac7d02370 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntityType.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntityType.java
 @@ -15,14 +15,26 @@ import org.bukkit.entity.EntityType;
  
  public class CraftEntityType {
  
-+    public static final java.util.Map<net.minecraft.world.entity.EntityType<?>, EntityType> MINECRAFT_TO_BUKKIT_KEY_CACHE = new java.util.concurrent.ConcurrentHashMap<>(); // Leaf - Cache CraftEntityType#minecraftToBukkit convert
++    private static final java.util.Map<net.minecraft.world.entity.EntityType<?>, EntityType> MINECRAFT_TO_BUKKIT_KEY_CACHE = new java.util.concurrent.ConcurrentHashMap<>(); // Leaf - Cache CraftEntityType#minecraftToBukkit convert
 +
      public static EntityType minecraftToBukkit(net.minecraft.world.entity.EntityType<?> minecraft) {
          Preconditions.checkArgument(minecraft != null);

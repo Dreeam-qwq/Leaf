@@ -10,18 +10,9 @@ As part of: Lithium (https://github.com/CaffeineMC/lithium-fabric)
 Licensed under: LGPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
 
 diff --git a/net/minecraft/util/Mth.java b/net/minecraft/util/Mth.java
-index 85c329437f27fc2fc143d2873572f8d3cf30660d..1ebac20359345630ad56a2578b4b1686617300d2 100644
+index 1b60fa34e4d6a5c00a983bf94e4d16d1eb46c665..1e93f74dece88509e56f077d07f67184335801b1 100644
 --- a/net/minecraft/util/Mth.java
 +++ b/net/minecraft/util/Mth.java
-@@ -29,7 +29,7 @@ public class Mth {
-     public static final Vector3f Y_AXIS = new Vector3f(0.0F, 1.0F, 0.0F);
-     public static final Vector3f X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
-     public static final Vector3f Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
--    private static final float[] SIN = Util.make(new float[65536], floats -> {
-+    public static final float[] SIN = Util.make(new float[65536], floats -> { // Leaf - Lithium - private -> public
-         for (int i1 = 0; i1 < floats.length; i1++) {
-             floats[i1] = (float)Math.sin(i1 * Math.PI * 2.0 / 65536.0);
-         }
 @@ -46,11 +46,11 @@ public class Mth {
      private static final double[] COS_TAB = new double[257];
  

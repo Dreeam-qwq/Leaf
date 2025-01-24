@@ -7,36 +7,36 @@ Original license: MIT
 Original project: https://github.com/thebrightspark/AsyncLocator
 
 diff --git a/src/main/java/ca/spottedleaf/moonrise/common/util/TickThread.java b/src/main/java/ca/spottedleaf/moonrise/common/util/TickThread.java
-index 157e5edb507d6d2a922833c70a1c27abc93c9c34..152fc4347000bb14b3c3fbea3a2bef75efcfc784 100644
+index 157e5edb507d6d2a922833c70a1c27abc93c9c34..0e2f43598575d3ed80ebfcd35144d56e6affe1a7 100644
 --- a/src/main/java/ca/spottedleaf/moonrise/common/util/TickThread.java
 +++ b/src/main/java/ca/spottedleaf/moonrise/common/util/TickThread.java
 @@ -101,6 +101,12 @@ public class TickThread extends Thread {
          this(null, run, name);
      }
  
-+    // Leaf start - Async locator
++    // Leaf start - Asynchronous locator
 +    public TickThread(final Runnable run, final String name, final int id) {
 +        this(null, run, name, id);
 +    }
-+    // Leaf end - Async locator
++    // Leaf end - Asynchronous locator
 +
      public TickThread(final ThreadGroup group, final Runnable run, final String name) {
          this(group, run, name, ID_GENERATOR.incrementAndGet());
      }
 diff --git a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
-index 361f4de9cdf0f7505628a2fed2a3f5366031e04b..befeb418c7d9021b9043b1f50b688b1870f7e591 100644
+index 361f4de9cdf0f7505628a2fed2a3f5366031e04b..548fcd9646dee0c40b6ba9b3dafb9ca157dfe324 100644
 --- a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
 +++ b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
 @@ -48,6 +48,12 @@ class PaperEventManager {
                  return;
              }
              // Leaf end - Multithreaded tracker
-+            // Leaf start - Async locator
++            // Leaf start - Asynchronous locator
 +            if (org.dreeam.leaf.config.modules.async.AsyncLocator.enabled) {
 +                net.minecraft.server.MinecraftServer.getServer().scheduleOnMain(event::callEvent);
 +                return;
 +            }
-+            // Leaf end - Async locator
++            // Leaf end - Asynchronous locator
              throw new IllegalStateException(event.getEventName() + " may only be triggered synchronously.");
          }
          // Leaves start - skip photographer

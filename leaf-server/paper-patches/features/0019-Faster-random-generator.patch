@@ -1,16 +1,17 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 Date: Tue, 9 Nov 2077 00:00:00 +0800
-Subject: [PATCH] Faster Random Generator
+Subject: [PATCH] Faster random generator
 
 This patch replaces LegacyRandomSource with FasterRandomSource by default,
 which is faster in general.
 
-Benchmark results (10,000,000 iterations) (GraalVM 21)
-SimpleRandom (Moonrise): 80ms
-FasterRandomSource (Leaf) (Backed by Xoroshiro128PlusPlus): 35ms
-LegacyRandomSource (Vanilla): 200ms
-XoroshiroRandomSource (Vanilla): 47ms
+Benchmark results (10,000,000 iterations) (Azul Zulu 23.0.1)
+
+FasterRandomSource (Leaf) (Backed by Xoroshiro128PlusPlus): 51,633,700 ns
+LegacyRandomSource (Vanilla): 254,857,500 ns
+ThreadUnsafeRandom (Moonrise): 102,265,100 ns
+SimpleThreadUnsafeRandom (Moonrise): 97,054,600 ns
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java b/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
 index c60c05b9e426f56ed3e812abb9aae9ef52bd20e8..268fd8e60630e835c750a8b67201cc63f0b5193d 100644

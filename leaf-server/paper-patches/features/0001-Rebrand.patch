@@ -51,7 +51,7 @@ index b78828e83d8128eace986aeb73213da3b3f905e4..f59879ae7d3c73cd4c4233d30667988b
                  .completer(new ConsoleCommandCompleter(this.server))
                  .option(LineReader.Option.COMPLETE_IN_WORD, true);
 diff --git a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
-index 2596e0ee4df5b96f181e28a742ef345981fc97e3..bbdda3b5263118ec00847e94dde761617db09df2 100644
+index 2596e0ee4df5b96f181e28a742ef345981fc97e3..5b844d2fea387f2cb655169f458ec0ca627f1c65 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
 @@ -32,6 +32,9 @@ public record ServerBuildInfoImpl(
@@ -60,7 +60,7 @@ index 2596e0ee4df5b96f181e28a742ef345981fc97e3..bbdda3b5263118ec00847e94dde76161
      private static final String BRAND_GALE_NAME = "Gale"; // Gale - branding changes
 +    // Leaf start - Rebrand
 +    private static final String BRAND_LEAF_NAME = "Leaf";
-+    // Leaf end- Rebrand
++    // Leaf end - Rebrand
  
      private static final String BUILD_DEV = "DEV";
  
@@ -81,9 +81,9 @@ index 2596e0ee4df5b96f181e28a742ef345981fc97e3..bbdda3b5263118ec00847e94dde76161
      @Override
      public boolean isBrandCompatible(final @NotNull Key brandId) {
 -        return brandId.equals(this.brandId) || brandId.equals(BRAND_PAPER_ID); // Gale - branding changes
++        // Leaf start - Rebrand
 +        return brandId.equals(this.brandId)
 +            || brandId.equals(BRAND_PAPER_ID)
-+            // Leaf start - Rebrand
 +            || brandId.equals(BRAND_GALE_ID); // Gale - branding changes
 +            // Leaf end - Rebrand
      }

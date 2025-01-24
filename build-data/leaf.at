@@ -2,8 +2,10 @@
 # See CONTRIBUTING.md on how to add access transformers.
 protected net.minecraft.world.entity.Entity dimensions
 protected-f net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase$Cache largeCollisionShape
+public net.minecraft.util.Mth SIN
 public net.minecraft.world.entity.Entity updateInWaterStateAndDoWaterCurrentPushing()V
 public net.minecraft.world.entity.LivingEntity canGlide()Z
+public net.minecraft.world.entity.decoration.ArmorStand noTickEquipmentDirty
 public net.minecraft.world.entity.monster.Shulker MAX_SCALE
 public net.minecraft.world.entity.player.Player canGlide()Z
 public net.minecraft.world.level.block.entity.FuelValues values
@@ -12,6 +14,7 @@ public net.minecraft.world.level.chunk.storage.RegionFile isOversized(II)Z
 public net.minecraft.world.level.chunk.storage.RegionFile recalculateHeader()Z
 public net.minecraft.world.level.chunk.storage.RegionFile setOversized(IIZ)V
 public net.minecraft.world.level.chunk.storage.RegionFile write(Lnet/minecraft/world/level/ChunkPos;Ljava/nio/ByteBuffer;)V
+public net.minecraft.world.level.material.FlowingFluid canHoldAnyFluid(Lnet/minecraft/world/level/block/state/BlockState;)Z
 public net.minecraft.world.level.pathfinder.SwimNodeEvaluator allowBreaching
 public-f net.minecraft.world.entity.EntityType dimensions
 public-f net.minecraft.world.level.block.state.BlockBehaviour explosionResistance

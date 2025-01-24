@@ -5,7 +5,7 @@ Subject: [PATCH] Collect then startEachNonRunningBehavior in Brain
 
 
 diff --git a/net/minecraft/world/entity/ai/Brain.java b/net/minecraft/world/entity/ai/Brain.java
-index c561b749fb9b76ba9b1e9689089b743248c65d50..2f261294ddb82231b6cf423c27c0620876d51cdf 100644
+index c561b749fb9b76ba9b1e9689089b743248c65d50..ea6c8e85ccff67b1c24109732f74f1e8199cad07 100644
 --- a/net/minecraft/world/entity/ai/Brain.java
 +++ b/net/minecraft/world/entity/ai/Brain.java
 @@ -453,20 +453,29 @@ public class Brain<E extends LivingEntity> {
@@ -13,7 +13,7 @@ index c561b749fb9b76ba9b1e9689089b743248c65d50..2f261294ddb82231b6cf423c27c06208
  
      private void startEachNonRunningBehavior(ServerLevel level, E entity) {
 -        long gameTime = level.getGameTime();
-+        // Leaf start - Collect first then start
++        // Leaf start - Collect then startEachNonRunningBehavior in Brain
 +        final long gameTime = level.getGameTime();
 +        List<BehaviorControl<? super E>> behaviorsToStart = new ObjectArrayList<>();
  
@@ -41,7 +41,7 @@ index c561b749fb9b76ba9b1e9689089b743248c65d50..2f261294ddb82231b6cf423c27c06208
 +                behaviorControl.tryStart(level, entity, gameTime);
 +            }
 +        }
-+        // Leaf end - Collect first then start
++        // Leaf end - Collect then startEachNonRunningBehavior in Brain
      }
  
      private void tickEachRunningBehavior(ServerLevel level, E entity) {

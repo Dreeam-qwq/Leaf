@@ -10,7 +10,7 @@ which the contains iteration call is very expensive if called everytime
 In the test, it can improve ~30% performance in ~1577000 times of canHoldAnyFluid calls (~159ms -> ~111ms)
 
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 36ac6114cc3449a3b344baac5f3034288cf77a63..fb0843e26e5ee2834fd9917e9d929cb06d915eca 100644
+index 7f46f33fa565fa1a3aedce5524f19be8ba420352..d35211b0cae66b1a40e89539507e55973313f46f 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -454,6 +454,8 @@ public abstract class BlockBehaviour implements FeatureElement {
@@ -51,18 +51,9 @@ index 36ac6114cc3449a3b344baac5f3034288cf77a63..fb0843e26e5ee2834fd9917e9d929cb0
          public boolean isSolid() {
              return this.legacySolid;
 diff --git a/net/minecraft/world/level/material/FlowingFluid.java b/net/minecraft/world/level/material/FlowingFluid.java
-index c535cd03c577d76c3b19da5a8426d0cbee3069f0..2bb220d0442f3c8593c40af2eb559c312c8f47b3 100644
+index 738defb8cbd9c63dc85c479911ebe2f795d0a815..4c2c2efd5380ff1fa5ad7553b51babae20f516ae 100644
 --- a/net/minecraft/world/level/material/FlowingFluid.java
 +++ b/net/minecraft/world/level/material/FlowingFluid.java
-@@ -450,7 +450,7 @@ public abstract class FlowingFluid extends Fluid {
-         return map;
-     }
- 
--    private static boolean canHoldAnyFluid(BlockState state) {
-+    public static boolean canHoldAnyFluid(BlockState state) { // Leaf - Cache part of canHoldFluid result - private -> public
-         Block block = state.getBlock();
-         return block instanceof LiquidBlockContainer
-             || !state.blocksMotion()
 @@ -466,7 +466,7 @@ public abstract class FlowingFluid extends Fluid {
      }
  

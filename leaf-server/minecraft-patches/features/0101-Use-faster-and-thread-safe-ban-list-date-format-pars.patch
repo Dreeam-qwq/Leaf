@@ -23,21 +23,23 @@ Wether there is a high frequnently calls or not. And also thread-safe. So there 
 a better solution, why not using it?
 
 diff --git a/net/minecraft/server/players/BanListEntry.java b/net/minecraft/server/players/BanListEntry.java
-index e111adec2116f922fe67ee434635e50c60dad15c..378ea667007844a08b4f215ca5f0730668e46699 100644
+index e111adec2116f922fe67ee434635e50c60dad15c..72f64d5812411be0f0bc5456caff87d63a4cbbb9 100644
 --- a/net/minecraft/server/players/BanListEntry.java
 +++ b/net/minecraft/server/players/BanListEntry.java
-@@ -9,7 +9,9 @@ import javax.annotation.Nullable;
+@@ -9,7 +9,11 @@ import javax.annotation.Nullable;
  import net.minecraft.network.chat.Component;
  
  public abstract class BanListEntry<T> extends StoredUserEntry<T> {
 -    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
++    // Leaf start - Use faster and thread-safe ban list date format parsing
 +    //public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT); // Leaf - I assume no one will use this, if yes, why?
 +    private static final java.time.ZoneId ZONE_ID = java.time.ZoneId.systemDefault();
-+    public static final java.time.format.DateTimeFormatter DATE_TIME_FORMATTER = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z"); // Leaf - Use faster and thread-safe ban list date format parsing
++    public static final java.time.format.DateTimeFormatter DATE_TIME_FORMATTER = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z");
++    // Leaf end - Use faster and thread-safe ban list date format parsing
      public static final String EXPIRES_NEVER = "forever";
      protected final Date created;
      protected final String source;
-@@ -30,8 +32,10 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
+@@ -30,8 +34,10 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
  
          Date date;
          try {
@@ -50,7 +52,7 @@ index e111adec2116f922fe67ee434635e50c60dad15c..378ea667007844a08b4f215ca5f07306
              date = new Date();
          }
  
-@@ -40,8 +44,10 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
+@@ -40,8 +46,10 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
  
          Date date1;
          try {
@@ -63,7 +65,7 @@ index e111adec2116f922fe67ee434635e50c60dad15c..378ea667007844a08b4f215ca5f07306
              date1 = null;
          }
  
-@@ -75,9 +81,9 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
+@@ -75,9 +83,9 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
  
      @Override
      protected void serialize(JsonObject data) {
@@ -75,7 +77,7 @@ index e111adec2116f922fe67ee434635e50c60dad15c..378ea667007844a08b4f215ca5f07306
          data.addProperty("reason", this.reason);
      }
  
-@@ -86,9 +92,11 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
+@@ -86,9 +94,11 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
          Date expires = null;
  
          try {
@@ -83,13 +85,13 @@ index e111adec2116f922fe67ee434635e50c60dad15c..378ea667007844a08b4f215ca5f07306
 -        } catch (ParseException ex) {
 +            // Leaf start - Use faster and thread-safe ban list date format parsing
 +            expires = jsonobject.has("expires") ? parseToDate(jsonobject.get("expires").getAsString()) : null;
-+        } catch (java.time.format.DateTimeParseException ignored) {
++        } catch (java.time.format.DateTimeParseException ex) {
              // Guess we don't have a date
 +            // Leaf end - Use faster and thread-safe ban list date format parsing
          }
  
          if (expires == null || expires.after(new Date())) {
-@@ -98,4 +106,15 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
+@@ -98,4 +108,15 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
          }
      }
      // CraftBukkit end
@@ -100,7 +102,7 @@ index e111adec2116f922fe67ee434635e50c60dad15c..378ea667007844a08b4f215ca5f07306
 +        return Date.from(parsedDateTime.toInstant());
 +    }
 +
-+    public static String formateToString(Date date) {
++    private static String formateToString(Date date) {
 +        return DATE_TIME_FORMATTER.format(date.toInstant().atZone(ZONE_ID));
 +    }
 +    // Leaf end - Use faster and thread-safe ban list date format parsing

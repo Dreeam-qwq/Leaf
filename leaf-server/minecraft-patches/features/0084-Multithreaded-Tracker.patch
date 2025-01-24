@@ -24,7 +24,7 @@ But it is still recommending to use those packet based, virtual entity
 based NPC plugins, e.g. ZNPC Plus, Adyeshach, Fancy NPC, etc.
 
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 5d9d233e3a568aa6297ed9c703fa450f98158602..325f44fc5c07d931d888698dc7f84547d20f78b1 100644
+index 5d9d233e3a568aa6297ed9c703fa450f98158602..8986c059e7aadb58ae8d9ab7b848de10f9faa6b2 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -248,6 +248,15 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -43,29 +43,7 @@ index 5d9d233e3a568aa6297ed9c703fa450f98158602..325f44fc5c07d931d888698dc7f84547
          for (int i = 0, len = inRange.size(); i < len; i++) {
              ++(backingSet[i].mobCounts[index]);
          }
-@@ -929,6 +938,21 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
-         ((ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerEntity)entity).moonrise$setTrackedEntity(null); // Paper - optimise entity tracker
-     }
- 
-+    // Leaf start - petal - Multithreaded tracker
-+    private final java.util.concurrent.ConcurrentLinkedQueue<Runnable> trackerMainThreadTasks = new java.util.concurrent.ConcurrentLinkedQueue<>();
-+    private boolean tracking = false;
-+
-+    public void runOnTrackerMainThread(final Runnable runnable) {
-+        //final boolean isOnMain = ca.spottedleaf.moonrise.common.util.TickThread.isTickThread();
-+        //System.out.println(isOnMain);
-+        if (false && this.tracking) { // TODO: check here
-+            this.trackerMainThreadTasks.add(runnable);
-+        } else {
-+            runnable.run();
-+        }
-+    }
-+    // Leaf end - petal - Multithreaded tracker
-+
-     // Paper start - optimise entity tracker
-     private void newTrackerTick() {
-         final ca.spottedleaf.moonrise.patches.chunk_system.level.entity.server.ServerEntityLookup entityLookup = (ca.spottedleaf.moonrise.patches.chunk_system.level.entity.server.ServerEntityLookup)((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.level).moonrise$getEntityLookup();;
-@@ -951,6 +975,13 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -951,6 +960,13 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
      // Paper end - optimise entity tracker
  
      protected void tick() {
@@ -79,18 +57,16 @@ index 5d9d233e3a568aa6297ed9c703fa450f98158602..325f44fc5c07d931d888698dc7f84547
          // Paper start - optimise entity tracker
          if (true) {
              this.newTrackerTick();
-@@ -1073,7 +1104,9 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1073,7 +1089,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          final Entity entity;
          private final int range;
          SectionPos lastSectionPos;
 -        public final Set<ServerPlayerConnection> seenBy = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>(); // Paper - Perf: optimise map impl
-+        public final Set<ServerPlayerConnection> seenBy = org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled
-+                ? com.google.common.collect.Sets.newConcurrentHashSet()
-+                : new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>(); // Paper - Perf: optimise map impl // Leaf - petal - Multithreaded tracker
++        public final Set<ServerPlayerConnection> seenBy = org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled ? com.google.common.collect.Sets.newConcurrentHashSet() : new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>(); // Paper - Perf: optimise map impl // Leaf - petal - Multithreaded tracker
  
          // Paper start - optimise entity tracker
          private long lastChunkUpdate = -1L;
-@@ -1100,7 +1133,39 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1100,7 +1116,39 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
              this.lastTrackedChunk = chunk;
  
              final ServerPlayer[] playersRaw = players.getRawDataUnchecked();
@@ -130,7 +106,7 @@ index 5d9d233e3a568aa6297ed9c703fa450f98158602..325f44fc5c07d931d888698dc7f84547
              for (int i = 0, len = players.size(); i < len; ++i) {
                  final ServerPlayer player = playersRaw[i];
                  this.updatePlayer(player);
-@@ -1115,6 +1180,8 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1115,6 +1163,8 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
                      }
                  }
              }
@@ -139,7 +115,7 @@ index 5d9d233e3a568aa6297ed9c703fa450f98158602..325f44fc5c07d931d888698dc7f84547
          }
  
          @Override
-@@ -1176,7 +1243,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1176,7 +1226,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          }
  
          public void broadcast(Packet<?> packet) {
@@ -148,7 +124,7 @@ index 5d9d233e3a568aa6297ed9c703fa450f98158602..325f44fc5c07d931d888698dc7f84547
                  serverPlayerConnection.send(packet);
              }
          }
-@@ -1189,21 +1256,22 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1189,21 +1239,22 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          }
  
          public void broadcastRemoved() {
@@ -175,22 +151,20 @@ index 5d9d233e3a568aa6297ed9c703fa450f98158602..325f44fc5c07d931d888698dc7f84547
                  // Vec3 vec3 = player.position().subtract(this.entity.position());
                  double vec3_dx = player.getX() - this.entity.getX();
 diff --git a/net/minecraft/server/level/ServerBossEvent.java b/net/minecraft/server/level/ServerBossEvent.java
-index f106373ef3ac4a8685c2939c9e8361688a285913..37c5fd2ba5b3b0ff741222f04737e8928a4b6079 100644
+index f106373ef3ac4a8685c2939c9e8361688a285913..51ae390c68e7a3aa193329cc3bc47ca675930ff2 100644
 --- a/net/minecraft/server/level/ServerBossEvent.java
 +++ b/net/minecraft/server/level/ServerBossEvent.java
-@@ -13,7 +13,9 @@ import net.minecraft.util.Mth;
+@@ -13,7 +13,7 @@ import net.minecraft.util.Mth;
  import net.minecraft.world.BossEvent;
  
  public class ServerBossEvent extends BossEvent {
 -    private final Set<ServerPlayer> players = Sets.newHashSet();
-+    private final Set<ServerPlayer> players = org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled
-+            ? Sets.newConcurrentHashSet()
-+            : Sets.newHashSet(); // Leaf - petal - Multithreaded tracker - players can be removed in async tracking
++    private final Set<ServerPlayer> players = org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled ? Sets.newConcurrentHashSet() : Sets.newHashSet(); // Leaf - petal - Multithreaded tracker - players can be removed in async tracking
      private final Set<ServerPlayer> unmodifiablePlayers = Collections.unmodifiableSet(this.players);
      public boolean visible = true;
  
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index 1b9e34574fb5b8955fa37795baebf588fdaeca2a..a0a40c5f0ae22390615d060b1b45c937dd9e2370 100644
+index 1b9e34574fb5b8955fa37795baebf588fdaeca2a..2cca2c7b826dc64c0642751fda006f65e80befc1 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
 @@ -110,8 +110,16 @@ public class ServerEntity {
@@ -212,49 +186,12 @@ index 1b9e34574fb5b8955fa37795baebf588fdaeca2a..a0a40c5f0ae22390615d060b1b45c937
                          }
                      }
                  );
-@@ -335,14 +343,21 @@ public class ServerEntity {
- 
-     public void removePairing(ServerPlayer player) {
-         this.entity.stopSeenByPlayer(player);
--        player.connection.send(new ClientboundRemoveEntitiesPacket(this.entity.getId()));
-+        // Leaf start - petal - Multithreaded tracker - send in main thread
-+        ((ServerLevel) this.entity.level()).chunkSource.chunkMap.runOnTrackerMainThread(() ->
-+            player.connection.send(new ClientboundRemoveEntitiesPacket(this.entity.getId()))
-+        );
-+        // Leaf end - petal - Multithreaded tracker - send in main thread
-     }
- 
-     public void addPairing(ServerPlayer player) {
-         List<Packet<? super ClientGamePacketListener>> list = new ArrayList<>();
-         this.sendPairingData(player, list::add);
--        player.connection.send(new ClientboundBundlePacket(list));
--        this.entity.startSeenByPlayer(player);
-+        // Leaf start - petal - Multithreaded tracker - send in main thread
-+        ((ServerLevel) this.entity.level()).chunkSource.chunkMap.runOnTrackerMainThread(() ->
-+            player.connection.send(new ClientboundBundlePacket(list))
-+        );
-+        // Leaf end - petal - Multithreaded tracker - send in main thread        this.entity.startSeenByPlayer(player);
-     }
- 
-     public void sendPairingData(ServerPlayer player, Consumer<Packet<ClientGamePacketListener>> consumer) {
-@@ -435,18 +450,27 @@ public class ServerEntity {
-         List<SynchedEntityData.DataValue<?>> list = entityData.packDirty();
-         if (list != null) {
-             this.trackedDataValues = entityData.getNonDefaultValues();
--            this.broadcastAndSend(new ClientboundSetEntityDataPacket(this.entity.getId(), list));
-+            // Leaf start - petal - Multithreaded tracker - send in main thread
-+            ((ServerLevel) this.entity.level()).chunkSource.chunkMap.runOnTrackerMainThread(() ->
-+                this.broadcastAndSend(new ClientboundSetEntityDataPacket(this.entity.getId(), list))
-+            );
-+            // Leaf end - petal - Multithreaded tracker - send in main thread
-         }
- 
+@@ -441,12 +449,15 @@ public class ServerEntity {
          if (this.entity instanceof LivingEntity) {
              Set<AttributeInstance> attributesToSync = ((LivingEntity)this.entity).getAttributes().getAttributesToSync();
              if (!attributesToSync.isEmpty()) {
 +                // Leaf start - petal - Multithreaded tracker - send in main thread
 +                final Set<AttributeInstance> copy = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>(attributesToSync);
-+                ((ServerLevel) this.entity.level()).chunkSource.chunkMap.runOnTrackerMainThread(() -> {
                  // CraftBukkit start - Send scaled max health
                  if (this.entity instanceof ServerPlayer serverPlayer) {
 -                    serverPlayer.getBukkitEntity().injectScaledMaxHealth(attributesToSync, false);
@@ -263,13 +200,12 @@ index 1b9e34574fb5b8955fa37795baebf588fdaeca2a..a0a40c5f0ae22390615d060b1b45c937
                  // CraftBukkit end
 -                this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributesToSync));
 +                this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), copy));
-+                });
 +                // Leaf end - petal - Multithreaded tracker - send in main thread
              }
  
              attributesToSync.clear();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index b3c388f6108360708baf275121af18f46622494f..682024138e792fa4c72189ed06226f0a92ef3d7f 100644
+index 677e5f31089879235677b82ff554e5b89e335a6d..9ac8f658cbdc0640112c6aa672d45761285e81a9 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -2494,7 +2494,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -282,7 +218,7 @@ index b3c388f6108360708baf275121af18f46622494f..682024138e792fa4c72189ed06226f0a
      }
  
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 14c75c85c062fb9d2b576bb1cd24f942642fbf8c..0ebcaeeda2242d918fbb917076bc99a86ef677f8 100644
+index e47a9ee15c9fb7fa79c0fa92f1193adf4efb667d..72d520c91e070ce6d309f68c0558d82baffd6eb0 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1810,7 +1810,7 @@ public class ServerGamePacketListenerImpl

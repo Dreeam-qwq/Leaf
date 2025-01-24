@@ -1,25 +1,25 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 Date: Mon, 1 Nov 2077 00:00:00 +0800
-Subject: [PATCH] TT20 Lag compensation
+Subject: [PATCH] TT20: Lag compensation
 
 Original license: AGPL-3.0
 Original project: https://github.com/snackbag/TT20
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 99fb4faa6e8f099ee216eb44793a1df0e6b8c137..f5766b3bed325f42d4bf55d4fe83ef50fed1481f 100644
+index 2b28fdd68db5b5cf67023410730871843f49248b..d6266bd00da49a9121916fa03a7b920cebec2ace 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1556,6 +1556,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
          this.server.spark.tickStart(); // Paper - spark
          new com.destroystokyo.paper.event.server.ServerTickStartEvent(this.tickCount+1).callEvent(); // Paper - Server Tick Events
-+        if (org.dreeam.leaf.config.modules.misc.LagCompensation.enabled) org.dreeam.leaf.misc.LagCompensation.TPSCalculator.onTick(); // Leaf - Lag compensation tick hook
++        if (org.dreeam.leaf.config.modules.misc.LagCompensation.enabled) org.dreeam.leaf.misc.LagCompensation.TPSCalculator.onTick(); // Leaf - TT20 - Lag compensation - tick hook
          this.tickCount++;
          this.tickRateManager.tick();
          this.tickChildren(hasTimeLeft);
 diff --git a/net/minecraft/world/level/material/LavaFluid.java b/net/minecraft/world/level/material/LavaFluid.java
-index 85629a43f5469a89dd6078d879f475e8212438ec..8eae2979bfee578443bcf19298b362ef4bed4937 100644
+index 85629a43f5469a89dd6078d879f475e8212438ec..d66321acb26682a02efa02cf1443b40d2a17f67b 100644
 --- a/net/minecraft/world/level/material/LavaFluid.java
 +++ b/net/minecraft/world/level/material/LavaFluid.java
 @@ -177,7 +177,13 @@ public abstract class LavaFluid extends FlowingFluid {
@@ -27,18 +27,18 @@ index 85629a43f5469a89dd6078d879f475e8212438ec..8eae2979bfee578443bcf19298b362ef
      @Override
      public int getTickDelay(LevelReader level) {
 -        return level.dimensionType().ultraWarm() ? level.getWorldBorder().world.purpurConfig.lavaSpeedNether : level.getWorldBorder().world.purpurConfig.lavaSpeedNotNether; // Purpur - Make lava flow speed configurable
-+        // Leaf start - Lag compensation
++        // Leaf start - TT20 - Lag compensation
 +        if (org.dreeam.leaf.config.modules.misc.LagCompensation.enabled && org.dreeam.leaf.config.modules.misc.LagCompensation.enableForLava) {
 +            return level.dimensionType().ultraWarm() ? org.dreeam.leaf.misc.LagCompensation.tt20(level.getWorldBorder().world.purpurConfig.lavaSpeedNether, true) : org.dreeam.leaf.misc.LagCompensation.tt20(level.getWorldBorder().world.purpurConfig.lavaSpeedNotNether, true); // Purpur - Make lava flow speed configurable // Leaf
 +        } else {
 +            return level.dimensionType().ultraWarm() ? level.getWorldBorder().world.purpurConfig.lavaSpeedNether : level.getWorldBorder().world.purpurConfig.lavaSpeedNotNether; // Purpur - Make lava flow speed configurable
 +        }
-+        // Leaf end - Lag compensation
++        // Leaf end - TT20 - Lag compensation
      }
  
      @Override
 diff --git a/net/minecraft/world/level/material/WaterFluid.java b/net/minecraft/world/level/material/WaterFluid.java
-index 2e4fed7c27910b6c886f710f33b0841c2a175837..24e0094d5fa5beafdd79eb127d80a71c7a08f43c 100644
+index 2e4fed7c27910b6c886f710f33b0841c2a175837..508036525272ffdda054bd631bebd05e82d28409 100644
 --- a/net/minecraft/world/level/material/WaterFluid.java
 +++ b/net/minecraft/world/level/material/WaterFluid.java
 @@ -115,7 +115,13 @@ public abstract class WaterFluid extends FlowingFluid {
@@ -46,13 +46,13 @@ index 2e4fed7c27910b6c886f710f33b0841c2a175837..24e0094d5fa5beafdd79eb127d80a71c
      @Override
      public int getTickDelay(LevelReader level) {
 -        return 5;
-+        // Leaf start - Lag compensation
++        // Leaf start - TT20 - Lag compensation
 +        if (org.dreeam.leaf.config.modules.misc.LagCompensation.enabled && org.dreeam.leaf.config.modules.misc.LagCompensation.enableForWater) {
 +            return org.dreeam.leaf.misc.LagCompensation.tt20(5, true);
 +        } else {
 +            return 5;
 +        }
-+        // Leaf end - Lag compensation
++        // Leaf end - TT20 - Lag compensation
      }
  
      @Override
