@@ -14,14 +14,12 @@ import net.minecraft.world.entity.Entity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class MultithreadedTracker {
 
     private static final Logger LOGGER = LogManager.getLogger("MultithreadedTracker");
+
     public static class MultithreadedTrackerThread extends Thread {
         @Override
         public void run() {
@@ -30,9 +28,9 @@ public class MultithreadedTracker {
     }
     private static final Executor trackerExecutor = new ThreadPoolExecutor(
             1,
-            org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads,
-            org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerKeepalive, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(),
+        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? Integer.MAX_VALUE : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads,
+        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? 30L : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerKeepalive, TimeUnit.SECONDS,
+        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? new SynchronousQueue<>() : new LinkedBlockingQueue<>(),
             new ThreadFactoryBuilder()
                     .setThreadFactory(
                             r -> new MultithreadedTrackerThread() {
