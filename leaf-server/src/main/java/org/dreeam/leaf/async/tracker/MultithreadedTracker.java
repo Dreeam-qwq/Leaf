@@ -14,6 +14,8 @@ import net.minecraft.world.entity.Entity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 
 public class MultithreadedTracker {
@@ -45,9 +47,17 @@ public class MultithreadedTracker {
             .setNameFormat("Leaf Async Tracker Thread - %d")
             .setPriority(Thread.NORM_PRIORITY - 2)
             .build(),
-        (r, executor) -> {
+        (rejectedTask, executor) -> {
+            BlockingQueue<Runnable> workQueue = executor.getQueue();
             if (!executor.isShutdown()) {
-                r.run();
+                if (!workQueue.isEmpty()) {
+                    List<Runnable> pendingTasks = new ArrayList<>(workQueue.size());
+                    workQueue.drainTo(pendingTasks);
+                    for (Runnable pendingTask : pendingTasks) {
+                        pendingTask.run();
+                    }
+                }
+                rejectedTask.run();
             }
             if (System.currentTimeMillis() - lastWarnMillis > 30000L) {
                 LOGGER.warn("Async entity tracker is busy! Tracking tasks will be done in the server thread. Increasing max-threads in Leaf config may help.");
