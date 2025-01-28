@@ -20,29 +20,41 @@ public class MultithreadedTracker {
 
     private static final Logger LOGGER = LogManager.getLogger("MultithreadedTracker");
 
+    private static long lastWarnMillis = System.currentTimeMillis();
+
     public static class MultithreadedTrackerThread extends Thread {
         @Override
         public void run() {
             super.run();
         }
     }
-    private static final Executor trackerExecutor = new ThreadPoolExecutor(
-            1,
+    private static final ThreadPoolExecutor trackerExecutor = new ThreadPoolExecutor(
+        1,
         org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? Integer.MAX_VALUE : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads,
         org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? 30L : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerKeepalive, TimeUnit.SECONDS,
-        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? new SynchronousQueue<>() : new LinkedBlockingQueue<>(),
-            new ThreadFactoryBuilder()
-                    .setThreadFactory(
-                            r -> new MultithreadedTrackerThread() {
-                                @Override
-                                public void run() {
-                                    r.run();
-                                }
-                            }
-                    )
-                    .setNameFormat("Leaf Async Tracker Thread - %d")
-                    .setPriority(Thread.NORM_PRIORITY - 2)
-                    .build());
+        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? new SynchronousQueue<>() : new LinkedBlockingQueue<>(org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads * 4),
+        new ThreadFactoryBuilder()
+            .setThreadFactory(
+                r -> new MultithreadedTrackerThread() {
+                    @Override
+                    public void run() {
+                        r.run();
+                    }
+                }
+            )
+            .setNameFormat("Leaf Async Tracker Thread - %d")
+            .setPriority(Thread.NORM_PRIORITY - 2)
+            .build(),
+        (r, executor) -> {
+            if (!executor.isShutdown()) {
+                r.run();
+            }
+            if (System.currentTimeMillis() - lastWarnMillis > 30000L) {
+                LOGGER.warn("Async entity tracker is busy! Tracking tasks will be done in the server thread. Increasing max-threads in Leaf config may help.");
+                lastWarnMillis = System.currentTimeMillis();
+            }
+        }
+    );
 
     private MultithreadedTracker() {
     }
