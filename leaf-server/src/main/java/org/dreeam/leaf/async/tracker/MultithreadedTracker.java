@@ -30,6 +30,28 @@ public class MultithreadedTracker {
             super.run();
         }
     }
+
+    static class RejectedTrackingTaskHandler implements RejectedExecutionHandler {
+        @Override
+        public void rejectedExecution(Runnable rejectedTask, ThreadPoolExecutor executor) {
+            BlockingQueue<Runnable> workQueue = executor.getQueue();
+            if (!executor.isShutdown()) {
+                if (!workQueue.isEmpty()) {
+                    List<Runnable> pendingTasks = new ArrayList<>(workQueue.size());
+                    workQueue.drainTo(pendingTasks);
+                    for (Runnable pendingTask : pendingTasks) {
+                        pendingTask.run();
+                    }
+                }
+                rejectedTask.run();
+            }
+            if (System.currentTimeMillis() - lastWarnMillis > 30000L) {
+                LOGGER.warn("Async entity tracker is busy! Tracking tasks will be done in the server thread. Increasing max-threads in Leaf config may help.");
+                lastWarnMillis = System.currentTimeMillis();
+            }
+        }
+    }
+
     private static final ThreadPoolExecutor trackerExecutor = new ThreadPoolExecutor(
         1,
         org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? Integer.MAX_VALUE : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads,
@@ -47,23 +69,7 @@ public class MultithreadedTracker {
             .setNameFormat("Leaf Async Tracker Thread - %d")
             .setPriority(Thread.NORM_PRIORITY - 2)
             .build(),
-        (rejectedTask, executor) -> {
-            BlockingQueue<Runnable> workQueue = executor.getQueue();
-            if (!executor.isShutdown()) {
-                if (!workQueue.isEmpty()) {
-                    List<Runnable> pendingTasks = new ArrayList<>(workQueue.size());
-                    workQueue.drainTo(pendingTasks);
-                    for (Runnable pendingTask : pendingTasks) {
-                        pendingTask.run();
-                    }
-                }
-                rejectedTask.run();
-            }
-            if (System.currentTimeMillis() - lastWarnMillis > 30000L) {
-                LOGGER.warn("Async entity tracker is busy! Tracking tasks will be done in the server thread. Increasing max-threads in Leaf config may help.");
-                lastWarnMillis = System.currentTimeMillis();
-            }
-        }
+        new RejectedTrackingTaskHandler()
     );
 
     private MultithreadedTracker() {
