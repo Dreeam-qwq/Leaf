@@ -5,7 +5,7 @@ Subject: [PATCH] Cache player profileResult
 
 
 diff --git a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index 9081780cff9d97b0f4a93afade62f5ef0d448209..f2b9ba7eaa02d8da54bb5f4561cdf457400b2e6b 100644
+index 069477e524a28b20a0289221858bdc802704a890..595cfb31dd2c026ef9946429608c2c7497bf9de0 100644
 --- a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -71,6 +71,11 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
@@ -20,7 +20,7 @@ index 9081780cff9d97b0f4a93afade62f5ef0d448209..f2b9ba7eaa02d8da54bb5f4561cdf457
  
      public ServerLoginPacketListenerImpl(MinecraftServer server, Connection connection, boolean transferred) {
          this.server = server;
-@@ -302,9 +307,23 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
+@@ -304,9 +309,23 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                  String string1 = Objects.requireNonNull(ServerLoginPacketListenerImpl.this.requestedUsername, "Player name not initialized");
  
                  try {

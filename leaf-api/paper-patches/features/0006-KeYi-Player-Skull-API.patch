@@ -7,10 +7,10 @@ Original license: MIT
 Original project: https://github.com/KeYiMC/KeYi
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 886a954b1a12e895f5d54fd35a9acb36673e3733..1df8a2ceb4df1ea14d9d936a9389d9d44fd91b55 100644
+index c39bd414cb3b1e12867cfee150f0ccfc9ba56ce8..a7abbf0b8645f394a30dc27995919a32c7a424d5 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -4021,4 +4021,23 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -4057,4 +4057,23 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
          sendDeathScreen(message);
      }
      // Purpur end

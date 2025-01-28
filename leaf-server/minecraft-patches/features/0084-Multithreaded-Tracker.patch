@@ -205,10 +205,10 @@ index 1b9e34574fb5b8955fa37795baebf588fdaeca2a..2cca2c7b826dc64c0642751fda006f65
  
              attributesToSync.clear();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 677e5f31089879235677b82ff554e5b89e335a6d..9ac8f658cbdc0640112c6aa672d45761285e81a9 100644
+index f9e335c86684969b744a7d7c1d96458e830bbd35..9f3fe9ffdbd2973754898233cca60b7335d671c9 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -2494,7 +2494,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2495,7 +2495,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
      @Override
      public LevelEntityGetter<Entity> getEntities() {
@@ -218,10 +218,10 @@ index 677e5f31089879235677b82ff554e5b89e335a6d..9ac8f658cbdc0640112c6aa672d45761
      }
  
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index e47a9ee15c9fb7fa79c0fa92f1193adf4efb667d..72d520c91e070ce6d309f68c0558d82baffd6eb0 100644
+index b03ec4f449bf7c7bd56bf763fe5c2841ca1408ef..d9dfa7c0c79166156c6e166d721e804264d3c59c 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -1810,7 +1810,7 @@ public class ServerGamePacketListenerImpl
+@@ -1817,7 +1817,7 @@ public class ServerGamePacketListenerImpl
      }
  
      public void internalTeleport(PositionMoveRotation posMoveRotation, Set<Relative> relatives) {

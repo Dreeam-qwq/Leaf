@@ -70,16 +70,3 @@ index 57ae4aaf1431021daf77c5638038d4910a358155..d4317668df3b1a2ae1b6091b65dfa9da
      }
  
      @Override
-diff --git a/net/minecraft/world/level/levelgen/synth/PerlinNoise.java b/net/minecraft/world/level/levelgen/synth/PerlinNoise.java
-index 2c28bb2fed04542a2ee126fe0c1c1f0253a3e2eb..5632cfde8118bd8db79b9abdb8b57edf94c44f96 100644
---- a/net/minecraft/world/level/levelgen/synth/PerlinNoise.java
-+++ b/net/minecraft/world/level/levelgen/synth/PerlinNoise.java
-@@ -215,7 +215,7 @@ public class PerlinNoise {
-     }
- 
-     public static double wrap(double value) {
--        return value - Mth.lfloor(value / 3.3554432E7 + 0.5) * 3.3554432E7;
-+        return value - Math.floor(value / 3.3554432E7 + 0.5) * 3.3554432E7; // Leaf - C2ME - Optimize world gen math - Avoid casting
-     }
- 
-     protected int firstOctave() {

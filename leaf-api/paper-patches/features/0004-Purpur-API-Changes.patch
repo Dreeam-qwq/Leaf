@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur API Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 4b74604c1f9f84e87f91dd390c83850f088a736b
+Commit: 5583a3f19b75a9d07367e2ca80adbbafa9af6593
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "co/aikar/timings/TimedEventExecutor.java.patch"
@@ -70,10 +70,10 @@ index 6b2f6ab137ae37ff0db4827886614436b7ed5dcb..66a9fc729182476c4f601cdb32bcb109
      /**
       * The brand id for Pufferfish.
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 6c24786d349b88b414a1d96e4c0415f75d8fa545..196109f427fb1169785b82b4cfb52c53329d2bea 100644
+index c3cdfd40386b0844712e9561b35e7acc6f83142b..d67af3fdc4434817cea29673069430a33fb30a8e 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -3047,4 +3047,133 @@ public final class Bukkit {
+@@ -3046,4 +3046,133 @@ public final class Bukkit {
      public static Server.Spigot spigot() {
          return server.spigot();
      }
@@ -446,10 +446,10 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +    // Purpur end - OfflinePlayer API
  }
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 5e1cc13695ce58aadb882c03ed4259f8ad843730..02fb928e8c44bdbfc948079ccc2eba40c4621ae6 100644
+index 7ffe592b88d5f57723c9373f326e09e68da716bd..6790ca1648a17cf30063522f68b3ac3e82e3bd8c 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -2383,6 +2383,18 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2382,6 +2382,18 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
  
          // Paper end
  
@@ -468,7 +468,7 @@ index 5e1cc13695ce58aadb882c03ed4259f8ad843730..02fb928e8c44bdbfc948079ccc2eba40
          // Leaf start - Leaf config - API
          @NotNull
          public org.bukkit.configuration.file.YamlConfiguration getLeafConfig()
-@@ -2740,4 +2752,111 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2739,4 +2751,111 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       */
      long getLastTickOversleepTime();
      // Gale end - YAPFA - last tick time - API
@@ -581,10 +581,10 @@ index 5e1cc13695ce58aadb882c03ed4259f8ad843730..02fb928e8c44bdbfc948079ccc2eba40
 +    // Purpur end - Debug Marker API
  }
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index e99fa923d35b6dda0b02968bdcf6b43552517ea4..5ee6f017101a05b568b69627b1819d63dbe8094e 100644
+index 8784842d14bbbe7dbde181e86782a0955be66924..3af8eb8064aeafa3606fed23e7ca2bc74c194726 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -4238,6 +4238,86 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -4253,6 +4253,86 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
      @Nullable
      public DragonBattle getEnderDragonBattle();
  
@@ -1010,13 +1010,13 @@ index bc84b892cae5fe7019a3ad481e9da79956efa1fe..48eb5b00c460cccde29d327cef1d63fc
 +    // Purpur end
  }
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 1ee59ed42de64ae1a0a580b3f640cdcb5f51c71b..886a954b1a12e895f5d54fd35a9acb36673e3733 100644
+index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc9ba56ce8 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -3902,4 +3902,123 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -3938,4 +3938,123 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @return the result of this method, holding leftovers and spawned items.
       */
-     void sendEntityEffect(org.bukkit.@NotNull EntityEffect effect, @NotNull Entity target);
-     // Paper end - entity effect API
+     @NotNull PlayerGiveResult give(@NotNull Collection<@NotNull ItemStack> items, boolean dropIfFull);
 +
 +    // Purpur start
 +    /**

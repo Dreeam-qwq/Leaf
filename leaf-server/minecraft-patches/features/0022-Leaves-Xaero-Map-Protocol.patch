@@ -9,10 +9,10 @@ Original project: https://github.com/LeavesMC/Leaves
 This patch is Powered by Xaero Map
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 3d1338b463466d833b53eff50ec1366f41329dd8..823a7c330ec7f0287b4f7a83e2c719a45cbedf6e 100644
+index 0e81a445a4f960eab5c873bc16f79a9ebfab0122..03bf654aaf1b4f7df9608ee1ad99230f7aa507f9 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -1216,6 +1216,7 @@ public abstract class PlayerList {
+@@ -1222,6 +1222,7 @@ public abstract class PlayerList {
          player.connection.send(new ClientboundInitializeBorderPacket(worldBorder));
          player.connection.send(new ClientboundSetTimePacket(level.getGameTime(), level.getDayTime(), level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)));
          player.connection.send(new ClientboundSetDefaultSpawnPositionPacket(level.getSharedSpawnPos(), level.getSharedSpawnAngle()));

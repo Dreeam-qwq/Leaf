@@ -27,7 +27,7 @@ index 4c003acccdd2dd17918b15316001e52e7670123e..780f3a48152fef6a06dc67bf7fbd1965
          HandlerList handlers = event.getHandlers();
          RegisteredListener[] listeners = handlers.getRegisteredListeners();
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index dd054c184095644a122be0f610ade1d47d9be74a..da73276a7f7e91911919ffca8ec231f37c18ab53 100644
+index 399cf37a3e823524aea48c288d270820696ba666..78904ae17d5f1b12da4825c251d8331376de78d6 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -321,6 +321,8 @@ public final class CraftServer implements Server {
@@ -48,7 +48,7 @@ index dd054c184095644a122be0f610ade1d47d9be74a..da73276a7f7e91911919ffca8ec231f3
              @Override
              public CraftPlayer apply(ServerPlayer player) {
                  return player.getBukkitEntity();
-@@ -3459,4 +3461,11 @@ public final class CraftServer implements Server {
+@@ -3458,4 +3460,11 @@ public final class CraftServer implements Server {
          return getServer().lagging;
      }
      // Purpur end - Lagging threshold
@@ -74,10 +74,10 @@ index dca2761fe4765c6e95b5db0d0cb5c818eb8697b4..3235ec3415407d1f4fa420d398364fd6
          if (entity instanceof EnderDragonPart complexPart) {
              if (complexPart.parentMob instanceof EnderDragon) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 7729f49719ce1d42fcbc33452d2b4f8f027283da..9f29ca8f0c32687705906ed912721c3dbca5299c 100644
+index 5480b93b922f282fb2193a5b7ed16651764de5f5..6b72004ac0d40bba230e4d721a868fdd37117e22 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2276,7 +2276,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2283,7 +2283,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
  
      @Override
      public boolean canSee(Player player) {

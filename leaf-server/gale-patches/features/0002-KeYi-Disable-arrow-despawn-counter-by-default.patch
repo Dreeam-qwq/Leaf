@@ -7,10 +7,10 @@ Original license: MIT
 Original project: https://github.com/KeYiMC/KeYi
 
 diff --git a/src/main/java/org/galemc/gale/configuration/GaleWorldConfiguration.java b/src/main/java/org/galemc/gale/configuration/GaleWorldConfiguration.java
-index a12b0fa0df84fc44861cebbfbdc4a06a990accce..37896174667b884fcdc83b0a613686d76b66f247 100644
+index 34cccb190510c041062858fca20cc40ea5be5f9e..f550c88d125ffafebfad7663088c080bbf771665 100644
 --- a/src/main/java/org/galemc/gale/configuration/GaleWorldConfiguration.java
 +++ b/src/main/java/org/galemc/gale/configuration/GaleWorldConfiguration.java
-@@ -120,7 +120,7 @@ public class GaleWorldConfiguration extends ConfigurationPart {
+@@ -132,7 +132,7 @@ public class GaleWorldConfiguration extends ConfigurationPart {
  
          }
  

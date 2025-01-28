@@ -38,7 +38,7 @@ index 1638eccef431fb68775af624110f1968f0c6dabd..62038854696bd946f58e0e8d26da0241
              if (entity.getLastHurtByMob() instanceof ServerPlayer serverPlayer) {
                  DamageSource damageSource = entity.getLastDamageSource() == null
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index a5f76c81dfb148fc184d137395d5961229cb799b..265e890557dd6557b327b6252dd3177fdd112777 100644
+index 95972e7d5e0357ff5884f1cb2f7596c5029f999d..290163335cf3967e2745442fd7d4d4fa16fb7bc0 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -79,7 +79,19 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
@@ -71,7 +71,7 @@ index a5f76c81dfb148fc184d137395d5961229cb799b..265e890557dd6557b327b6252dd3177f
  
          for (Heightmap.Types types : Heightmap.Types.values()) {
              if (ChunkStatus.FULL.heightmapsAfter().contains(types)) {
-@@ -268,10 +280,27 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+@@ -266,10 +278,27 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
  
      @Override
      public GameEventListenerRegistry getListenerRegistry(int sectionY) {
@@ -103,7 +103,7 @@ index a5f76c81dfb148fc184d137395d5961229cb799b..265e890557dd6557b327b6252dd3177f
      }
  
      // Paper start - Perf: Reduce instructions and provide final method
-@@ -611,7 +640,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
+@@ -609,7 +638,7 @@ public class LevelChunk extends ChunkAccess implements ca.spottedleaf.moonrise.p
      }
  
      private void removeGameEventListenerRegistry(int sectionY) {

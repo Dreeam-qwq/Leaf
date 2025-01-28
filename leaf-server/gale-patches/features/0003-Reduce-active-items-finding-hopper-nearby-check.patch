@@ -9,10 +9,10 @@ But still recommend to turn-off `checkForMinecartNearItemWhileActive`
 Since `Reduce-hopper-item-checks.patch` will cause lag under massive dropped items
 
 diff --git a/src/main/java/org/galemc/gale/configuration/GaleWorldConfiguration.java b/src/main/java/org/galemc/gale/configuration/GaleWorldConfiguration.java
-index 37896174667b884fcdc83b0a613686d76b66f247..81e853a10028d7ae4cf58a722fffdaa5a121932e 100644
+index f550c88d125ffafebfad7663088c080bbf771665..2cc0e485b5de49822c97530769591a090e2ff88f 100644
 --- a/src/main/java/org/galemc/gale/configuration/GaleWorldConfiguration.java
 +++ b/src/main/java/org/galemc/gale/configuration/GaleWorldConfiguration.java
-@@ -78,6 +78,7 @@ public class GaleWorldConfiguration extends ConfigurationPart {
+@@ -87,6 +87,7 @@ public class GaleWorldConfiguration extends ConfigurationPart {
                              public int duration = 100;
                              public int nearbyItemMaxAge = 1200;
                              public int checkForMinecartNearItemInterval = 20;

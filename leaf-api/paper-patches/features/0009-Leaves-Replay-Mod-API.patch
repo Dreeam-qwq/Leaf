@@ -11,10 +11,10 @@ Original project: https://github.com/LeavesMC/Leaves
 This patch is Powered by ReplayMod(https://github.com/ReplayMod)
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 196109f427fb1169785b82b4cfb52c53329d2bea..3e999a4805fbf733dc1530e7dbf23aa10642cb39 100644
+index d67af3fdc4434817cea29673069430a33fb30a8e..1e32c10f3e7687cbd55985a2e03f0ab6c5f93b31 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -3048,6 +3048,7 @@ public final class Bukkit {
+@@ -3047,6 +3047,7 @@ public final class Bukkit {
          return server.spigot();
      }
  
@@ -22,7 +22,7 @@ index 196109f427fb1169785b82b4cfb52c53329d2bea..3e999a4805fbf733dc1530e7dbf23aa1
      // Purpur start - Bring back server name
      /**
       * Get the name of this server
-@@ -3176,4 +3177,10 @@ public final class Bukkit {
+@@ -3175,4 +3176,10 @@ public final class Bukkit {
          server.clearBlockHighlights();
      }
      // Purpur end - Debug Marker API
@@ -34,7 +34,7 @@ index 196109f427fb1169785b82b4cfb52c53329d2bea..3e999a4805fbf733dc1530e7dbf23aa1
 +    // Leaves end - Photographer API
  }
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 335db5f0893df51c65c5aab7f11fd6aef59a191d..78ddb4f8e90d797920ed7664055ba81d3c7cde41 100644
+index 6790ca1648a17cf30063522f68b3ac3e82e3bd8c..223f3a4545996073872d1650c9a84feacfd2c493 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -66,6 +66,7 @@ import org.jetbrains.annotations.ApiStatus;
@@ -45,7 +45,7 @@ index 335db5f0893df51c65c5aab7f11fd6aef59a191d..78ddb4f8e90d797920ed7664055ba81d
  
  /**
   * Represents a server implementation.
-@@ -2859,4 +2860,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2858,4 +2859,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       */
      void clearBlockHighlights();
      // Purpur end - Debug Marker API

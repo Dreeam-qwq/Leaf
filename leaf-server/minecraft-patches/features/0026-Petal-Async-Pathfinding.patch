@@ -725,7 +725,7 @@ index d6d3c8f5e5dd4a8cab0d3fcc131c3a59f06130c6..add5b8b98e4d09617cbd4e7dd2710dc5
              return false;
          } else if (pathentity.nodes.size() != this.nodes.size()) {
 diff --git a/net/minecraft/world/level/pathfinder/PathFinder.java b/net/minecraft/world/level/pathfinder/PathFinder.java
-index d48057d387b6937a0194e5300eb1cb46dec2896b..9912ba3bc165dfbdd55fbf02dcec28dc2902b30a 100644
+index c2baadcdceb1df6a881d6f73aa4eb4dd264bcdfe..61912c67611ded5a8f34e0c55d3d3017f144f970 100644
 --- a/net/minecraft/world/level/pathfinder/PathFinder.java
 +++ b/net/minecraft/world/level/pathfinder/PathFinder.java
 @@ -22,10 +22,18 @@ public class PathFinder {
@@ -828,10 +828,10 @@ index d48057d387b6937a0194e5300eb1cb46dec2896b..9912ba3bc165dfbdd55fbf02dcec28dc
  
                  for (int i2 = 0; i2 < neighbors; i2++) {
                      Node node2 = this.neighbors[i2];
-@@ -124,6 +169,7 @@ public class PathFinder {
+@@ -123,6 +168,7 @@ public class PathFinder {
+                 best = path;
              }
          }
- 
 +        //noinspection ConstantConditions // Kaiiju - petal - ignore this warning, we know that the above loop always runs at least once since positions is not empty
          return best;
          // Paper end - Perf: remove streams and optimize collection

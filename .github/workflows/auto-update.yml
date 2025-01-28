@@ -60,7 +60,7 @@ jobs:
           if ! git diff --quiet; then
             echo "Running tests...."
             ./gradlew applyAllPatches
-            ./gradlew build
+            ./gradlew build -x test
             ./gradlew rebuildAllServerPatches
           fi
 

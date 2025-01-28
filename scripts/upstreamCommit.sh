@@ -11,7 +11,7 @@
 # flag: --leaves HASH - the commit hash to use for comparing commits between leaves (LeavesMC/Leaves/compare/HASH...HEAD)
 
 function getCommits() {
-    curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/"$1"/compare/"$2"..."$3" | jq -r '.commits[] | "'"$1"'@\(.sha[:7]) \(.commit.message | split("\r\n")[0] | split("\n")[0])"'
+    curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/"$1"/compare/"$2"..."$3" | jq -r '.commits[] | "'"$1"'@\(.sha[:8]) \(.commit.message | split("\r\n")[0] | split("\n")[0])" | sub("\\[ci( |-)skip]"; "[ci/skip]")'
 }
 
 (
@@ -23,8 +23,9 @@ paperHash=""
 purpurHash=""
 leavesHash=""
 
-TEMP=$(getopt --long paper:,gale:,purpur:,leaves: -o "" -- "$@")
-eval set -- "$TEMP"
+# Useless params standardize
+# TEMP=$(getopt --long paper:,gale:,purpur:,leaves: -o "" -- "$@")
+# eval set -- "$TEMP"
 while true; do
     case "$1" in
         --paper)

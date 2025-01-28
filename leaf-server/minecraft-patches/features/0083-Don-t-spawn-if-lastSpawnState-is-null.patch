@@ -5,10 +5,10 @@ Subject: [PATCH] Don't spawn if lastSpawnState is null
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index eacebc190a1f598314a8b812629fecd86d87ff7c..7d80766eab50ef5d63ea06098f177fd95307c1b9 100644
+index bb76dbf98979fdc725676c98dafe64ea941cb290..dd956431bb882daa70267685f2283d0c358336be 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -648,7 +648,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -649,7 +649,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
          for (LevelChunk levelChunk : chunks) {
              ChunkPos pos = levelChunk.getPos();
              levelChunk.incrementInhabitedTime(timeInhabited);

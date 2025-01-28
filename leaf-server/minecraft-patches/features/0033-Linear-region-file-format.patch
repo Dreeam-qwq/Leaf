@@ -28,10 +28,10 @@ index a814512fcfb85312474ae2c2c21443843bf57831..f80c75c561313625b694b433692aa429
      public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(
              final int chunkX, final int chunkZ, final CompoundTag compound
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
-index 1acea58838f057ab87efd103cbecb6f5aeaef393..48a6d8b534943393c26180fbf341b77bd2d5bc48 100644
+index 98fbc5c8044bd945d64569f13412a6e7e49a4e7f..395b69c70080933eb936b4eb537d5da842e8caac 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
-@@ -1462,7 +1462,7 @@ public final class MoonriseRegionFileIO {
+@@ -1470,7 +1470,7 @@ public final class MoonriseRegionFileIO {
  
          public static interface IORunnable {
  
@@ -52,10 +52,10 @@ index 51c126735ace8fdde89ad97b5cab62f244212db0..4046f0aaa153e00277bf14f009fbe14a
 +    public void moonrise$write(final org.stupidcraft.linearpaper.region.IRegionFile regionFile) throws IOException; // LinearPaper
  }
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 8499ee1505c0390f98d1555d47a671541727dbf8..cb7df3a09bfaa1791450628095e9788f1d5da6fc 100644
+index 0e6e71030e3fd1335fff796b861524a48cb0a507..30747b30596208bc02dfb4a6c31f8afb5c1aba8e 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -941,10 +941,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -935,10 +935,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // CraftBukkit end
          if (flush) {
              for (ServerLevel serverLevel2 : this.getAllLevels()) {
@@ -118,7 +118,7 @@ index e0bcda2ddea0d6633445a7440fbf0d18e50a7653..17cdff80683de3fc166cc38d27a9e80d
  
      class PoiUpgrader extends WorldUpgrader.SimpleRegionStorageUpgrader {
 diff --git a/net/minecraft/world/level/chunk/storage/RegionFile.java b/net/minecraft/world/level/chunk/storage/RegionFile.java
-index 5d8917dd393b0583e5a45c291729ade48296e9a8..254ff19bed684d93d5be0b03f2ceb8783eb20743 100644
+index c72494e757a9dc50e053dbc873f7b30e83d5cb8c..8241165e5bbab0966647e11320693be245f5d9aa 100644
 --- a/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/net/minecraft/world/level/chunk/storage/RegionFile.java
 @@ -22,7 +22,7 @@ import net.minecraft.util.profiling.jfr.JvmProfiler;

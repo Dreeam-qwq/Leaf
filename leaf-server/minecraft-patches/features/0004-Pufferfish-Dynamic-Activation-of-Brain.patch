@@ -32,10 +32,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 diff --git a/io/papermc/paper/entity/activation/ActivationRange.java b/io/papermc/paper/entity/activation/ActivationRange.java
-index a04302728819f28ab724d474a3d06a916f3d1d99..47463babd445763c861ac5c4713b5bd3be5cbeec 100644
+index 54916fe57ceeab24936ce50709402ecf1fcd9a10..cd2fa33f6e655419f2a1155aed8566742385d922 100644
 --- a/io/papermc/paper/entity/activation/ActivationRange.java
 +++ b/io/papermc/paper/entity/activation/ActivationRange.java
-@@ -171,6 +171,22 @@ public final class ActivationRange {
+@@ -173,6 +173,22 @@ public final class ActivationRange {
                  }
  
                  ActivationRange.activateEntity(entity);
@@ -58,7 +58,7 @@ index a04302728819f28ab724d474a3d06a916f3d1d99..47463babd445763c861ac5c4713b5bd3
              }
          }
      }
-@@ -182,11 +198,11 @@ public final class ActivationRange {
+@@ -184,11 +200,11 @@ public final class ActivationRange {
       */
      private static void activateEntity(final Entity entity) {
          if (MinecraftServer.currentTick > entity.activatedTick) {
@@ -73,7 +73,7 @@ index a04302728819f28ab724d474a3d06a916f3d1d99..47463babd445763c861ac5c4713b5bd3
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index ba0b5961535f0dbffda5216a6e4657ea85f30eb7..e52d976f0c1c5eacdc8608b204c3a178b9b17446 100644
+index 7c9496e8564c2464e79661153fd295bb027b7bdb..95d69c4b40e4ebe12d8033dbcc7ba195a0ccfb5a 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -781,6 +781,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -85,7 +85,7 @@ index ba0b5961535f0dbffda5216a6e4657ea85f30eb7..e52d976f0c1c5eacdc8608b204c3a178
                              if (!tickRateManager.isEntityFrozen(entity)) {
                                  entity.checkDespawn();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 8470698181040b5d164a353aeb1dfa907765b80e..36f5c28fa2fb3ba2cb5a4b2614c6b8d934659892 100644
+index a839042a883831ab5bf7bca7fa707b10a97689f8..22af2c4996601847f2bbe9d6fef2fc4bd82725fc 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -335,6 +335,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
@@ -110,7 +110,7 @@ index 13cfe61fe500e6798b9129c7c559a7af65378a22..303bd2d3ea5c313477c8ab48359a01f2
      @Nullable
      private Component description;
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index f3eec8b75fcda47e6632a2a7db9a238b515bc8a0..cc452ca41c336891473fae98b8681768c52f822d 100644
+index acf2e306ad26e5f0413ee320b9b514b56fefc21b..86d78bcb6ddf23d298430406cc75e4b482538773 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -217,10 +217,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
@@ -239,7 +239,7 @@ index a04d71967976731b4858d44ac138b7ac390ef7e7..77691e10f7c511eca4384f2974e538d7
          TadpoleAi.updateActivity(this);
          super.customServerAiStep(level);
 diff --git a/net/minecraft/world/entity/animal/goat/Goat.java b/net/minecraft/world/entity/animal/goat/Goat.java
-index 25c0c27979f49f08d0cc150de9afe6112f115666..35d492106506c28412fea5c59c7b67c809ce231c 100644
+index c4c0ebb9b43018d795e02b2ab15d38bc475e4330..dde7f05b8664d9a60edc716a370917d6cab03c18 100644
 --- a/net/minecraft/world/entity/animal/goat/Goat.java
 +++ b/net/minecraft/world/entity/animal/goat/Goat.java
 @@ -182,8 +182,10 @@ public class Goat extends Animal {

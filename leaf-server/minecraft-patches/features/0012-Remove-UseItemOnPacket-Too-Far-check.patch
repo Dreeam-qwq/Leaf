@@ -7,10 +7,10 @@ This Check is added in 1.17.x -> 1.18.x that updated by Mojang.
 By removing this check, it gives ability for hackers to use some modules of hack clients.
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index ec6276f3335fd963c8554dbc43adf5bdfe3d2412..c58a231183655e2910748a5ecdf3b2ce0d7b00a1 100644
+index e3fa94538ec5756e39ca55ba2216971d499215cc..9706e382ad2b597a04ff637881c3b5d32f26d281 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -1998,8 +1998,13 @@ public class ServerGamePacketListenerImpl
+@@ -2005,8 +2005,13 @@ public class ServerGamePacketListenerImpl
                  BlockPos blockPos = hitResult.getBlockPos();
                  if (this.player.canInteractWithBlock(blockPos, 1.0)) {
                      Vec3 vec3 = location.subtract(Vec3.atCenterOf(blockPos));

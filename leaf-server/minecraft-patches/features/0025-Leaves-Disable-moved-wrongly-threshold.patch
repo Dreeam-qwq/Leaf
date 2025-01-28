@@ -7,7 +7,7 @@ Original license: GPLv3
 Original project: https://github.com/LeavesMC/Leaves
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index ffb8d4c5b894e130d7e330459e9797356db2a262..52d0eec6588f395642df2cf6894a9461d05bf6a3 100644
+index 95768fcb1f0b480910a1ba4a3dc321b27e5b3782..5078887fc6056a0f3ef5acd5e052116107737e62 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -575,7 +575,7 @@ public class ServerGamePacketListenerImpl
@@ -28,7 +28,7 @@ index ffb8d4c5b894e130d7e330459e9797356db2a262..52d0eec6588f395642df2cf6894a9461
                      flag2 = true; // Paper - diff on change, this should be moved wrongly
                      LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", rootVehicle.getName().getString(), this.player.getName().getString(), Math.sqrt(d7));
                  }
-@@ -1450,7 +1450,7 @@ public class ServerGamePacketListenerImpl
+@@ -1457,7 +1457,7 @@ public class ServerGamePacketListenerImpl
                                          io.papermc.paper.event.player.PlayerFailMoveEvent event = fireFailMove(io.papermc.paper.event.player.PlayerFailMoveEvent.FailReason.MOVED_TOO_QUICKLY,
                                              toX, toY, toZ, toYaw, toPitch, true);
                                          if (!event.isAllowed()) {
@@ -37,7 +37,7 @@ index ffb8d4c5b894e130d7e330459e9797356db2a262..52d0eec6588f395642df2cf6894a9461
                                                  LOGGER.warn("{} moved too quickly! {},{},{}", this.player.getName().getString(), d3, d4, d5);
                                              }
                                              this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
-@@ -1516,7 +1516,8 @@ public class ServerGamePacketListenerImpl
+@@ -1523,7 +1523,8 @@ public class ServerGamePacketListenerImpl
                              d5 = d2 - this.player.getZ();
                              d7 = d3 * d3 + d4 * d4 + d5 * d5;
                              boolean movedWrongly = false; // Paper - Add fail move event; rename

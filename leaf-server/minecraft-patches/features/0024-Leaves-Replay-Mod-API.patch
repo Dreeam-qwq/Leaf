@@ -123,10 +123,10 @@ index b305ba9bab617bf4e52d0e6ddf160bacc5751a94..b8215b71971d16705bc11f19343823ac
                              if (players.size() >= resultLimit) {
                                  return players;
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 42845c03fc94a589bfad6a2ae1e5e7f8d577ef16..8499ee1505c0390f98d1555d47a671541727dbf8 100644
+index dddbb18992348fb7e8a6552423d134809cd7fdbc..0e6e71030e3fd1335fff796b861524a48cb0a507 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1656,7 +1656,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1650,7 +1650,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      }
  
      private ServerStatus.Players buildPlayerStatus() {
@@ -165,7 +165,7 @@ index 5c0a04db38821dbb0cba2bb6f0787f113d167efd..8a071166262fbb7d24735fec394cb19d
                                          .filter(player -> !playerList.isOp(player.getGameProfile()))
                                          .map(player -> player.getGameProfile().getName()),
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index a13aa7b896a998975d2ee14eafb86a85db988e69..bf364e3fad2823400ec671bc632ba50751a3f473 100644
+index bb38adebfcf2e3c52971a79d8363a45f067727a9..69a807ccda1ec5334316863604aa3192065d16a1 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -216,6 +216,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -184,7 +184,7 @@ index a13aa7b896a998975d2ee14eafb86a85db988e69..bf364e3fad2823400ec671bc632ba507
      }
  
      // Paper start
-@@ -2669,6 +2671,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2670,6 +2672,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server; moved down below valid=true
              if (entity instanceof ServerPlayer serverPlayer) {
                  ServerLevel.this.players.add(serverPlayer);
@@ -196,7 +196,7 @@ index a13aa7b896a998975d2ee14eafb86a85db988e69..bf364e3fad2823400ec671bc632ba507
                  ServerLevel.this.updateSleepingPlayerList();
              }
  
-@@ -2739,6 +2746,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2740,6 +2747,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer serverPlayer) {
                  ServerLevel.this.players.remove(serverPlayer);
@@ -209,7 +209,7 @@ index a13aa7b896a998975d2ee14eafb86a85db988e69..bf364e3fad2823400ec671bc632ba507
              }
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 00c7afd995d179efe1c96fb6daf342b6b357fa65..2da6609ab8398c5c537e9065b3a82693f43200e2 100644
+index 622257dbbe572de33e15abef9055016268730261..dfb4524d80f642eff1b146dd2fbfa07f21d844c6 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -195,7 +195,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -222,7 +222,7 @@ index 00c7afd995d179efe1c96fb6daf342b6b357fa65..2da6609ab8398c5c537e9065b3a82693
      private final ServerStatsCounter stats;
      private float lastRecordedHealthAndAbsorption = Float.MIN_VALUE;
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 823a7c330ec7f0287b4f7a83e2c719a45cbedf6e..220d415ecd20030c930d42c018659d6d61ee1a9e 100644
+index 03bf654aaf1b4f7df9608ee1ad99230f7aa507f9..8893be00aa731d26a41b5e6b3996425eced33cc4 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -132,6 +132,7 @@ public abstract class PlayerList {

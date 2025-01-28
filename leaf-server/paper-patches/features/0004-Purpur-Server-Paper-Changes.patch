@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Paper Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 4b74604c1f9f84e87f91dd390c83850f088a736b
+Commit: 5583a3f19b75a9d07367e2ca80adbbafa9af6593
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "Rebrand.patch"
@@ -143,7 +143,7 @@ index 6bdc683b5ade408ee27f1d6636b4d60c8c89cb7c..bc6d3898d8784e50a0e2264bbb5bde63
          ignored.add("goal_selector_1");
          ignored.add("goal_selector_2");
 diff --git a/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java b/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java
-index f0fce4113fb07c64adbec029d177c236cbdcbae8..da9ba821362605ca86df0fc6cb4f3cabfc4d5809 100644
+index f0fce4113fb07c64adbec029d177c236cbdcbae8..94dc9f97de086e3ab51d1b000eb116cf868a75db 100644
 --- a/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java
 +++ b/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java
 @@ -78,10 +78,10 @@ public class PaperPluginsCommand extends BukkitCommand {
@@ -205,7 +205,7 @@ index f0fce4113fb07c64adbec029d177c236cbdcbae8..da9ba821362605ca86df0fc6cb4f3cab
 +                hover.append(getAuthors(provider.getMeta()));
 +            }
 +
-+            pluginName.hoverEvent(hover.build());
++            pluginName = pluginName.hoverEvent(hover.build());
 +        }
 +        // Purpur end - Improve output of plugins command
  
@@ -559,7 +559,7 @@ index 94ca0407303c4493ab4928b12ec6ecc75aaca549..f2d87c12dd19210ce7e2147fada5c101
 +    // Purpur end - OfflinePlayer API
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index aaa68b6756397df3eec5c0b08e9c19fa8d2e58b6..de2c10a18869d3fcfc1ae1329489155d7bdc4dd8 100644
+index 5ad91693178b5645c98804ab04a56e85a28eb426..60389075b86a7c030e59fbc4c493a4f31012a66e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -428,6 +428,20 @@ public final class CraftServer implements Server {
@@ -687,7 +687,7 @@ index aaa68b6756397df3eec5c0b08e9c19fa8d2e58b6..de2c10a18869d3fcfc1ae1329489155d
          @Override
          public void restart() {
              org.spigotmc.RestartCommand.restart();
-@@ -3362,4 +3445,18 @@ public final class CraftServer implements Server {
+@@ -3361,4 +3444,18 @@ public final class CraftServer implements Server {
          return MinecraftServer.lastTickOversleepTime;
      }
      // Gale end - YAPFA - last tick time - API
@@ -707,10 +707,10 @@ index aaa68b6756397df3eec5c0b08e9c19fa8d2e58b6..de2c10a18869d3fcfc1ae1329489155d
 +    // Purpur end - Lagging threshold
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 91156797d0ffed5227851b398d8b896aef71d614..ca5897526ecb0323ac18842048fcc2a28cc5faff 100644
+index 20f709a4e8d7756375dc7742a87bdac57f1b4d1f..fca96230406e49afef4c55eb4e1b7fd4478ccbab 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -2349,6 +2349,50 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -2372,6 +2372,50 @@ public class CraftWorld extends CraftRegionAccessor implements World {
          return (this.getHandle().getDragonFight() == null) ? null : new CraftDragonBattle(this.getHandle().getDragonFight());
      }
  
@@ -762,7 +762,7 @@ index 91156797d0ffed5227851b398d8b896aef71d614..ca5897526ecb0323ac18842048fcc2a2
      public Collection<GeneratedStructure> getStructures(int x, int z) {
          return this.getStructures(x, z, struct -> true);
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 1df9bed6d3dc1e28898af8d5ad6a854dd5ccab1b..251922d1ee5ef93ef0383f4360e9a7ea17dfb195 100644
+index d0becb56a9911ef4cc55ae8d7c47832f442ad52f..bdce5f9a589fedf8c7a59da9cde56056413dd723 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -176,6 +176,13 @@ public class Main {
@@ -1140,10 +1140,10 @@ index 351f42842b780d053cd2e5bad9ae299449141b10..054d2c2b93c43faeeaf56f482eb7b943
 +    // Purpur end - Llama API
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 98fc89cc7a715d35b62e13f8ecbe56c05605ca64..9fbbdc9664353fd2be8eae112e5cfe8880d51d08 100644
+index baffa036078bfc38505f9008a54a5abff65704db..d84d716629d93e264bc40c565e9fedd1ce38722c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -585,10 +585,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -591,10 +591,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
  
      @Override
      public void setPlayerListName(String name) {
@@ -1160,7 +1160,7 @@ index 98fc89cc7a715d35b62e13f8ecbe56c05605ca64..9fbbdc9664353fd2be8eae112e5cfe88
          if (this.getHandle().connection == null) return; // Paper - Updates are possible before the player has fully joined
          for (ServerPlayer player : (List<ServerPlayer>) this.server.getHandle().players) {
              if (player.getBukkitEntity().canSee(this)) {
-@@ -1426,6 +1431,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1433,6 +1438,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          // Paper start - Teleport passenger API
          // Don't allow teleporting between worlds while keeping passengers
          if (ignorePassengers && entity.isVehicle() && location.getWorld() != this.getWorld()) {
@@ -1168,7 +1168,7 @@ index 98fc89cc7a715d35b62e13f8ecbe56c05605ca64..9fbbdc9664353fd2be8eae112e5cfe88
              return false;
          }
  
-@@ -1447,6 +1453,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1454,6 +1460,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
  
          if (entity.isVehicle() && !ignorePassengers) { // Paper - Teleport API
@@ -1176,7 +1176,7 @@ index 98fc89cc7a715d35b62e13f8ecbe56c05605ca64..9fbbdc9664353fd2be8eae112e5cfe88
              return false;
          }
  
-@@ -2745,6 +2752,28 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2752,6 +2759,28 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          return this.getHandle().getAbilities().walkingSpeed * 2f;
      }
  
@@ -1205,10 +1205,11 @@ index 98fc89cc7a715d35b62e13f8ecbe56c05605ca64..9fbbdc9664353fd2be8eae112e5cfe88
      private void validateSpeed(float value) {
          Preconditions.checkArgument(value <= 1f && value >= -1f, "Speed value (%s) need to be between -1f and 1f", value);
      }
-@@ -3541,4 +3570,74 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-         this.getHandle().connection.send(new net.minecraft.network.protocol.game.ClientboundEntityEventPacket(((CraftEntity) target).getHandle(), effect.getData()));
+@@ -3581,4 +3610,75 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         handle.containerMenu.broadcastChanges();
+         return new PaperPlayerGiveResult(leftovers.build(), drops.build());
      }
-     // Paper end - entity effect API
++
 +    // Purpur start - Purpur client support
 +    @Override
 +    public boolean usesPurpurClient() {

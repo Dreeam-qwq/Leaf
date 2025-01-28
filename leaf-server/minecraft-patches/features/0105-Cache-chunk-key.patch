@@ -84,7 +84,7 @@ index 571db5f9bf94745a8afe2cd313e593fb15db5e37..108db549eeb4a33c9a9c0c1983376613
                      valueInMap = new ServerChunkTasks(
                              keyInMap, ServerLightQueue.this.lightInterface, ServerLightQueue.this, priority
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 682024138e792fa4c72189ed06226f0a92ef3d7f..44c7f1cb7aab6861836f653ddac5e2c9b6e35471 100644
+index 9f3fe9ffdbd2973754898233cca60b7335d671c9..b588386ade7a23750dcf5f64b383760404359af2 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -508,7 +508,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -96,7 +96,7 @@ index 682024138e792fa4c72189ed06226f0a92ef3d7f..44c7f1cb7aab6861836f653ddac5e2c9
              return;
          }
  
-@@ -2567,7 +2567,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2568,7 +2568,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
      public boolean isNaturalSpawningAllowed(ChunkPos chunkPos) {
          // Paper start - rewrite chunk system
@@ -106,7 +106,7 @@ index 682024138e792fa4c72189ed06226f0a92ef3d7f..44c7f1cb7aab6861836f653ddac5e2c9
          // Paper end - rewrite chunk system
      }
 diff --git a/net/minecraft/world/level/ChunkPos.java b/net/minecraft/world/level/ChunkPos.java
-index f758602f1929fe0e19b91989d240b24d9d0d1ca6..619cfa7eba6ed662278293c524c158ce798cd194 100644
+index 6e2b2d258e47dcca30a5ad9f4f492598f2bc21fb..9b6db05fa2e8e667453e9b3c703ae1cd519e30d5 100644
 --- a/net/minecraft/world/level/ChunkPos.java
 +++ b/net/minecraft/world/level/ChunkPos.java
 @@ -47,6 +47,7 @@ public class ChunkPos {

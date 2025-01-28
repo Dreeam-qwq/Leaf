@@ -9,10 +9,10 @@ Original project: https://github.com/Cryptite/Slice
 Co-authored-by: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index b60982fa6e11c1f72e2c7021059ebbd04e064364..7729f49719ce1d42fcbc33452d2b4f8f027283da 100644
+index b78782a90bd9dcc43e9b98781f95a619b00d88cb..5480b93b922f282fb2193a5b7ed16651764de5f5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -1376,6 +1376,25 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1383,6 +1383,25 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          // Paper end - Teleportation API
      }
  

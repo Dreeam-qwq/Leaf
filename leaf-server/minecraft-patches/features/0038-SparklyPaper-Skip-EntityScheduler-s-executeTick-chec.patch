@@ -13,10 +13,10 @@ To avoid the hefty ArrayDeque's size() call, we check if we *really* need to exe
 Most entities won't have any scheduled tasks, so this is a nice performance bonus. These optimizations, however, wouldn't work in a Folia environment, but because in SparklyPaper executeTick is always executed on the main thread, it ain't an issue for us (yay).
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index cb7df3a09bfaa1791450628095e9788f1d5da6fc..d9d0a7dc0ccfa321c41dbdc51d0c3a7383a0f9fd 100644
+index 30747b30596208bc02dfb4a6c31f8afb5c1aba8e..23af98932a9c1e6dc209a6ce40d52b5bd9ccfcc5 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -291,6 +291,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -290,6 +290,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      public static final long SERVER_INIT = System.nanoTime(); // Paper - Lag compensation
      protected boolean upnp = false; // Purpur - UPnP Port Forwarding
      public gg.pufferfish.pufferfish.util.AsyncExecutor mobSpawnExecutor = new gg.pufferfish.pufferfish.util.AsyncExecutor("Leaf Async Mob Spawn Thread"); // Pufferfish - optimize mob spawning // Leaf - Fix Pufferfish and Purpur patches - Unify thread name
@@ -24,7 +24,7 @@ index cb7df3a09bfaa1791450628095e9788f1d5da6fc..d9d0a7dc0ccfa321c41dbdc51d0c3a73
  
      public static <S extends MinecraftServer> S spin(Function<Thread, S> threadFunction) {
          ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry.init(); // Paper - rewrite data converter system
-@@ -1680,6 +1681,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1674,6 +1675,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.server.getScheduler().mainThreadHeartbeat(); // CraftBukkit
          // Paper start - Folia scheduler API
          ((io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler) org.bukkit.Bukkit.getGlobalRegionScheduler()).tick();
@@ -43,7 +43,7 @@ index cb7df3a09bfaa1791450628095e9788f1d5da6fc..d9d0a7dc0ccfa321c41dbdc51d0c3a73
          getAllLevels().forEach(level -> {
              for (final net.minecraft.world.entity.Entity entity : level.getEntities().getAll()) {
                  if (entity.isRemoved()) {
-@@ -1691,6 +1704,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1685,6 +1698,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                  }
              }
          });

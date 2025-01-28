@@ -5,10 +5,10 @@ Subject: [PATCH] Configurable player knockback zombie
 
 
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index d8a93bd85580c4bdc52d6f368b78ad210c265ae5..6aa4153a5368645ad3f1a0b879428f9a60d8fbc6 100644
+index 54b7ae45de54dc335a88a8c48e5212e7e663bc54..a7f87ba5a447be8bd1a4029da999aca34a583b5e 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -2001,6 +2001,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -1998,6 +1998,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
      }
  
      public void knockback(double strength, double x, double z, @Nullable Entity attacker, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause eventCause) { // Paper - knockback events
@@ -17,7 +17,7 @@ index d8a93bd85580c4bdc52d6f368b78ad210c265ae5..6aa4153a5368645ad3f1a0b879428f9a
          strength *= 1.0 - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
          if (true || !(strength <= 0.0)) { // CraftBukkit - Call event even when force is 0
              // this.hasImpulse = true; // CraftBukkit - Move down
-@@ -2031,6 +2033,20 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -2028,6 +2030,20 @@ public abstract class LivingEntity extends Entity implements Attackable {
          }
      }
  

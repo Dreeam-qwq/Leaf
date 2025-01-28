@@ -19,7 +19,7 @@ index 967c01f9e40c2c73f266de281425c918472cf66e..d8464f77c54f547161356b78e7642992
              org.purpurmc.purpur.command.DemoCommand.register(this.dispatcher); // Purpur - Add demo command
              org.purpurmc.purpur.command.PingCommand.register(this.dispatcher); // Purpur - Add ping command
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 2da6609ab8398c5c537e9065b3a82693f43200e2..c051884e5af270fc36ca2be44af8f841c92ca14c 100644
+index dfb4524d80f642eff1b146dd2fbfa07f21d844c6..2c67693cc3781eb5aee10b4dfb9617cbe107e922 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -2460,6 +2460,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -53,10 +53,10 @@ index 2da6609ab8398c5c537e9065b3a82693f43200e2..c051884e5af270fc36ca2be44af8f841
              } else {
                  getBukkitEntity().setPlayerListName(prefix + scoreboardName + suffix, true);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 52d0eec6588f395642df2cf6894a9461d05bf6a3..2857e71ddb37f2a98c72df8cb439e2eab97d6f67 100644
+index 5078887fc6056a0f3ef5acd5e052116107737e62..9c5ba056376a731871a2c00654cc179915d4dafd 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -2254,6 +2254,8 @@ public class ServerGamePacketListenerImpl
+@@ -2261,6 +2261,8 @@ public class ServerGamePacketListenerImpl
          }
      }
  
@@ -65,7 +65,7 @@ index 52d0eec6588f395642df2cf6894a9461d05bf6a3..2857e71ddb37f2a98c72df8cb439e2ea
      @Override
      public void handleChatCommand(ServerboundChatCommandPacket packet) {
          this.tryHandleChat(packet.command(), () -> {
-@@ -2274,6 +2276,32 @@ public class ServerGamePacketListenerImpl
+@@ -2281,6 +2283,32 @@ public class ServerGamePacketListenerImpl
              LOGGER.info("{} issued server command: {}", this.player.getScoreboardName(), prefixedCommand);
          }
  
@@ -98,7 +98,7 @@ index 52d0eec6588f395642df2cf6894a9461d05bf6a3..2857e71ddb37f2a98c72df8cb439e2ea
          PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(this.getCraftPlayer(), prefixedCommand, new LazyPlayerSet(this.server));
          this.cserver.getPluginManager().callEvent(event);
  
-@@ -2311,11 +2339,37 @@ public class ServerGamePacketListenerImpl
+@@ -2318,11 +2346,37 @@ public class ServerGamePacketListenerImpl
  
      private void performSignedChatCommand(ServerboundChatCommandSignedPacket packet, LastSeenMessages lastSeenMessages) {
          // CraftBukkit start
@@ -138,7 +138,7 @@ index 52d0eec6588f395642df2cf6894a9461d05bf6a3..2857e71ddb37f2a98c72df8cb439e2ea
          this.cserver.getPluginManager().callEvent(event);
          command = event.getMessage().substring(1);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 65f943dbbe6e30f0a299fdbd73b94ca60d4f406c..7d7343d4e2c206daf77a61050f2f4c229dd042cd 100644
+index 831d1a60a5ed57d4f09b5ece6ffb50e061398cc0..0bb8c326a468e79a7f5a4f3395a3c2fe84352f47 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -667,6 +667,7 @@ public abstract class PlayerList {
