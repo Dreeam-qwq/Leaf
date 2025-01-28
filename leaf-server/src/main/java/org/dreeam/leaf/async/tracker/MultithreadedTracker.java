@@ -56,7 +56,7 @@ public class MultithreadedTracker {
         1,
         org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? Integer.MAX_VALUE : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads,
         org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? 30L : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerKeepalive, TimeUnit.SECONDS,
-        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? new SynchronousQueue<>() : new LinkedBlockingQueue<>(org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads * 4),
+        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? new SynchronousQueue<>() : new LinkedBlockingQueue<>(org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads * (Math.max(org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads, 4))),
         new ThreadFactoryBuilder()
             .setThreadFactory(
                 r -> new MultithreadedTrackerThread() {
