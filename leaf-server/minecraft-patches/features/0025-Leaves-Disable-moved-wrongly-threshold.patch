@@ -7,7 +7,7 @@ Original license: GPLv3
 Original project: https://github.com/LeavesMC/Leaves
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 95768fcb1f0b480910a1ba4a3dc321b27e5b3782..5078887fc6056a0f3ef5acd5e052116107737e62 100644
+index 95768fcb1f0b480910a1ba4a3dc321b27e5b3782..60385c699c305112ac0bc3f26927e436043d9f72 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -575,7 +575,7 @@ public class ServerGamePacketListenerImpl
@@ -28,7 +28,14 @@ index 95768fcb1f0b480910a1ba4a3dc321b27e5b3782..5078887fc6056a0f3ef5acd5e0521161
                      flag2 = true; // Paper - diff on change, this should be moved wrongly
                      LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", rootVehicle.getName().getString(), this.player.getName().getString(), Math.sqrt(d7));
                  }
-@@ -1457,7 +1457,7 @@ public class ServerGamePacketListenerImpl
+@@ -1451,13 +1451,13 @@ public class ServerGamePacketListenerImpl
+ 
+                                 if (this.shouldCheckPlayerMovement(isFallFlying)) {
+                                     float f2 = isFallFlying ? 300.0F : 100.0F;
+-                                    if (d7 - d6 > Math.max(f2, Mth.square(org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed))) {
++                                    if (!org.dreeam.leaf.config.modules.gameplay.DisableMovedWronglyThreshold.enabled && d7 - d6 > Math.max(f2, Mth.square(org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed))) { // Leaves - disable can
+                                         // CraftBukkit end
+                                         // Paper start - Add fail move event
                                          io.papermc.paper.event.player.PlayerFailMoveEvent event = fireFailMove(io.papermc.paper.event.player.PlayerFailMoveEvent.FailReason.MOVED_TOO_QUICKLY,
                                              toX, toY, toZ, toYaw, toPitch, true);
                                          if (!event.isAllowed()) {
