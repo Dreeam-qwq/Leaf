@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,55 +22,14 @@ import java.util.concurrent.*;
 public class MultithreadedTracker {
 
     private static final Logger LOGGER = LogManager.getLogger("MultithreadedTracker");
-
     private static long lastWarnMillis = System.currentTimeMillis();
-
-    public static class MultithreadedTrackerThread extends Thread {
-        @Override
-        public void run() {
-            super.run();
-        }
-    }
-
-    static class RejectedTrackingTaskHandler implements RejectedExecutionHandler {
-        @Override
-        public void rejectedExecution(Runnable rejectedTask, ThreadPoolExecutor executor) {
-            BlockingQueue<Runnable> workQueue = executor.getQueue();
-            if (!executor.isShutdown()) {
-                if (!workQueue.isEmpty()) {
-                    List<Runnable> pendingTasks = new ArrayList<>(workQueue.size());
-                    workQueue.drainTo(pendingTasks);
-                    for (Runnable pendingTask : pendingTasks) {
-                        pendingTask.run();
-                    }
-                }
-                rejectedTask.run();
-            }
-            if (System.currentTimeMillis() - lastWarnMillis > 30000L) {
-                LOGGER.warn("Async entity tracker is busy! Tracking tasks will be done in the server thread. Increasing max-threads in Leaf config may help.");
-                lastWarnMillis = System.currentTimeMillis();
-            }
-        }
-    }
-
     private static final ThreadPoolExecutor trackerExecutor = new ThreadPoolExecutor(
-        1,
-        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? Integer.MAX_VALUE : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads,
-        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? 30L : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerKeepalive, TimeUnit.SECONDS,
-        org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? new SynchronousQueue<>() : new LinkedBlockingQueue<>(org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads * (Math.max(org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads, 4))),
-        new ThreadFactoryBuilder()
-            .setThreadFactory(
-                r -> new MultithreadedTrackerThread() {
-                    @Override
-                    public void run() {
-                        r.run();
-                    }
-                }
-            )
-            .setNameFormat("Leaf Async Tracker Thread - %d")
-            .setPriority(Thread.NORM_PRIORITY - 2)
-            .build(),
-        new RejectedTrackingTaskHandler()
+        getCorePoolSize(),
+        getMaxPoolSize(),
+        getKeepAliveTime(), TimeUnit.SECONDS,
+        getQueueImpl(),
+        getThreadFactory(),
+        getRejectedPolicy()
     );
 
     private MultithreadedTracker() {
@@ -161,6 +121,68 @@ public class MultithreadedTracker {
                 || ((ca.spottedleaf.moonrise.patches.chunk_system.entity.ChunkSystemEntity) entity).moonrise$getChunkStatus().isOrAfter(FullChunkStatus.ENTITY_TICKING)) {
                 tracker.serverEntity.sendChanges();
             }
+        }
+    }
+
+    private static int getCorePoolSize() {
+        return 1;
+    }
+
+    private static int getMaxPoolSize() {
+        return org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? Integer.MAX_VALUE : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads;
+    }
+
+    private static long getKeepAliveTime() {
+        return org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? 30L : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerKeepalive;
+    }
+
+    private static BlockingQueue<Runnable> getQueueImpl() {
+        if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize) {
+            return new SynchronousQueue<>();
+        }
+
+        final int queueCapacity = org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads * (Math.max(org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads, 4));
+
+        return new LinkedBlockingQueue<>(queueCapacity);
+    }
+
+    private static @NotNull ThreadFactory getThreadFactory() {
+        return new ThreadFactoryBuilder()
+            .setThreadFactory(MultithreadedTrackerThread::new)
+            .setNameFormat("Leaf Async Tracker Thread - %d")
+            .setPriority(Thread.NORM_PRIORITY - 2)
+            .build();
+    }
+
+    private static @NotNull RejectedExecutionHandler getRejectedPolicy() {
+        return (rejectedTask, executor) -> {
+            BlockingQueue<Runnable> workQueue = executor.getQueue();
+
+            if (!executor.isShutdown()) {
+                if (!workQueue.isEmpty()) {
+                    List<Runnable> pendingTasks = new ArrayList<>(workQueue.size());
+
+                    workQueue.drainTo(pendingTasks);
+
+                    for (Runnable pendingTask : pendingTasks) {
+                        pendingTask.run();
+                    }
+                }
+
+                rejectedTask.run();
+            }
+
+            if (System.currentTimeMillis() - lastWarnMillis > 30000L) {
+                LOGGER.warn("Async entity tracker is busy! Tracking tasks will be done in the server thread. Increasing max-threads in Leaf config may help.");
+                lastWarnMillis = System.currentTimeMillis();
+            }
+        };
+    }
+
+    public static class MultithreadedTrackerThread extends Thread {
+
+        public MultithreadedTrackerThread(Runnable runnable) {
+            super(runnable);
         }
     }
 }
