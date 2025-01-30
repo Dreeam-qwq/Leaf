@@ -11,6 +11,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class NodeEvaluatorCache {
+
     private static final Map<NodeEvaluatorFeatures, MultiThreadedQueue<NodeEvaluator>> threadLocalNodeEvaluators = new ConcurrentHashMap<>();
     private static final Map<NodeEvaluator, NodeEvaluatorGenerator> nodeEvaluatorToGenerator = new ConcurrentHashMap<>();
 

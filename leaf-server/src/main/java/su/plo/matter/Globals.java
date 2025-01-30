@@ -8,6 +8,7 @@ import java.security.SecureRandom;
 import java.util.Optional;
 
 public class Globals {
+
     public static final int WORLD_SEED_LONGS = 16;
     public static final int WORLD_SEED_BITS = WORLD_SEED_LONGS * 64;
 

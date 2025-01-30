@@ -2,7 +2,9 @@ package org.dreeam.leaf.util.cache;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
+
 import java.util.Iterator;
+
 import net.minecraft.core.BlockPos;
 
 /**
@@ -22,7 +24,7 @@ public class LongList2BlockPosMutableIterable implements Iterable<BlockPos> {
 
     @Override
     public Iterator<BlockPos> iterator() {
-        return new Iterator<BlockPos>() {
+        return new Iterator<>() {
 
             private final LongIterator it = LongList2BlockPosMutableIterable.this.positions.iterator();
             private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -36,11 +38,10 @@ public class LongList2BlockPosMutableIterable implements Iterable<BlockPos> {
             public net.minecraft.core.BlockPos next() {
                 long nextPos = this.it.nextLong();
                 return this.pos.set(
-                        LongList2BlockPosMutableIterable.this.xOffset + BlockPos.getX(nextPos),
-                        LongList2BlockPosMutableIterable.this.yOffset + BlockPos.getY(nextPos),
-                        LongList2BlockPosMutableIterable.this.zOffset + BlockPos.getZ(nextPos));
+                    LongList2BlockPosMutableIterable.this.xOffset + BlockPos.getX(nextPos),
+                    LongList2BlockPosMutableIterable.this.yOffset + BlockPos.getY(nextPos),
+                    LongList2BlockPosMutableIterable.this.zOffset + BlockPos.getZ(nextPos));
             }
         };
     }
-
 }

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 
 public class WorldgenCryptoRandom extends WorldgenRandom {
+
     // hash the world seed to guard against badly chosen world seeds
     private static final long[] HASHED_ZERO_SEED = Hashing.hashWorldSeed(new long[Globals.WORLD_SEED_LONGS]);
     private static final ThreadLocal<long[]> LAST_SEEN_WORLD_SEED = ThreadLocal.withInitial(() -> new long[Globals.WORLD_SEED_LONGS]);
@@ -33,7 +34,7 @@ public class WorldgenCryptoRandom extends WorldgenRandom {
     public void setSecureSeed(int x, int z, Globals.Salt typeSalt, long salt) {
         System.arraycopy(Globals.worldSeed, 0, this.worldSeed, 0, Globals.WORLD_SEED_LONGS);
         message[0] = ((long) x << 32) | ((long) z & 0xffffffffL);
-        message[1] = ((long) Globals.dimension.get() << 32) | ((long) salt & 0xffffffffL);
+        message[1] = ((long) Globals.dimension.get() << 32) | (salt & 0xffffffffL);
         message[2] = typeSalt.ordinal();
         message[3] = counter = 0;
         randomBitIndex = MAX_RANDOM_BIT_INDEX;

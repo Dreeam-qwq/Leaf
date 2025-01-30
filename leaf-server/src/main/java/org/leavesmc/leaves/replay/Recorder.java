@@ -112,14 +112,14 @@ public class Recorder extends Connection {
         this.savePacket(new ClientboundSelectKnownPacks(knownPackslist), ConnectionProtocol.CONFIGURATION);
 
         server.getServerResourcePack().ifPresent((info) -> this.savePacket(new ClientboundResourcePackPushPacket(
-                info.id(), info.url(), info.hash(), info.isRequired(), Optional.ofNullable(info.prompt())
+            info.id(), info.url(), info.hash(), info.isRequired(), Optional.ofNullable(info.prompt())
         )));
 
         LayeredRegistryAccess<RegistryLayer> layeredregistryaccess = server.registries();
         DynamicOps<Tag> dynamicOps = layeredregistryaccess.compositeAccess().createSerializationContext(NbtOps.INSTANCE);
         RegistrySynchronization.packRegistries(dynamicOps, layeredregistryaccess.getAccessFrom(RegistryLayer.WORLDGEN), Set.copyOf(knownPackslist),
-                (key, entries) ->
-                        this.savePacket(new ClientboundRegistryDataPacket(key, entries), ConnectionProtocol.CONFIGURATION)
+            (key, entries) ->
+                this.savePacket(new ClientboundRegistryDataPacket(key, entries), ConnectionProtocol.CONFIGURATION)
         );
         this.savePacket(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(layeredregistryaccess)), ConnectionProtocol.CONFIGURATION);
 

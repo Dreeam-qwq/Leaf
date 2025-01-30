@@ -198,9 +198,9 @@ public class LeafConfig {
 
     private static List<String> buildSparkExtraConfigs() {
         List<String> extraConfigs = new ArrayList<>(Arrays.asList(
-                "config/leaf-global.yml",
-                "config/gale-global.yml",
-                "config/gale-world-defaults.yml"
+            "config/leaf-global.yml",
+            "config/gale-global.yml",
+            "config/gale-world-defaults.yml"
         ));
 
         for (World world : Bukkit.getWorlds()) {
@@ -212,7 +212,7 @@ public class LeafConfig {
 
     private static String[] buildSparkHiddenPaths() {
         return new String[]{
-                SentryDSN.sentryDsnConfigPath // Hide Sentry DSN key
+            SentryDSN.sentryDsnConfigPath // Hide Sentry DSN key
         };
     }
 

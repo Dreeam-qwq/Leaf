@@ -57,29 +57,29 @@ public class AsteorBarProtocol {
 
     @ProtocolHandler.Ticker
     public static void tick() {
-            for (ServerPlayer player : players) {
-                FoodData data = player.getFoodData();
+        for (ServerPlayer player : players) {
+            FoodData data = player.getFoodData();
 
-                float saturation = data.getSaturationLevel();
-                Float previousSaturation = previousSaturationLevels.get(player.getUUID());
-                if (previousSaturation == null || saturation != previousSaturation) {
-                    ProtocolUtils.sendPayloadPacket(player, NETWORK_KEY, buf -> {
-                        buf.writeByte(1);
-                        buf.writeFloat(saturation);
-                    });
-                    previousSaturationLevels.put(player.getUUID(), saturation);
-                }
-
-                float exhaustion = data.exhaustionLevel;
-                Float previousExhaustion = previousExhaustionLevels.get(player.getUUID());
-                if (previousExhaustion == null || Math.abs(exhaustion - previousExhaustion) >= THRESHOLD) {
-                    ProtocolUtils.sendPayloadPacket(player, NETWORK_KEY, buf -> {
-                        buf.writeByte(0);
-                        buf.writeFloat(exhaustion);
-                    });
-                    previousExhaustionLevels.put(player.getUUID(), exhaustion);
-                }
+            float saturation = data.getSaturationLevel();
+            Float previousSaturation = previousSaturationLevels.get(player.getUUID());
+            if (previousSaturation == null || saturation != previousSaturation) {
+                ProtocolUtils.sendPayloadPacket(player, NETWORK_KEY, buf -> {
+                    buf.writeByte(1);
+                    buf.writeFloat(saturation);
+                });
+                previousSaturationLevels.put(player.getUUID(), saturation);
             }
+
+            float exhaustion = data.exhaustionLevel;
+            Float previousExhaustion = previousExhaustionLevels.get(player.getUUID());
+            if (previousExhaustion == null || Math.abs(exhaustion - previousExhaustion) >= THRESHOLD) {
+                ProtocolUtils.sendPayloadPacket(player, NETWORK_KEY, buf -> {
+                    buf.writeByte(0);
+                    buf.writeFloat(exhaustion);
+                });
+                previousExhaustionLevels.put(player.getUUID(), exhaustion);
+            }
+        }
     }
 
     @ProtocolHandler.ReloadServer

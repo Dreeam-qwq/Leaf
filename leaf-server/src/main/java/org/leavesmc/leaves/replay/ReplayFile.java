@@ -75,10 +75,10 @@ public class ReplayFile {
         this.packetStream = new DataOutputStream(new DigestOutputStream(new BufferedOutputStream(new FileOutputStream(packetFile)), crc32));
 
         this.protocols = Map.of(
-                ConnectionProtocol.STATUS, StatusProtocols.CLIENTBOUND,
-                ConnectionProtocol.LOGIN, LoginProtocols.CLIENTBOUND,
-                ConnectionProtocol.CONFIGURATION, ConfigurationProtocols.CLIENTBOUND,
-                ConnectionProtocol.PLAY, GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(MinecraftServer.getServer().registryAccess()))
+            ConnectionProtocol.STATUS, StatusProtocols.CLIENTBOUND,
+            ConnectionProtocol.LOGIN, LoginProtocols.CLIENTBOUND,
+            ConnectionProtocol.CONFIGURATION, ConfigurationProtocols.CLIENTBOUND,
+            ConnectionProtocol.PLAY, GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(MinecraftServer.getServer().registryAccess()))
         );
     }
 

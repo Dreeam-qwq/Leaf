@@ -5,7 +5,6 @@ import ca.spottedleaf.moonrise.common.misc.NearbyPlayers;
 import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel;
 import ca.spottedleaf.moonrise.patches.chunk_system.level.entity.server.ServerEntityLookup;
 import ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerEntity;
-import ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerTrackedEntity;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.FullChunkStatus;
@@ -67,7 +66,7 @@ public class MultithreadedTracker {
 
                 if (tracker == null) continue;
 
-                ((EntityTrackerTrackedEntity) tracker).moonrise$tick(nearbyPlayers.getChunk(entity.chunkPosition()));
+                tracker.moonrise$tick(nearbyPlayers.getChunk(entity.chunkPosition()));
                 tracker.serverEntity.sendChanges();
             }
         });
@@ -89,7 +88,7 @@ public class MultithreadedTracker {
 
             if (tracker == null) continue;
 
-            ((EntityTrackerTrackedEntity) tracker).moonrise$tick(nearbyPlayers.getChunk(entity.chunkPosition()));
+            tracker.moonrise$tick(nearbyPlayers.getChunk(entity.chunkPosition()));
             sendChangesTasks[index++] = () -> tracker.serverEntity.sendChanges(); // Collect send changes to task array
         }
 

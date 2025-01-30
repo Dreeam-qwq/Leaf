@@ -4,6 +4,7 @@ import net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber;
 import net.minecraft.world.item.ItemStack;
 
 public interface EquipmentEntity {
+
     void onEquipmentReplaced(ItemStack oldStack, ItemStack newStack);
 
     interface EquipmentTrackingEntity {

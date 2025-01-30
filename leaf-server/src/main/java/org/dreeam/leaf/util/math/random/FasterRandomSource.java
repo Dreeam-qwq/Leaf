@@ -13,6 +13,7 @@ import java.util.random.RandomGeneratorFactory;
 
 
 public class FasterRandomSource implements BitRandomSource {
+
     private static final int INT_BITS = 48;
     private static final long SEED_MASK = 0xFFFFFFFFFFFFL;
     private static final long MULTIPLIER = 25214903917L;
@@ -75,7 +76,7 @@ public class FasterRandomSource implements BitRandomSource {
         @Override
         public RandomSource fromHashOf(String seed) {
             int i = seed.hashCode();
-            return new FasterRandomSource((long)i ^ this.seed);
+            return new FasterRandomSource((long) i ^ this.seed);
         }
 
         @Override

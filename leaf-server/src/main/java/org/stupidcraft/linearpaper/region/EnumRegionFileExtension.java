@@ -23,10 +23,6 @@ public enum EnumRegionFileExtension {
     @Contract(pure = true)
     public static EnumRegionFileExtension fromName(@NotNull String name) {
         switch (name.toUpperCase(Locale.ROOT)) {
-            default -> {
-                return UNKNOWN;
-            }
-
             case "MCA" -> {
                 return MCA;
             }
@@ -34,6 +30,10 @@ public enum EnumRegionFileExtension {
             case "LINEAR" -> {
                 return LINEAR;
             }
+            default -> {
+                return UNKNOWN;
+            }
+
         }
     }
 

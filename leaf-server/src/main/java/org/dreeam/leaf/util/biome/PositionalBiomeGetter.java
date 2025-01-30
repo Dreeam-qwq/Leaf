@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class PositionalBiomeGetter implements Supplier<Holder<Biome>> {
+
     private final Function<BlockPos, Holder<Biome>> biomeGetter;
     private final BlockPos.MutableBlockPos pos;
     private int nextX, nextY, nextZ;

@@ -2,17 +2,20 @@ package org.dreeam.leaf.util.cache;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
+
 import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+
 import net.minecraft.core.BlockPos;
 
 /**
  * @author 2No2Name, original implemenation by SuperCoder7979 and Gegy1000
  */
 public class IterateOutwardsCache {
+
     //POS_ZERO must not be replaced with BlockPos.ORIGIN, otherwise iterateOutwards at BlockPos.ORIGIN will not use the cache
-    public static final BlockPos POS_ZERO = new BlockPos(0,0,0);
+    public static final BlockPos POS_ZERO = new BlockPos(0, 0, 0);
 
 
     private final ConcurrentHashMap<Long, LongArrayList> table;

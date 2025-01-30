@@ -17,6 +17,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class WrappedHierarchyLookup<T extends IJadeProvider> extends HierarchyLookup<T> {
+
     public final List<Pair<IHierarchyLookup<T>, Function<Accessor<?>, @Nullable Object>>> overrides = Lists.newArrayList();
     private boolean empty = true;
 
@@ -28,12 +29,12 @@ public class WrappedHierarchyLookup<T extends IJadeProvider> extends HierarchyLo
     public static <T extends IJadeProvider> WrappedHierarchyLookup<T> forAccessor() {
         WrappedHierarchyLookup<T> lookup = new WrappedHierarchyLookup<>();
         lookup.overrides.add(Pair.of(
-                new HierarchyLookup<>(Block.class), accessor -> {
-                    if (accessor instanceof BlockAccessor blockAccessor) {
-                        return blockAccessor.getBlock();
-                    }
-                    return null;
-                }));
+            new HierarchyLookup<>(Block.class), accessor -> {
+                if (accessor instanceof BlockAccessor blockAccessor) {
+                    return blockAccessor.getBlock();
+                }
+                return null;
+            }));
         return lookup;
     }
 

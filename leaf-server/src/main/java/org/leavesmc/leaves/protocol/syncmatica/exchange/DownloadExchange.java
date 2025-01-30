@@ -4,6 +4,7 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
+import org.leavesmc.leaves.protocol.syncmatica.CommunicationManager;
 import org.leavesmc.leaves.protocol.syncmatica.MessageType;
 import org.leavesmc.leaves.protocol.syncmatica.PacketType;
 import org.leavesmc.leaves.protocol.syncmatica.ServerPlacement;
@@ -101,7 +102,7 @@ public class DownloadExchange extends AbstractExchange {
 
     @Override
     protected void onClose() {
-        getManager().setDownloadState(toDownload, false);
+        CommunicationManager.setDownloadState(toDownload, false);
         try {
             outputStream.close();
         } catch (final IOException e) {

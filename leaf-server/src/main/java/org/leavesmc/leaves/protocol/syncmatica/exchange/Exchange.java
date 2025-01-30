@@ -4,6 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 public interface Exchange {
+
     ExchangeTarget getPartner();
 
     boolean checkPacket(ResourceLocation id, FriendlyByteBuf packetBuf);

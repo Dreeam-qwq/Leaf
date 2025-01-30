@@ -1,8 +1,6 @@
 package org.leavesmc.leaves.protocol.syncmatica.exchange;
 
 import net.minecraft.network.FriendlyByteBuf;
-import org.leavesmc.leaves.protocol.syncmatica.CommunicationManager;
-import org.leavesmc.leaves.protocol.syncmatica.SyncmaticaProtocol;
 
 import java.util.UUID;
 
@@ -39,10 +37,6 @@ public abstract class AbstractExchange implements Exchange {
         if (notifyPartner) {
             sendCancelPacket();
         }
-    }
-
-    public CommunicationManager getManager() {
-        return SyncmaticaProtocol.getCommunicationManager();
     }
 
     protected void sendCancelPacket() {

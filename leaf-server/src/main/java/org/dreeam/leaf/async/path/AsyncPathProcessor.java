@@ -17,14 +17,14 @@ import java.util.function.Consumer;
 public class AsyncPathProcessor {
 
     private static final Executor pathProcessingExecutor = new ThreadPoolExecutor(
-            1,
-            org.dreeam.leaf.config.modules.async.AsyncPathfinding.asyncPathfindingMaxThreads,
-            org.dreeam.leaf.config.modules.async.AsyncPathfinding.asyncPathfindingKeepalive, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(),
-            new ThreadFactoryBuilder()
-                    .setNameFormat("Leaf Async Pathfinding Thread - %d")
-                    .setPriority(Thread.NORM_PRIORITY - 2)
-                    .build()
+        1,
+        org.dreeam.leaf.config.modules.async.AsyncPathfinding.asyncPathfindingMaxThreads,
+        org.dreeam.leaf.config.modules.async.AsyncPathfinding.asyncPathfindingKeepalive, TimeUnit.SECONDS,
+        new LinkedBlockingQueue<>(),
+        new ThreadFactoryBuilder()
+            .setNameFormat("Leaf Async Pathfinding Thread - %d")
+            .setPriority(Thread.NORM_PRIORITY - 2)
+            .build()
     );
 
     protected static CompletableFuture<Void> queue(@NotNull AsyncPath path) {
@@ -42,7 +42,7 @@ public class AsyncPathProcessor {
     public static void awaitProcessing(@Nullable Path path, Consumer<@Nullable Path> afterProcessing) {
         if (path != null && !path.isProcessed() && path instanceof AsyncPath asyncPath) {
             asyncPath.postProcessing(() ->
-                    MinecraftServer.getServer().scheduleOnMain(() -> afterProcessing.accept(path))
+                MinecraftServer.getServer().scheduleOnMain(() -> afterProcessing.accept(path))
             );
         } else {
             afterProcessing.accept(path);

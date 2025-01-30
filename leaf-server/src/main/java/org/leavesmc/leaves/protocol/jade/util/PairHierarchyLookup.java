@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 public class PairHierarchyLookup<T extends IJadeProvider> implements IHierarchyLookup<T> {
+
     public final IHierarchyLookup<T> first;
     public final IHierarchyLookup<T> second;
     private final Cache<Pair<Class<?>, Class<?>>, List<T>> mergedCache = CacheBuilder.newBuilder().build();
@@ -47,8 +48,8 @@ public class PairHierarchyLookup<T extends IJadeProvider> implements IHierarchyL
                     return firstList;
                 }
                 return ImmutableList.sortedCopyOf(
-                        Comparator.comparingInt(JadeProtocol.priorities::byValue),
-                        Iterables.concat(firstList, secondList)
+                    Comparator.comparingInt(JadeProtocol.priorities::byValue),
+                    Iterables.concat(firstList, secondList)
                 );
             });
         } catch (ExecutionException e) {

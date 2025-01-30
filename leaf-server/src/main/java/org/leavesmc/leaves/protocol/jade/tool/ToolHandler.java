@@ -10,8 +10,8 @@ import java.util.List;
 
 public interface ToolHandler extends IJadeProvider {
 
-	ItemStack test(BlockState state, Level world, BlockPos pos);
+    ItemStack test(BlockState state, Level world, BlockPos pos);
 
-	List<ItemStack> getTools();
+    List<ItemStack> getTools();
 
 }

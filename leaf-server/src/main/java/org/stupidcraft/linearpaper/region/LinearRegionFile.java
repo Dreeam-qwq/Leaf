@@ -34,6 +34,7 @@ import org.dreeam.leaf.config.modules.misc.RegionFormatConfig;
 import org.slf4j.Logger;
 
 public class LinearRegionFile implements IRegionFile {
+
     private static final long SUPERBLOCK = -4323716122432332390L;
     private static final byte VERSION = 2;
     private static final int HEADER_SIZE = 32;
@@ -226,7 +227,7 @@ public class LinearRegionFile implements IRegionFile {
     }
 
     @Override
-    public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(CompoundTag data, ChunkPos pos) throws IOException {
+    public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(CompoundTag data, ChunkPos pos) {
         final DataOutputStream out = this.getChunkDataOutputStream(pos);
 
         return new ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData(

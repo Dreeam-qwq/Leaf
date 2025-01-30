@@ -7,7 +7,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import org.dreeam.leaf.config.modules.network.ProtocolSupport;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.protocol.chatimage.ChatImageIndex;
@@ -36,7 +35,7 @@ public class ChatImageProtocol {
     }
 
     public record FileInfoChannelPacket(
-            String message) implements LeavesCustomPayload<LeavesProtocolManager.LeavesPayload> {
+        String message) implements LeavesCustomPayload<LeavesProtocolManager.LeavesPayload> {
         private static final ResourceLocation FILE_INFO = ChatImageProtocol.id("file_info");
 
         @New
@@ -56,7 +55,7 @@ public class ChatImageProtocol {
     }
 
     public record DownloadFileChannelPacket(
-            String message) implements LeavesCustomPayload<LeavesProtocolManager.LeavesPayload> {
+        String message) implements LeavesCustomPayload<LeavesProtocolManager.LeavesPayload> {
         private static final ResourceLocation DOWNLOAD_FILE_CHANNEL = ChatImageProtocol.id("download_file_channel");
 
         @New
@@ -77,7 +76,7 @@ public class ChatImageProtocol {
     }
 
     public record FileChannelPacket(
-            String message) implements LeavesCustomPayload<LeavesProtocolManager.LeavesPayload> {
+        String message) implements LeavesCustomPayload<LeavesProtocolManager.LeavesPayload> {
         private static final ResourceLocation FILE_CHANNEL = ChatImageProtocol.id("file_channel");
 
         @New

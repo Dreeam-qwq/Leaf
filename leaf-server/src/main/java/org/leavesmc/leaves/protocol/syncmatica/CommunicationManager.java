@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.protocol.core.LeavesProtocol;
-import org.leavesmc.leaves.protocol.core.LeavesProtocolManager;
 import org.leavesmc.leaves.protocol.core.ProtocolHandler;
 import org.leavesmc.leaves.protocol.syncmatica.exchange.DownloadExchange;
 import org.leavesmc.leaves.protocol.syncmatica.exchange.Exchange;

@@ -18,12 +18,15 @@ import java.util.function.Consumer;
 
 // Original project: https://github.com/thebrightspark/AsyncLocator
 public class AsyncLocator {
+
     private static final ExecutorService LOCATING_EXECUTOR_SERVICE;
 
-    private AsyncLocator() {}
+    private AsyncLocator() {
+    }
 
     public static class AsyncLocatorThread extends TickThread {
         private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(0);
+
         public AsyncLocatorThread(Runnable run, String name) {
             super(run, name, THREAD_COUNTER.incrementAndGet());
         }
@@ -37,23 +40,23 @@ public class AsyncLocator {
     static {
         int threads = org.dreeam.leaf.config.modules.async.AsyncLocator.asyncLocatorThreads;
         LOCATING_EXECUTOR_SERVICE = new ThreadPoolExecutor(
-                1,
-                threads,
-                org.dreeam.leaf.config.modules.async.AsyncLocator.asyncLocatorKeepalive,
-                TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(),
-                new ThreadFactoryBuilder()
-                        .setThreadFactory(
-                                r -> new AsyncLocatorThread(r, "Leaf Async Locator Thread") {
-                                    @Override
-                                    public void run() {
-                                        r.run();
-                                    }
-                                }
-                        )
-                        .setNameFormat("Leaf Async Locator Thread - %d")
-                        .setPriority(Thread.NORM_PRIORITY - 2)
-                        .build()
+            1,
+            threads,
+            org.dreeam.leaf.config.modules.async.AsyncLocator.asyncLocatorKeepalive,
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(),
+            new ThreadFactoryBuilder()
+                .setThreadFactory(
+                    r -> new AsyncLocatorThread(r, "Leaf Async Locator Thread") {
+                        @Override
+                        public void run() {
+                            r.run();
+                        }
+                    }
+                )
+                .setNameFormat("Leaf Async Locator Thread - %d")
+                .setPriority(Thread.NORM_PRIORITY - 2)
+                .build()
         );
     }
 
@@ -68,15 +71,15 @@ public class AsyncLocator {
      * and returns a {@link LocateTask} with the futures for it.
      */
     public static LocateTask<BlockPos> locate(
-            ServerLevel level,
-            TagKey<Structure> structureTag,
-            BlockPos pos,
-            int searchRadius,
-            boolean skipKnownStructures
+        ServerLevel level,
+        TagKey<Structure> structureTag,
+        BlockPos pos,
+        int searchRadius,
+        boolean skipKnownStructures
     ) {
         CompletableFuture<BlockPos> completableFuture = new CompletableFuture<>();
         Future<?> future = LOCATING_EXECUTOR_SERVICE.submit(
-                () -> doLocateLevel(completableFuture, level, structureTag, pos, searchRadius, skipKnownStructures)
+            () -> doLocateLevel(completableFuture, level, structureTag, pos, searchRadius, skipKnownStructures)
         );
         return new LocateTask<>(level.getServer(), completableFuture, future);
     }
@@ -87,41 +90,41 @@ public class AsyncLocator {
      * {@link LocateTask} with the futures for it.
      */
     public static LocateTask<Pair<BlockPos, Holder<Structure>>> locate(
-            ServerLevel level,
-            HolderSet<Structure> structureSet,
-            BlockPos pos,
-            int searchRadius,
-            boolean skipKnownStructures
+        ServerLevel level,
+        HolderSet<Structure> structureSet,
+        BlockPos pos,
+        int searchRadius,
+        boolean skipKnownStructures
     ) {
         CompletableFuture<Pair<BlockPos, Holder<Structure>>> completableFuture = new CompletableFuture<>();
         Future<?> future = LOCATING_EXECUTOR_SERVICE.submit(
-                () -> doLocateChunkGenerator(completableFuture, level, structureSet, pos, searchRadius, skipKnownStructures)
+            () -> doLocateChunkGenerator(completableFuture, level, structureSet, pos, searchRadius, skipKnownStructures)
         );
         return new LocateTask<>(level.getServer(), completableFuture, future);
     }
 
     private static void doLocateLevel(
-            CompletableFuture<BlockPos> completableFuture,
-            ServerLevel level,
-            TagKey<Structure> structureTag,
-            BlockPos pos,
-            int searchRadius,
-            boolean skipExistingChunks
+        CompletableFuture<BlockPos> completableFuture,
+        ServerLevel level,
+        TagKey<Structure> structureTag,
+        BlockPos pos,
+        int searchRadius,
+        boolean skipExistingChunks
     ) {
         BlockPos foundPos = level.findNearestMapStructure(structureTag, pos, searchRadius, skipExistingChunks);
         completableFuture.complete(foundPos);
     }
 
     private static void doLocateChunkGenerator(
-            CompletableFuture<Pair<BlockPos, Holder<Structure>>> completableFuture,
-            ServerLevel level,
-            HolderSet<Structure> structureSet,
-            BlockPos pos,
-            int searchRadius,
-            boolean skipExistingChunks
+        CompletableFuture<Pair<BlockPos, Holder<Structure>>> completableFuture,
+        ServerLevel level,
+        HolderSet<Structure> structureSet,
+        BlockPos pos,
+        int searchRadius,
+        boolean skipExistingChunks
     ) {
         Pair<BlockPos, Holder<Structure>> foundPair = level.getChunkSource().getGenerator()
-                .findNearestMapStructure(level, structureSet, pos, searchRadius, skipExistingChunks);
+            .findNearestMapStructure(level, structureSet, pos, searchRadius, skipExistingChunks);
         completableFuture.complete(foundPair);
     }
 

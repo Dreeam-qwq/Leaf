@@ -12,24 +12,25 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ViewGroup<T> {
+
     public static <B extends ByteBuf, T> StreamCodec<B, ViewGroup<T>> codec(StreamCodec<B, T> viewCodec) {
         return StreamCodec.composite(
-                ByteBufCodecs.<B, T>list().apply(viewCodec),
-                $ -> $.views,
-                ByteBufCodecs.optional(ByteBufCodecs.STRING_UTF8),
-                $ -> Optional.ofNullable($.id),
-                ByteBufCodecs.optional(ByteBufCodecs.COMPOUND_TAG),
-                $ -> Optional.ofNullable($.extraData),
-                ViewGroup::new);
+            ByteBufCodecs.<B, T>list().apply(viewCodec),
+            $ -> $.views,
+            ByteBufCodecs.optional(ByteBufCodecs.STRING_UTF8),
+            $ -> Optional.ofNullable($.id),
+            ByteBufCodecs.optional(ByteBufCodecs.COMPOUND_TAG),
+            $ -> Optional.ofNullable($.extraData),
+            ViewGroup::new);
     }
 
     public static <B extends ByteBuf, T> StreamCodec<B, Map.Entry<ResourceLocation, List<ViewGroup<T>>>> listCodec(StreamCodec<B, T> viewCodec) {
         return StreamCodec.composite(
-                ResourceLocation.STREAM_CODEC,
-                Map.Entry::getKey,
-                ByteBufCodecs.<B, ViewGroup<T>>list().apply(codec(viewCodec)),
-                Map.Entry::getValue,
-                Map::entry);
+            ResourceLocation.STREAM_CODEC,
+            Map.Entry::getKey,
+            ByteBufCodecs.<B, ViewGroup<T>>list().apply(codec(viewCodec)),
+            Map.Entry::getValue,
+            Map::entry);
     }
 
     public List<T> views;

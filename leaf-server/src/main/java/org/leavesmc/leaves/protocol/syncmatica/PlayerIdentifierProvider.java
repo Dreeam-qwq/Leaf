@@ -18,7 +18,7 @@ public class PlayerIdentifierProvider {
     }
 
     public PlayerIdentifier createOrGet(final ExchangeTarget exchangeTarget) {
-        return createOrGet(SyncmaticaProtocol.getCommunicationManager().getGameProfile(exchangeTarget));
+        return createOrGet(CommunicationManager.getGameProfile(exchangeTarget));
     }
 
     public PlayerIdentifier createOrGet(final @NotNull GameProfile gameProfile) {

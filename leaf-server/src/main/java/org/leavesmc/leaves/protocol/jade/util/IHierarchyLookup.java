@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 public interface IHierarchyLookup<T extends IJadeProvider> {
+
     default IHierarchyLookup<? extends T> cast() {
         return this;
     }
@@ -24,8 +25,8 @@ public interface IHierarchyLookup<T extends IJadeProvider> {
 
     default List<ResourceLocation> mappedIds() {
         return Streams.stream(Objects.requireNonNull(idMapper()))
-                .map(IJadeProvider::getUid)
-                .toList();
+            .map(IJadeProvider::getUid)
+            .toList();
     }
 
     void register(Class<?> clazz, T provider);

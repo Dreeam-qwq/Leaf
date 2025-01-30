@@ -19,22 +19,23 @@ import java.util.Map;
 import static org.leavesmc.leaves.protocol.jade.util.JadeCodec.PRIMITIVE_STREAM_CODEC;
 
 public record ServerPingPayload(
-        Map<ResourceLocation, Object> serverConfig,
-        List<Block> shearableBlocks,
-        List<ResourceLocation> blockProviderIds,
-        List<ResourceLocation> entityProviderIds) implements LeavesCustomPayload<ServerPingPayload> {
+
+    Map<ResourceLocation, Object> serverConfig,
+    List<Block> shearableBlocks,
+    List<ResourceLocation> blockProviderIds,
+    List<ResourceLocation> entityProviderIds) implements LeavesCustomPayload<ServerPingPayload> {
 
     private static final ResourceLocation PACKET_SERVER_HANDSHAKE = JadeProtocol.id("server_ping_v1");
     private static final StreamCodec<RegistryFriendlyByteBuf, ServerPingPayload> CODEC = StreamCodec.composite(
-            ByteBufCodecs.map(Maps::newHashMapWithExpectedSize, ResourceLocation.STREAM_CODEC, PRIMITIVE_STREAM_CODEC),
-            ServerPingPayload::serverConfig,
-            ByteBufCodecs.registry(Registries.BLOCK).apply(ByteBufCodecs.list()),
-            ServerPingPayload::shearableBlocks,
-            ByteBufCodecs.<ByteBuf, ResourceLocation>list().apply(ResourceLocation.STREAM_CODEC),
-            ServerPingPayload::blockProviderIds,
-            ByteBufCodecs.<ByteBuf, ResourceLocation>list().apply(ResourceLocation.STREAM_CODEC),
-            ServerPingPayload::entityProviderIds,
-            ServerPingPayload::new);
+        ByteBufCodecs.map(Maps::newHashMapWithExpectedSize, ResourceLocation.STREAM_CODEC, PRIMITIVE_STREAM_CODEC),
+        ServerPingPayload::serverConfig,
+        ByteBufCodecs.registry(Registries.BLOCK).apply(ByteBufCodecs.list()),
+        ServerPingPayload::shearableBlocks,
+        ByteBufCodecs.<ByteBuf, ResourceLocation>list().apply(ResourceLocation.STREAM_CODEC),
+        ServerPingPayload::blockProviderIds,
+        ByteBufCodecs.<ByteBuf, ResourceLocation>list().apply(ResourceLocation.STREAM_CODEC),
+        ServerPingPayload::entityProviderIds,
+        ServerPingPayload::new);
 
     @Override
     public void write(FriendlyByteBuf buf) {
@@ -46,4 +47,3 @@ public record ServerPingPayload(
         return PACKET_SERVER_HANDSHAKE;
     }
 }
-

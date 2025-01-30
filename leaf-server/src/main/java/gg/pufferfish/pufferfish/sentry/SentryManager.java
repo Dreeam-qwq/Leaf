@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 public class SentryManager {
 
-    private static final Logger logger = LogManager.getLogger(SentryManager.class);
+    private static final Logger LOGGER = LogManager.getLogger(SentryManager.class);
 
     private SentryManager() {
 
@@ -20,7 +20,7 @@ public class SentryManager {
             return;
         }
         if (logLevel == null) {
-            logger.error("Invalid log level, defaulting to WARN.");
+            LOGGER.error("Invalid log level, defaulting to WARN.");
             logLevel = Level.WARN;
         }
         try {
@@ -34,9 +34,9 @@ public class SentryManager {
             PufferfishSentryAppender appender = new PufferfishSentryAppender(logLevel);
             appender.start();
             ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addAppender(appender);
-            logger.info("Sentry logging started!");
+            LOGGER.info("Sentry logging started!");
         } catch (Exception e) {
-            logger.warn("Failed to initialize sentry!", e);
+            LOGGER.warn("Failed to initialize sentry!", e);
             initialized = false;
         }
     }

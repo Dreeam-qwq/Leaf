@@ -134,15 +134,15 @@ public class BlockAccessorImpl extends AccessorImpl<BlockHitResult> implements B
 
     public record SyncData(boolean showDetails, BlockHitResult hit, BlockState blockState, ItemStack fakeBlock) {
         public static final StreamCodec<RegistryFriendlyByteBuf, SyncData> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.BOOL,
-                SyncData::showDetails,
-                StreamCodec.of(FriendlyByteBuf::writeBlockHitResult, FriendlyByteBuf::readBlockHitResult),
-                SyncData::hit,
-                ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY),
-                SyncData::blockState,
-                ItemStack.OPTIONAL_STREAM_CODEC,
-                SyncData::fakeBlock,
-                SyncData::new
+            ByteBufCodecs.BOOL,
+            SyncData::showDetails,
+            StreamCodec.of(FriendlyByteBuf::writeBlockHitResult, FriendlyByteBuf::readBlockHitResult),
+            SyncData::hit,
+            ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY),
+            SyncData::blockState,
+            ItemStack.OPTIONAL_STREAM_CODEC,
+            SyncData::fakeBlock,
+            SyncData::new
         );
 
         public BlockAccessor unpack(ServerPlayer player) {
@@ -151,13 +151,13 @@ public class BlockAccessorImpl extends AccessorImpl<BlockHitResult> implements B
                 blockEntity = Suppliers.memoize(() -> player.level().getBlockEntity(hit.getBlockPos()));
             }
             return new Builder()
-                    .level(player.level())
-                    .player(player)
-                    .showDetails(showDetails)
-                    .hit(hit)
-                    .blockState(blockState)
-                    .blockEntity(blockEntity)
-                    .build();
+                .level(player.level())
+                .player(player)
+                .showDetails(showDetails)
+                .hit(hit)
+                .blockState(blockState)
+                .blockEntity(blockEntity)
+                .build();
         }
     }
 }

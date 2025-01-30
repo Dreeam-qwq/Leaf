@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LeavesLogger extends Logger {
+
     public static final LeavesLogger LOGGER = new LeavesLogger();
 
     private LeavesLogger() {

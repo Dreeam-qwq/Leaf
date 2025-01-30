@@ -28,7 +28,7 @@ public class FileStorage {
     }
 
     private boolean isDownloading(final ServerPlacement placement) {
-        return SyncmaticaProtocol.getCommunicationManager().getDownloadState(placement);
+        return CommunicationManager.getDownloadState(placement);
     }
 
     public File getLocalLitematic(final ServerPlacement placement) {

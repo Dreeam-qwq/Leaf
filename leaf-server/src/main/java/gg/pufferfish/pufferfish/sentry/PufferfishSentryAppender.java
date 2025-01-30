@@ -22,7 +22,7 @@ import org.dreeam.leaf.config.modules.misc.SentryDSN;
 
 public class PufferfishSentryAppender extends AbstractAppender {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(PufferfishSentryAppender.class.getSimpleName());
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(PufferfishSentryAppender.class.getSimpleName());
     private static final Gson GSON = new Gson();
     private final Level logLevel;
 
@@ -37,13 +37,13 @@ public class PufferfishSentryAppender extends AbstractAppender {
             try {
                 logException(logEvent);
             } catch (Exception e) {
-                logger.warn("Failed to log event with sentry", e);
+                LOGGER.warn("Failed to log event with sentry", e);
             }
         } else {
             try {
                 logBreadcrumb(logEvent);
             } catch (Exception e) {
-                logger.warn("Failed to log event with sentry", e);
+                LOGGER.warn("Failed to log event with sentry", e);
             }
         }
     }
@@ -127,7 +127,7 @@ public class PufferfishSentryAppender extends AbstractAppender {
 
         private Result filter(String loggerName) {
             return loggerName != null && loggerName.startsWith("gg.castaway.pufferfish.sentry") ? Result.DENY
-                    : Result.NEUTRAL;
+                : Result.NEUTRAL;
         }
     }
 }

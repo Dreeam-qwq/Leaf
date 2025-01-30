@@ -111,7 +111,7 @@ public class AsyncPath extends Path {
      */
     public synchronized void process() {
         if (this.processState == PathProcessState.COMPLETED ||
-                this.processState == PathProcessState.PROCESSING) {
+            this.processState == PathProcessState.PROCESSING) {
             return;
         }
 
@@ -136,7 +136,7 @@ public class AsyncPath extends Path {
      */
     private void checkProcessed() {
         if (this.processState == PathProcessState.WAITING ||
-                this.processState == PathProcessState.PROCESSING) { // Block if we are on processing
+            this.processState == PathProcessState.PROCESSING) { // Block if we are on processing
             this.process();
         }
     }

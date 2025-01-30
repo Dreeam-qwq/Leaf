@@ -15,19 +15,19 @@ public class LeafGlobalConfig {
     protected static final boolean isCN = CURRENT_REGION.equals("CN");
 
     public LeafGlobalConfig(boolean init) throws Exception {
-            configFile = ConfigFile.loadConfig(new File(LeafConfig.I_CONFIG_FOLDER, LeafConfig.I_GLOBAL_CONFIG_FILE));
-            configFile.set("config-version", 3.0);
-            configFile.addComments("config-version", pickStringRegionBased("""
-                    Leaf Config
-                    GitHub Repo: https://github.com/Winds-Studio/Leaf
-                    Discord: https://discord.com/invite/gfgAwdSEuM""",
-                    """
-                    Leaf Config
-                    GitHub Repo: https://github.com/Winds-Studio/Leaf
-                    QQ Group: 619278377"""));
+        configFile = ConfigFile.loadConfig(new File(LeafConfig.I_CONFIG_FOLDER, LeafConfig.I_GLOBAL_CONFIG_FILE));
+        configFile.set("config-version", 3.0);
+        configFile.addComments("config-version", pickStringRegionBased("""
+                Leaf Config
+                GitHub Repo: https://github.com/Winds-Studio/Leaf
+                Discord: https://discord.com/invite/gfgAwdSEuM""",
+            """
+                Leaf Config
+                GitHub Repo: https://github.com/Winds-Studio/Leaf
+                QQ Group: 619278377"""));
 
-            // Pre-structure to force order
-            structureConfig();
+        // Pre-structure to force order
+        structureConfig();
     }
 
     protected void structureConfig() {

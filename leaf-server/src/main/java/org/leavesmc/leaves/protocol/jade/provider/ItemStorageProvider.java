@@ -25,7 +25,7 @@ import java.util.Map;
 public abstract class ItemStorageProvider<T extends Accessor<?>> implements IServerDataProvider<T> {
 
     private static final StreamCodec<RegistryFriendlyByteBuf, Map.Entry<ResourceLocation, List<ViewGroup<ItemStack>>>> STREAM_CODEC = ViewGroup.listCodec(
-            ItemStack.OPTIONAL_STREAM_CODEC);
+        ItemStack.OPTIONAL_STREAM_CODEC);
 
     private static final ResourceLocation UNIVERSAL_ITEM_STORAGE = JadeProtocol.mc_id("item_storage");
 

@@ -10,6 +10,7 @@ import java.lang.reflect.Type;
 import java.util.UUID;
 
 public class UUIDSerializer implements JsonSerializer<UUID> {
+
     @Override
     public JsonElement serialize(@NotNull UUID src, Type typeOfSrc, JsonSerializationContext context) {
         return new JsonPrimitive(src.toString());

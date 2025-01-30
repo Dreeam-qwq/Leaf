@@ -49,8 +49,8 @@ public class AppleSkinProtocol {
 
     @ProtocolHandler.PlayerLeave
     public static void onPlayerLoggedOut(@NotNull ServerPlayer player) {
-            subscribedChannels.remove(player);
-            resetPlayerData(player);
+        subscribedChannels.remove(player);
+        resetPlayerData(player);
     }
 
     @ProtocolHandler.MinecraftRegister(ignoreId = true)
@@ -62,45 +62,45 @@ public class AppleSkinProtocol {
 
     @ProtocolHandler.Ticker
     public static void tick() {
-            if (MinecraftServer.getServer().getTickCount() % org.dreeam.leaf.config.modules.network.ProtocolSupport.appleskinSyncTickInterval != 0) {
-                return;
-            }
+        if (MinecraftServer.getServer().getTickCount() % org.dreeam.leaf.config.modules.network.ProtocolSupport.appleskinSyncTickInterval != 0) {
+            return;
+        }
 
-            for (Map.Entry<ServerPlayer, Set<String>> entry : subscribedChannels.entrySet()) {
-                ServerPlayer player = entry.getKey();
-                FoodData data = player.getFoodData();
+        for (Map.Entry<ServerPlayer, Set<String>> entry : subscribedChannels.entrySet()) {
+            ServerPlayer player = entry.getKey();
+            FoodData data = player.getFoodData();
 
-                for (String channel : entry.getValue()) {
-                    switch (channel) {
-                        case "saturation" -> {
-                            float saturation = data.getSaturationLevel();
-                            Float previousSaturation = previousSaturationLevels.get(player);
-                            if (previousSaturation == null || saturation != previousSaturation) {
-                                ProtocolUtils.sendPayloadPacket(player, SATURATION_KEY, buf -> buf.writeFloat(saturation));
-                                previousSaturationLevels.put(player, saturation);
-                            }
+            for (String channel : entry.getValue()) {
+                switch (channel) {
+                    case "saturation" -> {
+                        float saturation = data.getSaturationLevel();
+                        Float previousSaturation = previousSaturationLevels.get(player);
+                        if (previousSaturation == null || saturation != previousSaturation) {
+                            ProtocolUtils.sendPayloadPacket(player, SATURATION_KEY, buf -> buf.writeFloat(saturation));
+                            previousSaturationLevels.put(player, saturation);
                         }
+                    }
 
-                        case "exhaustion" -> {
-                            float exhaustion = data.exhaustionLevel;
-                            Float previousExhaustion = previousExhaustionLevels.get(player);
-                            if (previousExhaustion == null || Math.abs(exhaustion - previousExhaustion) >= MINIMUM_EXHAUSTION_CHANGE_THRESHOLD) {
-                                ProtocolUtils.sendPayloadPacket(player, EXHAUSTION_KEY, buf -> buf.writeFloat(exhaustion));
-                                previousExhaustionLevels.put(player, exhaustion);
-                            }
+                    case "exhaustion" -> {
+                        float exhaustion = data.exhaustionLevel;
+                        Float previousExhaustion = previousExhaustionLevels.get(player);
+                        if (previousExhaustion == null || Math.abs(exhaustion - previousExhaustion) >= MINIMUM_EXHAUSTION_CHANGE_THRESHOLD) {
+                            ProtocolUtils.sendPayloadPacket(player, EXHAUSTION_KEY, buf -> buf.writeFloat(exhaustion));
+                            previousExhaustionLevels.put(player, exhaustion);
                         }
+                    }
 
-                        case "natural_regeneration" -> {
-                            boolean regeneration = player.serverLevel().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
-                            Boolean previousRegeneration = previousNaturalRegeneration.get(player);
-                            if (previousRegeneration == null || regeneration != previousRegeneration) {
-                                ProtocolUtils.sendPayloadPacket(player, NATURAL_REGENERATION_KEY, buf -> buf.writeBoolean(regeneration));
-                                previousNaturalRegeneration.put(player, regeneration);
-                            }
+                    case "natural_regeneration" -> {
+                        boolean regeneration = player.serverLevel().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
+                        Boolean previousRegeneration = previousNaturalRegeneration.get(player);
+                        if (previousRegeneration == null || regeneration != previousRegeneration) {
+                            ProtocolUtils.sendPayloadPacket(player, NATURAL_REGENERATION_KEY, buf -> buf.writeBoolean(regeneration));
+                            previousNaturalRegeneration.put(player, regeneration);
                         }
                     }
                 }
             }
+        }
     }
 
     @ProtocolHandler.ReloadServer

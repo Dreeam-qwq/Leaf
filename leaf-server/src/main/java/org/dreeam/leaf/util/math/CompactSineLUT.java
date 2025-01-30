@@ -24,10 +24,11 @@ import net.minecraft.util.Mth;
  * from {@link Mth}. Validation is performed during runtime to ensure that the table is correct.
  *
  * @author coderbot16   Author of the original (and very clever) implementation in Rust:
- * https://gitlab.com/coderbot16/i73/-/tree/master/i73-trig/src
+ * <a href="https://gitlab.com/coderbot16/i73/-/tree/master/i73-trig/src"></a>
  * @author jellysquid3  Additional optimizations, port to Java
  */
 public class CompactSineLUT {
+
     private static final int[] SINE_TABLE_INT = new int[16384 + 1];
     private static final float SINE_TABLE_MIDPOINT;
 

@@ -32,9 +32,9 @@ public enum FurnaceProvider implements StreamServerDataProvider<BlockAccessor, F
 
         CompoundTag furnaceTag = furnace.saveWithoutMetadata(accessor.getLevel().registryAccess());
         return new Data(
-                furnaceTag.getInt("CookTime"),
-                furnaceTag.getInt("CookTimeTotal"),
-                List.of(furnace.getItem(0), furnace.getItem(1), furnace.getItem(2)));
+            furnaceTag.getInt("CookTime"),
+            furnaceTag.getInt("CookTimeTotal"),
+            List.of(furnace.getItem(0), furnace.getItem(1), furnace.getItem(2)));
     }
 
     @Override
@@ -49,12 +49,12 @@ public enum FurnaceProvider implements StreamServerDataProvider<BlockAccessor, F
 
     public record Data(int progress, int total, List<ItemStack> inventory) {
         public static final StreamCodec<RegistryFriendlyByteBuf, Data> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.VAR_INT,
-                Data::progress,
-                ByteBufCodecs.VAR_INT,
-                Data::total,
-                ItemStack.OPTIONAL_LIST_STREAM_CODEC,
-                Data::inventory,
-                Data::new);
+            ByteBufCodecs.VAR_INT,
+            Data::progress,
+            ByteBufCodecs.VAR_INT,
+            Data::total,
+            ItemStack.OPTIONAL_LIST_STREAM_CODEC,
+            Data::inventory,
+            Data::new);
     }
 }

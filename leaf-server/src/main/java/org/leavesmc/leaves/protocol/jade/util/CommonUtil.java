@@ -60,8 +60,8 @@ public class CommonUtil {
 
 
     public static <T> Map.Entry<ResourceLocation, List<ViewGroup<T>>> getServerExtensionData(
-            Accessor<?> accessor,
-            WrappedHierarchyLookup<IServerExtensionProvider<T>> lookup) {
+        Accessor<?> accessor,
+        WrappedHierarchyLookup<IServerExtensionProvider<T>> lookup) {
         for (var provider : lookup.wrappedGet(accessor)) {
             List<ViewGroup<T>> groups;
             try {

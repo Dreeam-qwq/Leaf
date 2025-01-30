@@ -46,7 +46,7 @@ public class RecorderOption {
 
         private final List<Packet<?>> packets;
 
-        private RecordWeather(Packet<?>... packets) {
+        RecordWeather(Packet<?>... packets) {
             this.packets = List.of(packets);
         }
 

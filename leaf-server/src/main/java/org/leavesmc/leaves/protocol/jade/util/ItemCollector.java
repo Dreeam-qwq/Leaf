@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 public class ItemCollector<T> {
+
     public static final int MAX_SIZE = 54;
     public static final ItemCollector<?> EMPTY = new ItemCollector<>(null);
     private static final Predicate<ItemStack> NON_EMPTY = stack -> {
@@ -75,7 +76,7 @@ public class ItemCollector<T> {
             updateCollectingProgress(mergedResult.getFirst());
             return mergedResult;
         }
-        List<ItemStack> partialResult = items.object2IntEntrySet().stream().limit(MAX_SIZE  ).map(entry -> {
+        List<ItemStack> partialResult = items.object2IntEntrySet().stream().limit(MAX_SIZE).map(entry -> {
             ItemDefinition def = entry.getKey();
             return def.toStack(entry.getIntValue());
         }).toList();

@@ -98,26 +98,26 @@ public class EntityAccessorImpl extends AccessorImpl<EntityHitResult> implements
 
     public record SyncData(boolean showDetails, int id, int partIndex, Vec3 hitVec) {
         public static final StreamCodec<RegistryFriendlyByteBuf, SyncData> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.BOOL,
-                SyncData::showDetails,
-                ByteBufCodecs.VAR_INT,
-                SyncData::id,
-                ByteBufCodecs.VAR_INT,
-                SyncData::partIndex,
-                ByteBufCodecs.VECTOR3F.map(Vec3::new, Vec3::toVector3f),
-                SyncData::hitVec,
-                SyncData::new
+            ByteBufCodecs.BOOL,
+            SyncData::showDetails,
+            ByteBufCodecs.VAR_INT,
+            SyncData::id,
+            ByteBufCodecs.VAR_INT,
+            SyncData::partIndex,
+            ByteBufCodecs.VECTOR3F.map(Vec3::new, Vec3::toVector3f),
+            SyncData::hitVec,
+            SyncData::new
         );
 
         public EntityAccessor unpack(ServerPlayer player) {
             Supplier<Entity> entity = Suppliers.memoize(() -> CommonUtil.getPartEntity(player.level().getEntity(id), partIndex));
             return new EntityAccessorImpl.Builder()
-                    .level(player.level())
-                    .player(player)
-                    .showDetails(showDetails)
-                    .entity(entity)
-                    .hit(Suppliers.memoize(() -> new EntityHitResult(entity.get(), hitVec)))
-                    .build();
+                .level(player.level())
+                .player(player)
+                .showDetails(showDetails)
+                .entity(entity)
+                .hit(Suppliers.memoize(() -> new EntityHitResult(entity.get(), hitVec)))
+                .build();
         }
     }
 }

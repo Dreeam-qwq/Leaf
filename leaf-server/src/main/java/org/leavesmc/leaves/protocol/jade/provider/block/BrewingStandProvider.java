@@ -34,10 +34,10 @@ public enum BrewingStandProvider implements StreamServerDataProvider<BlockAccess
 
     public record Data(int fuel, int time) {
         public static final StreamCodec<ByteBuf, Data> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.VAR_INT,
-                Data::fuel,
-                ByteBufCodecs.VAR_INT,
-                Data::time,
-                Data::new);
+            ByteBufCodecs.VAR_INT,
+            Data::fuel,
+            ByteBufCodecs.VAR_INT,
+            Data::time,
+            Data::new);
     }
 }

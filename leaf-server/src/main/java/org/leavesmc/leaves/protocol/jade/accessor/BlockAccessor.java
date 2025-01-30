@@ -46,5 +46,4 @@ public interface BlockAccessor extends Accessor<BlockHitResult> {
 
         BlockAccessor build();
     }
-
 }

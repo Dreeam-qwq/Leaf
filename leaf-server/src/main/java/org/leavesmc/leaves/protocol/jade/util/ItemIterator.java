@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public abstract class ItemIterator<T> {
+
     public static final AtomicLong version = new AtomicLong();
     protected final Function<Object, @Nullable T> containerFinder;
     protected final int fromIndex;

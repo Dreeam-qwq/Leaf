@@ -6,6 +6,7 @@ import java.util.BitSet;
 import java.util.function.IntFunction;
 
 public class CachedOrNewBitsGetter {
+
     private static final IntFunction<BitSet> bitSetConstructor = BitSet::new;
 
     public static ThreadLocal<Int2ObjectOpenHashMap<BitSet>> BITSETS = ThreadLocal.withInitial(Int2ObjectOpenHashMap::new);

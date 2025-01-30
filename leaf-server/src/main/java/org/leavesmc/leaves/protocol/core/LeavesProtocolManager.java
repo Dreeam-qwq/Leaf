@@ -315,7 +315,8 @@ public class LeavesProtocolManager {
         }
     }
 
-    public record ErrorPayload(ResourceLocation id, String[] protocolID, String[] packetID) implements LeavesCustomPayload<ErrorPayload> {
+    public record ErrorPayload(ResourceLocation id, String[] protocolID,
+                               String[] packetID) implements LeavesCustomPayload<ErrorPayload> {
         @Override
         public void write(@NotNull FriendlyByteBuf buf) {
         }
@@ -333,7 +334,8 @@ public class LeavesProtocolManager {
         }
     }
 
-    public record LeavesPayload(FriendlyByteBuf data, ResourceLocation id) implements LeavesCustomPayload<LeavesPayload> {
+    public record LeavesPayload(FriendlyByteBuf data,
+                                ResourceLocation id) implements LeavesCustomPayload<LeavesPayload> {
 
         @New
         public LeavesPayload(ResourceLocation location, FriendlyByteBuf buf) {
@@ -347,7 +349,7 @@ public class LeavesProtocolManager {
     }
 
     public record FabricRegisterPayload(
-            Set<ResourceLocation> channels) implements LeavesCustomPayload<FabricRegisterPayload> {
+        Set<ResourceLocation> channels) implements LeavesCustomPayload<FabricRegisterPayload> {
 
         public static final ResourceLocation CHANNEL = ResourceLocation.withDefaultNamespace("register");
 

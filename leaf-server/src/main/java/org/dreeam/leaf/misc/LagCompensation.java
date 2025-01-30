@@ -42,7 +42,8 @@ public class LagCompensation {
         public static final int MAX_TPS = 20;
         public static final int FULL_TICK = 50;
 
-        private TPSCalculator() {}
+        private TPSCalculator() {
+        }
 
         public static void onTick() {
             if (currentTick != null) {
