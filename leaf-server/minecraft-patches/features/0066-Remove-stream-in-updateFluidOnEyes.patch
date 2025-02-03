@@ -46,10 +46,10 @@ index 6c7edbbf3935c40ccb78bee680ea75431718b9bd..a1b4dc70d555cce5e06c0298736d8b89
          public String toString() {
              return "Reference{" + this.key + "=" + this.value + "}";
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 02e13e84da7424598b329cf34b7203658f1ff0af..b79e27f03f67ecc01547163c053cdb96c16ce1bb 100644
+index 8bb2abb01f1af34d6829cbbf759a425d871f3e3f..40bc2f9ffc565229f1ba8910ebc3bb7be5f849c6 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -1987,7 +1987,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -1983,7 +1983,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
              FluidState fluidState = this.level().getFluidState(blockPos);
              double d = blockPos.getY() + fluidState.getHeight(this.level(), blockPos);
              if (d > eyeY) {

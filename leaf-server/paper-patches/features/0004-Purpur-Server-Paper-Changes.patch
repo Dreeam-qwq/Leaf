@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Paper Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 5583a3f19b75a9d07367e2ca80adbbafa9af6593
+Commit: 4f481858a32b9636fcd19f539f13fb03e1bbf443
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "Rebrand.patch"
@@ -707,10 +707,10 @@ index 5ad91693178b5645c98804ab04a56e85a28eb426..60389075b86a7c030e59fbc4c493a4f3
 +    // Purpur end - Lagging threshold
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 20f709a4e8d7756375dc7742a87bdac57f1b4d1f..fca96230406e49afef4c55eb4e1b7fd4478ccbab 100644
+index 284b58ece65d9cf6411a79abb748f1dfa52edc92..ba5797e9e518d7a1054bad0c7a1fb10b9eaf32bd 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -2372,6 +2372,50 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -2373,6 +2373,50 @@ public class CraftWorld extends CraftRegionAccessor implements World {
          return (this.getHandle().getDragonFight() == null) ? null : new CraftDragonBattle(this.getHandle().getDragonFight());
      }
  
@@ -931,7 +931,7 @@ index d657fd2c507a5b215aeab0a5f3e9c2ee892a27c8..3604d92c122b5c8be823098ce7b91e57
      // Paper start
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 6d81a19741868983c54aff6c2c4c0e2bf690ba0d..dca2761fe4765c6e95b5db0d0cb5c818eb8697b4 100644
+index 659f0f9c7e45e5174f4736c4878a78d330b1d4ee..0d46585c0128cea7265870de5fe260681c65d7c3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 @@ -90,6 +90,25 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {

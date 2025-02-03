@@ -558,10 +558,10 @@ index 1f96fd5085bacb4c584576c7cb9f51e7898e9b03..8819717c5307a90abc493cf801b4e795
 +    // Leaf end - Kaiiju - await on async path processing
  }
 diff --git a/net/minecraft/world/entity/animal/Bee.java b/net/minecraft/world/entity/animal/Bee.java
-index 57c50ce5724b073b1aedf4df3129285143097303..91635b344ac02b66e51aa5620acf9ca481004853 100644
+index d5727999eb67ff30dbf47865d59452483338e170..6fffa2e98e54ab015762417af8507d11c164e765 100644
 --- a/net/minecraft/world/entity/animal/Bee.java
 +++ b/net/minecraft/world/entity/animal/Bee.java
-@@ -934,7 +934,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+@@ -936,7 +936,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
                          } else {
                              Bee.this.pathfindRandomlyTowards(Bee.this.hivePos);
                          }
@@ -570,7 +570,7 @@ index 57c50ce5724b073b1aedf4df3129285143097303..91635b344ac02b66e51aa5620acf9ca4
                          boolean flag = this.pathfindDirectlyTowards(Bee.this.hivePos);
                          if (!flag) {
                              this.dropAndBlacklistHive();
-@@ -988,7 +988,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+@@ -990,7 +990,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
                  return true;
              } else {
                  Path path = Bee.this.navigation.getPath();

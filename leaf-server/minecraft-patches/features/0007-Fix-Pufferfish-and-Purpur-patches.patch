@@ -78,7 +78,7 @@ index 72cdd8f72fb3f552d9729f21de438405abe3acdb..90a8494840faa0e7f605c904c657a953
          // Gale end - MultiPaper - skip unnecessary mob spawning computations
          int _int = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 29b81470ce8cbc8c8c5644b8c07738bf9d90460c..e3fa94538ec5756e39ca55ba2216971d499215cc 100644
+index ca16bef85f94ffb87eb27c9ec1429cba77e7fbc1..64841780b8fb037e730d947b21b1469e3f86229f 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1232,7 +1232,7 @@ public class ServerGamePacketListenerImpl
@@ -91,10 +91,10 @@ index 29b81470ce8cbc8c8c5644b8c07738bf9d90460c..e3fa94538ec5756e39ca55ba2216971d
                  this.disconnectAsync(Component.literal("Book too large!"), org.bukkit.event.player.PlayerKickEvent.Cause.ILLEGAL_ACTION); // Paper - kick event cause // Paper - add proper async disconnect
                  return;
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 1ee098b10548de763f7df0c494876fced442cf92..df0b6d21a7d629ba759e322d3e886fbc0cc53173 100644
+index 3be4556a14b61fad5690a4e664e9e27ab94bb41f..761b3806ddec0675935dc2e24d36e4b221c53c9b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -536,23 +536,37 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -532,23 +532,37 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
      // Purpur end - Add canSaveToDisk to Entity
  

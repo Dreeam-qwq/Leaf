@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Minecraft Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 5583a3f19b75a9d07367e2ca80adbbafa9af6593
+Commit: 4f481858a32b9636fcd19f539f13fb03e1bbf443
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "net/minecraft/CrashReport.java.patch"
@@ -42,7 +42,7 @@ Patches listed below are removed in this patch, They exists in Gale or Leaf:
     - Rebrand
 
 diff --git a/io/papermc/paper/entity/activation/ActivationRange.java b/io/papermc/paper/entity/activation/ActivationRange.java
-index cd2fa33f6e655419f2a1155aed8566742385d922..7ab41616b0c3e3766c13f86920965165ac800ba3 100644
+index a9269356de964585028e69a3713ca64f67ba02bf..9a81a642698ade8a06c3a3bb4766f3c004a0b030 100644
 --- a/io/papermc/paper/entity/activation/ActivationRange.java
 +++ b/io/papermc/paper/entity/activation/ActivationRange.java
 @@ -155,6 +155,8 @@ public final class ActivationRange {
@@ -490,7 +490,7 @@ index 8b7af734ca4ed3cafa810460b2cea6c1e6342a69..c394e4ea9b066895a8ad370615383a4a
                          ItemEntity itemEntity = serverPlayer.drop(itemStack, false, false, false); // CraftBukkit - SPIGOT-2942: Add boolean to call event
                          if (itemEntity != null) {
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index 30dc45b2201bf7435d7f38866dfa4b5fbbf44957..22b0f33dc3ef9f51ba2ca3cb665b07a16bd1c9d9 100644
+index 30dc45b2201bf7435d7f38866dfa4b5fbbf44957..6e7ac9128378586160230bd33462edb7d6880154 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -106,6 +106,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -521,7 +521,7 @@ index 30dc45b2201bf7435d7f38866dfa4b5fbbf44957..22b0f33dc3ef9f51ba2ca3cb665b07a1
          org.galemc.gale.command.GaleCommands.registerCommands(this); // Gale - Gale commands - register commands
          this.server.spark.registerCommandBeforePlugins(this.server); // Paper - spark
          com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics(); // Paper - start metrics
-+        // Purpur start - Purpur config files
++        /*// Purpur start - Purpur config files // Purpur - Configurable void damage height and damage
 +        try {
 +            org.purpurmc.purpur.PurpurConfig.init((java.io.File) options.valueOf("purpur-settings"));
 +        } catch (Exception e) {
@@ -529,7 +529,7 @@ index 30dc45b2201bf7435d7f38866dfa4b5fbbf44957..22b0f33dc3ef9f51ba2ca3cb665b07a1
 +            return false;
 +        }
 +        org.purpurmc.purpur.PurpurConfig.registerCommands();
-+        // Purpur end - Purpur config files
++        */// Purpur end - Purpur config files // Purpur - Configurable void damage height and damage
          com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // Paper - load version history now
  
          // Gale start - Pufferfish - SIMD support
@@ -1279,7 +1279,7 @@ index ea34bb4913e7357f5b76a64443f7e744abdf7b5e..de115ee71fa240440b54c553e0d3ddaf
              try {
                  String channels = payload.toString(com.google.common.base.Charsets.UTF_8);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 6a36f6e498fbba976c5f1f48c3648e2e19d46ebc..29b81470ce8cbc8c8c5644b8c07738bf9d90460c 100644
+index 657fbc5e5d81b44fefc2d9d6c6bfe47f179a7843..ca16bef85f94ffb87eb27c9ec1429cba77e7fbc1 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -326,6 +326,20 @@ public class ServerGamePacketListenerImpl
@@ -1492,7 +1492,7 @@ index 6a36f6e498fbba976c5f1f48c3648e2e19d46ebc..29b81470ce8cbc8c8c5644b8c07738bf
  
                  boolean cancelled;
                  if (hitResult == null || hitResult.getType() != HitResult.Type.BLOCK) {
-+                if (this.player.gameMode.shiftClickMended(itemInHand)) return; // Purpur - Shift right click to use exp for mending
++                    if (this.player.gameMode.shiftClickMended(itemInHand)) return; // Purpur - Shift right click to use exp for mending
                      org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.RIGHT_CLICK_AIR, itemInHand, hand);
                      cancelled = event.useItemInHand() == Event.Result.DENY;
                  } else {
@@ -1527,7 +1527,7 @@ index e802cecf30a2bfa4390ca70c45a9840032c8c046..7401200f6a11bf552d128d833f25d825
                      }
                  } catch (AuthenticationUnavailableException var4) {
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index ef533e2038fa110f3ce0936290023d54c0a98471..6ae663ce0b88f1c91425a67f2c765eecf49cdef7 100644
+index e7181a2ce0e3cdbcc05bd602c3c5447d8d1ad143..08a028ac0892552f7e6b95985233c1e625e11e44 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -407,6 +407,7 @@ public abstract class PlayerList {
@@ -1877,7 +1877,7 @@ index 1fc9e1ad541c46124183a401b2a7d99aea69cecf..881271f0bc77a8a8a7d31daad9a8188b
      }
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fced442cf92 100644
+index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27ab94bb41f 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -134,7 +134,7 @@ import net.minecraft.world.scores.Team;
@@ -1920,7 +1920,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
  
      public void inactiveTick() {
      }
-@@ -528,10 +530,39 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -524,10 +526,39 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
      // Paper end - optimise entity tracker
  
@@ -1960,7 +1960,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
          this.position = Vec3.ZERO;
          this.blockPosition = BlockPos.ZERO;
          this.chunkPosition = ChunkPos.ZERO;
-@@ -912,6 +943,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -908,6 +939,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
              && this.level.paperConfig().environment.netherCeilingVoidDamageHeight.test(v -> this.getY() >= v)
              && (!(this instanceof Player player) || !player.getAbilities().invulnerable))) {
              // Paper end - Configurable nether ceiling damage
@@ -1968,7 +1968,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
              this.onBelowWorld();
          }
      }
-@@ -1842,7 +1874,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -1838,7 +1870,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
  
      public boolean fireImmune() {
@@ -1977,7 +1977,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
      }
  
      public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
-@@ -1911,7 +1943,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -1907,7 +1939,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return this.isInWater() || flag;
      }
  
@@ -1986,7 +1986,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
          if (this.getVehicle() instanceof AbstractBoat abstractBoat && !abstractBoat.isUnderWater()) {
              this.wasTouchingWater = false;
          } else if (this.updateFluidHeightAndDoFluidPushing(FluidTags.WATER, 0.014)) {
-@@ -2547,6 +2579,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -2543,6 +2575,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                  compound.putBoolean("Paper.FreezeLock", true);
              }
              // Paper end
@@ -2000,7 +2000,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
              return compound;
          } catch (Throwable var9) {
              CrashReport crashReport = CrashReport.forThrowable(var9, "Saving entity NBT");
-@@ -2696,6 +2735,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -2692,6 +2731,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                  freezeLocked = compound.getBoolean("Paper.FreezeLock");
              }
              // Paper end
@@ -2014,7 +2014,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
          } catch (Throwable var17) {
              CrashReport crashReport = CrashReport.forThrowable(var17, "Loading entity NBT");
              CrashReportCategory crashReportCategory = crashReport.addCategory("Entity being loaded");
-@@ -2942,6 +2988,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -2938,6 +2984,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          if (this.isAlive() && this instanceof Leashable leashable) {
              if (leashable.getLeashHolder() == player) {
                  if (!this.level().isClientSide()) {
@@ -2022,7 +2022,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
                      // CraftBukkit start - fire PlayerUnleashEntityEvent
                      // Paper start - Expand EntityUnleashEvent
                      org.bukkit.event.player.PlayerUnleashEntityEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerUnleashEntityEvent(this, player, hand, !player.hasInfiniteMaterials());
-@@ -3148,6 +3195,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3144,6 +3191,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                  this.passengers = ImmutableList.copyOf(list);
              }
  
@@ -2036,7 +2036,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
              this.gameEvent(GameEvent.ENTITY_MOUNT, passenger);
          }
      }
-@@ -3189,6 +3243,14 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3185,6 +3239,14 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                  return false;
              }
              // CraftBukkit end
@@ -2051,7 +2051,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
              if (this.passengers.size() == 1 && this.passengers.get(0) == passenger) {
                  this.passengers = ImmutableList.of();
              } else {
-@@ -3267,15 +3329,18 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3263,15 +3325,18 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return Vec3.directionFromRotation(this.getRotationVector());
      }
  
@@ -2071,7 +2071,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
              }
          }
      }
-@@ -3477,7 +3542,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3473,7 +3538,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
  
      public int getMaxAirSupply() {
@@ -2080,7 +2080,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
      }
  
      public int getAirSupply() {
-@@ -3965,7 +4030,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3961,7 +4026,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      // CraftBukkit end
  
      public boolean canUsePortal(boolean allowPassengers) {
@@ -2089,7 +2089,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
      }
  
      public boolean canTeleport(Level fromLevel, Level toLevel) {
-@@ -4502,6 +4567,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -4498,6 +4563,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return Mth.lerp(partialTick, this.yRotO, this.yRot);
      }
  
@@ -2102,7 +2102,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
      // Paper start - optimise collisions
      public boolean updateFluidHeightAndDoFluidPushing(final TagKey<Fluid> fluid, final double flowScale) {
          if (this.touchingUnloadedChunk()) {
-@@ -4910,7 +4981,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -4906,7 +4977,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
  
      public float maxUpStep() {
@@ -2111,7 +2111,7 @@ index 22af2c4996601847f2bbe9d6fef2fc4bd82725fc..1ee098b10548de763f7df0c494876fce
      }
  
      public void onExplosionHit(@Nullable Entity entity) {
-@@ -5108,4 +5179,44 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -5104,4 +5175,44 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return ((ServerLevel) this.level).isPositionEntityTicking(this.blockPosition());
      }
      // Paper end - Expose entity id counter
@@ -3548,7 +3548,7 @@ index e34e3b949676aa28dd7c82a47f2ed3b44ad200e3..fa34e7f1c20dfd569b52a9c8e0a8d4d5
          animal.resetLove();
          level.broadcastEntityEvent(this, (byte)18);
 diff --git a/net/minecraft/world/entity/animal/Bee.java b/net/minecraft/world/entity/animal/Bee.java
-index 94244b148533ef026bf5c56abbc2bb5cfa83c938..57c50ce5724b073b1aedf4df3129285143097303 100644
+index 94244b148533ef026bf5c56abbc2bb5cfa83c938..d5727999eb67ff30dbf47865d59452483338e170 100644
 --- a/net/minecraft/world/entity/animal/Bee.java
 +++ b/net/minecraft/world/entity/animal/Bee.java
 @@ -145,6 +145,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
@@ -3587,7 +3587,7 @@ index 94244b148533ef026bf5c56abbc2bb5cfa83c938..57c50ce5724b073b1aedf4df31292851
          this.lookControl = new Bee.BeeLookControl(this);
          this.setPathfindingMalus(PathType.DANGER_FIRE, -1.0F);
 -        this.setPathfindingMalus(PathType.WATER, -1.0F);
-+        if (isSensitiveToWater()) this.setPathfindingMalus(PathType.WATER, -1.0F); // Purpur - Toggle for water sensitive mob damage
++        if (this.level().purpurConfig.beeCanInstantlyStartDrowning || isSensitiveToWater()) this.setPathfindingMalus(PathType.WATER, -1.0F); // Purpur - bee can instantly start drowning in water option // Purpur - Toggle for water sensitive mob damage
          this.setPathfindingMalus(PathType.WATER_BORDER, 16.0F);
          this.setPathfindingMalus(PathType.COCOA, -1.0F);
          this.setPathfindingMalus(PathType.FENCE, -1.0F);
@@ -3655,6 +3655,15 @@ index 94244b148533ef026bf5c56abbc2bb5cfa83c938..57c50ce5724b073b1aedf4df31292851
      }
  
      public void setStayOutOfHiveCountdown(int stayOutOfHiveCountdown) {
+@@ -388,7 +438,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+     @Override
+     protected void customServerAiStep(ServerLevel level) {
+         boolean hasStung = this.hasStung();
+-        if (this.isInWaterOrBubble()) {
++        if (this.level().purpurConfig.beeCanInstantlyStartDrowning && this.isInWaterOrBubble()) { // Purpur - bee can instantly start drowning in water option
+             this.underWaterTicks++;
+         } else {
+             this.underWaterTicks = 0;
 @@ -398,6 +448,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
              this.hurtServer(level, this.damageSources().drown(), 1.0F);
          }
@@ -3663,7 +3672,7 @@ index 94244b148533ef026bf5c56abbc2bb5cfa83c938..57c50ce5724b073b1aedf4df31292851
          if (hasStung) {
              this.timeSinceSting++;
              if (this.timeSinceSting % 5 == 0 && this.random.nextInt(Mth.clamp(1200 - this.timeSinceSting, 1, 1200)) == 0) {
-@@ -421,6 +472,33 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+@@ -421,6 +472,35 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
          return beehiveBlockEntity != null && beehiveBlockEntity.isFireNearby();
      }
  
@@ -3682,6 +3691,13 @@ index 94244b148533ef026bf5c56abbc2bb5cfa83c938..57c50ce5724b073b1aedf4df31292851
 +    }
 +    // Purpur end - Make entity breeding times configurable
 +
++    // Purpur start - Toggle for water sensitive mob damage
++    @Override
++    public boolean isSensitiveToWater() {
++        return this.level().purpurConfig.beeTakeDamageFromWater;
++    }
++    // Purpur end - Toggle for water sensitive mob damage
++
 +    // Purpur start - Mobs always drop experience
 +    @Override
 +    protected boolean isAlwaysExperienceDropper() {
@@ -3689,15 +3705,10 @@ index 94244b148533ef026bf5c56abbc2bb5cfa83c938..57c50ce5724b073b1aedf4df31292851
 +    }
 +    // Purpur end - Mobs always drop experience
 +
-+    @Override
-+    public boolean isSensitiveToWater() {
-+        return this.level().purpurConfig.beeTakeDamageFromWater;
-+    }
-+
      @Override
      public int getRemainingPersistentAngerTime() {
          return this.entityData.get(DATA_REMAINING_ANGER_TIME);
-@@ -1083,15 +1161,15 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+@@ -1083,15 +1163,15 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
          }
      }
  
@@ -3716,7 +3727,7 @@ index 94244b148533ef026bf5c56abbc2bb5cfa83c938..57c50ce5724b073b1aedf4df31292851
              }
          }
  
-@@ -1136,6 +1214,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+@@ -1136,6 +1216,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
                      Bee.this.savedFlowerPos = optional.get();
                      Bee.this.navigation
                          .moveTo(Bee.this.savedFlowerPos.getX() + 0.5, Bee.this.savedFlowerPos.getY() + 0.5, Bee.this.savedFlowerPos.getZ() + 0.5, 1.2F);
@@ -3724,7 +3735,7 @@ index 94244b148533ef026bf5c56abbc2bb5cfa83c938..57c50ce5724b073b1aedf4df31292851
                      return true;
                  } else {
                      Bee.this.remainingCooldownBeforeLocatingNewFlower = Mth.nextInt(Bee.this.random, 20, 60);
-@@ -1182,6 +1261,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+@@ -1182,6 +1263,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
              this.pollinating = false;
              Bee.this.navigation.stop();
              Bee.this.remainingCooldownBeforeLocatingNewFlower = 200;
@@ -3732,7 +3743,7 @@ index 94244b148533ef026bf5c56abbc2bb5cfa83c938..57c50ce5724b073b1aedf4df31292851
          }
  
          @Override
-@@ -1228,6 +1308,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+@@ -1228,6 +1310,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
                                  this.setWantedPos();
                              }
  
@@ -11050,7 +11061,7 @@ index cbae85171a1bb64ee3be40ba211d88e68bf672e4..241526239bdbd5d9276f85e7fca46a70
                  if (isFood && !this.isSilent()) {
                      this.level()
 diff --git a/net/minecraft/world/entity/monster/Vex.java b/net/minecraft/world/entity/monster/Vex.java
-index 7f1cdea810db24182f8f87076c42a19b1b43e98a..0ce9eb1f4108b6afab6df84d5e709be0882e515a 100644
+index af3fef70998cff4e4832adfa2071832324ebd91c..0d9dd9919b2b9902137df861bcac8057e4b741de 100644
 --- a/net/minecraft/world/entity/monster/Vex.java
 +++ b/net/minecraft/world/entity/monster/Vex.java
 @@ -58,6 +58,72 @@ public class Vex extends Monster implements TraceableEntity {
@@ -13881,7 +13892,7 @@ index 57c933af200551162774f1d473437521e5a85833..b3e003694ce0da357e91ab3ce2b1380f
          } else {
              player.startUsingItem(hand);
 diff --git a/net/minecraft/world/item/BucketItem.java b/net/minecraft/world/item/BucketItem.java
-index 62d79cb25879e6e48a1541f864d0b3782d926313..4dccebf97b720aa2189d3ae7b8e2d8066fa13573 100644
+index 62d79cb25879e6e48a1541f864d0b3782d926313..b820ecfbe71dd57a0f04b1c3381ffb76b0c16f16 100644
 --- a/net/minecraft/world/item/BucketItem.java
 +++ b/net/minecraft/world/item/BucketItem.java
 @@ -147,7 +147,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
@@ -13898,7 +13909,7 @@ index 62d79cb25879e6e48a1541f864d0b3782d926313..4dccebf97b720aa2189d3ae7b8e2d806
  
                  for (int i = 0; i < 8; i++) {
 -                    level.addParticle(ParticleTypes.LARGE_SMOKE, x + Math.random(), y + Math.random(), z + Math.random(), 0.0, 0.0, 0.0);
-+                    ((net.minecraft.server.level.ServerLevel) level).sendParticlesSource(null, ParticleTypes.LARGE_SMOKE, false, true, x + Math.random(), y + Math.random(), z + Math.random(), 1, 0.0D, 0.0D, 0.0D, 0.0D); // Purpur - Add allow water in end world option
++                    ((net.minecraft.server.level.ServerLevel) level).sendParticlesSource(null, ParticleTypes.LARGE_SMOKE, true, false, x + Math.random(), y + Math.random(), z + Math.random(), 1, 0.0D, 0.0D, 0.0D, 0.0D); // Purpur - Add allow water in end world option
                  }
  
                  return true;
@@ -15119,7 +15130,7 @@ index 9ed50f09147984ba8864edabb89669e2f4fc7bea..af4abe255da35e9b7ecfd29914d5e54e
          return level.getBlockState(blockPos).isRedstoneConductor(level, blockPos);
      }
 diff --git a/net/minecraft/world/level/block/ComposterBlock.java b/net/minecraft/world/level/block/ComposterBlock.java
-index 0d34839618648bb8c606dd2d9b1f9db93641c742..d71ac1d023cc5a5d00b20c0001a49f52591a3a9b 100644
+index c8ffb634df661a6a4520731be725b51480764976..9fb36207ce829d1a8b952017d3b60db015efdaaf 100644
 --- a/net/minecraft/world/level/block/ComposterBlock.java
 +++ b/net/minecraft/world/level/block/ComposterBlock.java
 @@ -241,17 +241,27 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
@@ -16752,7 +16763,7 @@ index 85148858db1fd5e9da8bbdde4b0d84110d80e373..c9c6e4e460ad8435f12761704bb9b028
  }
 diff --git a/org/purpurmc/purpur/PurpurConfig.java b/org/purpurmc/purpur/PurpurConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..aca85686fb0b9ec78d4e83574bbfe6313785f40f
+index 0000000000000000000000000000000000000000..e0db3230c3912588ed527e131751bef082665294
 --- /dev/null
 +++ b/org/purpurmc/purpur/PurpurConfig.java
 @@ -0,0 +1,581 @@
@@ -16832,8 +16843,8 @@ index 0000000000000000000000000000000000000000..aca85686fb0b9ec78d4e83574bbfe631
 +        commands = new HashMap<>();
 +        commands.put("purpur", new PurpurCommand("purpur"));
 +
-+        version = getInt("config-version", 38);
-+        set("config-version", 38);
++        version = getInt("config-version", 40);
++        set("config-version", 40);
 +
 +        readConfig(PurpurConfig.class, null);
 +
@@ -17339,10 +17350,10 @@ index 0000000000000000000000000000000000000000..aca85686fb0b9ec78d4e83574bbfe631
 +}
 diff --git a/org/purpurmc/purpur/PurpurWorldConfig.java b/org/purpurmc/purpur/PurpurWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2aac26f50958d8653eb1472daa7761d36093cf4c
+index 0000000000000000000000000000000000000000..40ee86981c24b79b209b5a0fb0705ff62fb65863
 --- /dev/null
 +++ b/org/purpurmc/purpur/PurpurWorldConfig.java
-@@ -0,0 +1,3440 @@
+@@ -0,0 +1,3445 @@
 +package org.purpurmc.purpur;
 +
 +import java.util.ArrayList;
@@ -17951,7 +17962,7 @@ index 0000000000000000000000000000000000000000..2aac26f50958d8653eb1472daa7761d3
 +            PurpurConfig.config.set("world-settings.default.tools.axe.weatherables.minecraft:weathered_copper_bulb", Map.of("into", "minecraft:exposed_copper_bulb", "drops", new HashMap<String, Double>()));
 +            PurpurConfig.config.set("world-settings.default.tools.axe.weatherables.minecraft:oxidized_copper_bulb", Map.of("into", "minecraft:weathered_copper_bulb", "drops", new HashMap<String, Double>()));
 +        }
-+        if (PurpurConfig.version < 38) {
++        if (PurpurConfig.version < 39) {
 +            PurpurConfig.config.set("world-settings.default.tools.axe.strippables.minecraft:pale_oak_wood", Map.of("into", "minecraft:stripped_pale_oak_wood", "drops", new HashMap<String, Double>()));
 +            PurpurConfig.config.set("world-settings.default.tools.axe.strippables.minecraft:pale_oak_log", Map.of("into", "minecraft:stripped_pale_oak_log", "drops", new HashMap<String, Double>()));
 +        }
@@ -18567,7 +18578,8 @@ index 0000000000000000000000000000000000000000..2aac26f50958d8653eb1472daa7761d3
 +    public double beeMaxHealth = 10.0D;
 +    public double beeScale = 1.0D;
 +    public int beeBreedingTicks = 6000;
-+    public boolean beeTakeDamageFromWater = true;
++    public boolean beeTakeDamageFromWater = false;
++    public boolean beeCanInstantlyStartDrowning = true;
 +    public boolean beeCanWorkAtNight = false;
 +    public boolean beeCanWorkInRain = false;
 +    public boolean beeAlwaysDropExp = false;
@@ -18585,9 +18597,13 @@ index 0000000000000000000000000000000000000000..2aac26f50958d8653eb1472daa7761d3
 +        beeMaxHealth = getDouble("mobs.bee.attributes.max_health", beeMaxHealth);
 +        beeScale = Mth.clamp(getDouble("mobs.bee.attributes.scale", beeScale), 0.0625D, 16.0D);
 +        beeBreedingTicks = getInt("mobs.bee.breeding-delay-ticks", beeBreedingTicks);
++        if (PurpurConfig.version < 40) {
++            set("mobs.bee.takes-damage-from-water", false);
++        }
 +        beeTakeDamageFromWater = getBoolean("mobs.bee.takes-damage-from-water", beeTakeDamageFromWater);
 +        beeCanWorkAtNight = getBoolean("mobs.bee.can-work-at-night", beeCanWorkAtNight);
 +        beeCanWorkInRain = getBoolean("mobs.bee.can-work-in-rain", beeCanWorkInRain);
++        beeCanInstantlyStartDrowning = getBoolean("mobs.bee.can-instantly-start-drowning", beeCanInstantlyStartDrowning);
 +        beeAlwaysDropExp = getBoolean("mobs.bee.always-drop-exp", beeAlwaysDropExp);
 +        beeDiesAfterSting = getBoolean("mobs.bee.dies-after-sting", beeDiesAfterSting);
 +    }
@@ -21882,7 +21898,7 @@ index 0000000000000000000000000000000000000000..9660716f4162a4441c6e1b0baddef8f5
 +}
 diff --git a/org/purpurmc/purpur/entity/projectile/DolphinSpit.java b/org/purpurmc/purpur/entity/projectile/DolphinSpit.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8ffacde0417d29bb2de12d58fe42fd0717735f9d
+index 0000000000000000000000000000000000000000..e489b16983b8eea75726baf6323b41af0929bdec
 --- /dev/null
 +++ b/org/purpurmc/purpur/entity/projectile/DolphinSpit.java
 @@ -0,0 +1,105 @@
@@ -21945,7 +21961,7 @@ index 0000000000000000000000000000000000000000..8ffacde0417d29bb2de12d58fe42fd07
 +        Vec3 motDouble = mot.scale(2.0);
 +        for (int i = 0; i < 5; i++) {
 +            ((ServerLevel) level()).sendParticlesSource(null, ParticleTypes.BUBBLE,
-+                    false, true,
++                    true, false,
 +                    getX() + random.nextFloat() / 2 - 0.25F,
 +                    getY() + random.nextFloat() / 2 - 0.25F,
 +                    getZ() + random.nextFloat() / 2 - 0.25F,
@@ -21993,7 +22009,7 @@ index 0000000000000000000000000000000000000000..8ffacde0417d29bb2de12d58fe42fd07
 +}
 diff --git a/org/purpurmc/purpur/entity/projectile/PhantomFlames.java b/org/purpurmc/purpur/entity/projectile/PhantomFlames.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..580d8dc556da951e2e1ab4e199317e2f5b166f2f
+index 0000000000000000000000000000000000000000..bac5eee2d101fa286285747170ba3365c47c87c3
 --- /dev/null
 +++ b/org/purpurmc/purpur/entity/projectile/PhantomFlames.java
 @@ -0,0 +1,127 @@
@@ -22058,7 +22074,7 @@ index 0000000000000000000000000000000000000000..580d8dc556da951e2e1ab4e199317e2f
 +        Vec3 motDouble = mot.scale(2.0);
 +        for (int i = 0; i < 5; i++) {
 +            ((ServerLevel) level()).sendParticlesSource(null, ParticleTypes.FLAME,
-+                    false, true,
++                    true, false,
 +                    getX() + random.nextFloat() / 2 - 0.25F,
 +                    getY() + random.nextFloat() / 2 - 0.25F,
 +                    getZ() + random.nextFloat() / 2 - 0.25F,
