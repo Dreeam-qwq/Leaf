@@ -1,7 +1,6 @@
 package org.dreeam.leaf.config;
 
 public enum EnumConfigCategory {
-
     ASYNC("async"),
     PERF("performance"),
     FIXES("fixes"),

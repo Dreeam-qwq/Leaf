@@ -21,7 +21,7 @@ public class ConnectionMessage extends ConfigModules {
                 available placeholders:
                 %player_name% - player name
                 %player_displayname% - player display name""",
-                """
+            """
                 自定义加入 & 退出消息 (MiniMessage 格式), 设置为 'default' 将使用原版消息.
                 可用的内置变量:
                 %player_name% - 玩家名称
@@ -29,14 +29,14 @@ public class ConnectionMessage extends ConfigModules {
 
         joinEnabled = config.getBoolean(getBasePath() + ".join.enabled", joinEnabled);
         joinMessage = config.getString(getBasePath() + ".join.message", joinMessage, config.pickStringRegionBased(
-                "Join message of player",
-                "玩家加入服务器时的消息"
+            "Join message of player",
+            "玩家加入服务器时的消息"
         ));
 
         quitEnabled = config.getBoolean(getBasePath() + ".quit.enabled", quitEnabled);
         quitMessage = config.getString(getBasePath() + ".quit.message", quitMessage, config.pickStringRegionBased(
-                "Quit message of player",
-                "玩家退出服务器时的消息"));
+            "Quit message of player",
+            "玩家退出服务器时的消息"));
 
         // Legacy compatibility
         // TODO: config migration

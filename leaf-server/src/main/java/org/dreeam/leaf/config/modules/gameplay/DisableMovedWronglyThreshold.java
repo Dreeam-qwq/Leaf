@@ -14,9 +14,9 @@ public class DisableMovedWronglyThreshold extends ConfigModules {
     @Override
     public void onLoaded() {
         enabled = config.getBoolean(getBasePath() + ".disable-moved-wrongly-threshold", enabled,
-                config.pickStringRegionBased(
-                        "Disable moved quickly/wrongly checks.",
-                        "关闭 moved wrongly/too quickly! 警告."
-                ));
+            config.pickStringRegionBased(
+                "Disable moved quickly/wrongly checks.",
+                "关闭 moved wrongly/too quickly! 警告."
+            ));
     }
 }

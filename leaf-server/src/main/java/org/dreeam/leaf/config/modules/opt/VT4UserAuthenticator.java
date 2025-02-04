@@ -14,8 +14,8 @@ public class VT4UserAuthenticator extends ConfigModules {
     @Override
     public void onLoaded() {
         enabled = config.getBoolean(getBasePath() + ".use-virtual-thread-for-user-authenticator", enabled,
-                config.pickStringRegionBased(
-                        "Use the new Virtual Thread introduced in JDK 21 for User Authenticator.",
-                        "是否为用户验证器使用虚拟线程."));
+            config.pickStringRegionBased(
+                "Use the new Virtual Thread introduced in JDK 21 for User Authenticator.",
+                "是否为用户验证器使用虚拟线程."));
     }
 }

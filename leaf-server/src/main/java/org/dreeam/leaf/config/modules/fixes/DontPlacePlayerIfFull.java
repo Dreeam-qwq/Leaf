@@ -17,7 +17,7 @@ public class DontPlacePlayerIfFull extends ConfigModules {
                 Don't let player join server if the server is full.
                 If enable this, you should use 'purpur.joinfullserver' permission instead of
                 PlayerLoginEvent#allow to let player join full server.""",
-                """
+            """
                 服务器已满时禁止玩家加入.
                 开启后需使用权限 'purpur.joinfullserver' 而不是
                 PlayerLoginEvent#allow 让玩家进入已满的服务器."""));

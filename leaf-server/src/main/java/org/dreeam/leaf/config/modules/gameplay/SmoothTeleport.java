@@ -16,14 +16,14 @@ public class SmoothTeleport extends ConfigModules {
     @Override
     public void onLoaded() {
         enabled = config.getBoolean(getBasePath(), enabled, config.pickStringRegionBased(
-                """
-                        **Experimental feature, report any bugs you encounter!**
-                        Whether to make a "smooth teleport" when players changing dimension.
-                        This requires original world and target world have same logical height to work.""",
-                """
-                        **实验性功能, 请及时反馈你遇到的问题!**
-                        是否在玩家切换世界时尝试使用 "平滑传送".
-                        此项要求源世界和目标世界逻辑高度相同才会生效."""
+            """
+                **Experimental feature, report any bugs you encounter!**
+                Whether to make a "smooth teleport" when players changing dimension.
+                This requires original world and target world have same logical height to work.""",
+            """
+                **实验性功能, 请及时反馈你遇到的问题!**
+                是否在玩家切换世界时尝试使用 "平滑传送".
+                此项要求源世界和目标世界逻辑高度相同才会生效."""
         ));
     }
 }

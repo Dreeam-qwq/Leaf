@@ -16,7 +16,7 @@ public class RemoveSpigotCheckBungee extends ConfigModules {
         enabled = config.getBoolean(getBasePath(), enabled, config.pickStringRegionBased("""
                 Enable player enter backend server through proxy
                 without backend server enabling its bungee mode.""",
-                """
+            """
                 使服务器无需打开 bungee 模式即可让玩家加入后端服务器."""));
     }
 }

@@ -14,8 +14,8 @@ public class VT4ChatExecutor extends ConfigModules {
     @Override
     public void onLoaded() {
         enabled = config.getBoolean(getBasePath() + ".use-virtual-thread-for-async-chat-executor", enabled,
-                config.pickStringRegionBased(
-                        "Use the new Virtual Thread introduced in JDK 21 for Async Chat Executor.",
-                        "是否为异步聊天线程使用虚拟线程."));
+            config.pickStringRegionBased(
+                "Use the new Virtual Thread introduced in JDK 21 for Async Chat Executor.",
+                "是否为异步聊天线程使用虚拟线程."));
     }
 }

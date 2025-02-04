@@ -33,6 +33,7 @@ public class LagCompensation {
     }
 
     public static class TPSCalculator {
+
         public static Long lastTick;
         public static Long currentTick;
         private static double allMissedTicks = 0;
@@ -51,6 +52,7 @@ public class LagCompensation {
             }
 
             currentTick = System.currentTimeMillis();
+
             addToHistory(getTPS());
             clearMissedTicks();
             missedTick();
@@ -70,9 +72,11 @@ public class LagCompensation {
 
         public static double getAverageTPS() {
             double sum = 0.0;
+
             for (double value : tpsHistory) {
                 sum += value;
             }
+
             return tpsHistory.isEmpty() ? 0.1 : sum / tpsHistory.size();
         }
 
@@ -81,6 +85,7 @@ public class LagCompensation {
             if (getMSPT() <= 0) return 0.1;
 
             double tps = 1000 / (double) getMSPT();
+
             return tps > MAX_TPS ? MAX_TPS : tps;
         }
 
@@ -89,6 +94,7 @@ public class LagCompensation {
 
             long mspt = getMSPT() <= 0 ? 50 : getMSPT();
             double missedTicks = (mspt / (double) FULL_TICK) - 1;
+
             allMissedTicks += missedTicks <= 0 ? 0 : missedTicks;
         }
 

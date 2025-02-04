@@ -15,14 +15,14 @@ public class DontSaveEntity extends ConfigModules {
     @Override
     public void onLoaded() {
         dontSavePrimedTNT = config.getBoolean(getBasePath() + ".dont-save-primed-tnt", dontSavePrimedTNT,
-                config.pickStringRegionBased(
+            config.pickStringRegionBased(
                 """
-                Disable save primed tnt on chunk unloads.
-                Useful for redstone/technical servers, can prevent machines from being exploded by TNT,
-                when player disconnected caused by Internet issue.""",
+                    Disable save primed tnt on chunk unloads.
+                    Useful for redstone/technical servers, can prevent machines from being exploded by TNT,
+                    when player disconnected caused by Internet issue.""",
                 """
-                区块卸载时不保存掉落的方块和激活的 TNT,
-                可以避免在玩家掉线时机器被炸毁."""));
+                    区块卸载时不保存掉落的方块和激活的 TNT,
+                    可以避免在玩家掉线时机器被炸毁."""));
         dontSaveFallingBlock = config.getBoolean(getBasePath() + ".dont-save-falling-block", dontSaveFallingBlock);
     }
 }

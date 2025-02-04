@@ -20,7 +20,7 @@ public class AsyncLocator extends ConfigModules {
                 Whether or not asynchronous locator should be enabled.
                 This offloads structure locating to other threads.
                 Only for locate command, dolphin treasure finding and eye of ender currently.""",
-                """
+            """
                 是否启用异步结构搜索.
                 目前可用于 /locate 指令, 海豚寻宝和末影之眼.""");
         enabled = config.getBoolean(getBasePath() + ".enabled", enabled);

@@ -14,8 +14,8 @@ public class FasterStructureGenFutureSequencing extends ConfigModules {
     @Override
     public void onLoaded() {
         enabled = config.getBoolean(getBasePath() + ".faster-structure-gen-future-sequencing", enabled,
-                config.pickStringRegionBased(
-                        "May cause the inconsistent order of future compose tasks.",
-                        "更快的结构生成任务分段."));
+            config.pickStringRegionBased(
+                "May cause the inconsistent order of future compose tasks.",
+                "更快的结构生成任务分段."));
     }
 }

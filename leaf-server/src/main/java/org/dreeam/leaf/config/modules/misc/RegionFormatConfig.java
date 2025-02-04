@@ -32,7 +32,7 @@ public class RegionFormatConfig extends ConfigModules {
                 Read Documentation before using: https://github.com/xymb-endcrystalme/LinearRegionFileFormatTools
                 Disclaimer: This is an experimental feature, there is potential risk to lose chunk data.
                 So backup your server before switching to Linear.""",
-                """
+            """
                 Linear 是一种使用 ZSTD 压缩而非 ZLIB 的区域文件格式.
                 该格式可节省约 50% 的磁盘空间.
                 使用前请阅读文档: https://github.com/xymb-endcrystalme/LinearRegionFileFormatTools
@@ -40,9 +40,9 @@ public class RegionFormatConfig extends ConfigModules {
                 切换到Linear前请备份服务器.""");
 
         regionFormatTypeName = config.getString(getBasePath() + ".region-format", regionFormatTypeName,
-                config.pickStringRegionBased(
-                        "Available region formats: MCA, LINEAR",
-                        "可用格式: MCA, LINEAR"));
+            config.pickStringRegionBased(
+                "Available region formats: MCA, LINEAR",
+                "可用格式: MCA, LINEAR"));
         linearCompressionLevel = config.getInt(getBasePath() + ".linear-compress-level", linearCompressionLevel);
         throwOnUnknownExtension = config().getBoolean(getBasePath() + ".throw-on-unknown-extension-detected", throwOnUnknownExtension);
         linearFlushFrequency = config.getInt(getBasePath() + ".flush-interval-seconds", linearFlushFrequency);

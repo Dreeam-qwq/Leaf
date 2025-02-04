@@ -19,7 +19,7 @@ public class ChatMessageSignature extends ConfigModules {
                 And also disables the popup when joining a server without
                 'secure chat', such as offline-mode servers.
                 """,
-                """
+            """
                 是否启用聊天签名, 禁用后玩家无法进行聊天举报."""));
     }
 }

@@ -19,7 +19,7 @@ public class ConfigurableMaxUseItemDistance extends ConfigModules {
                 NOTE: if set to -1 to disable the check,
                 players are able to use some packet modules of hack clients,
                 and NoCom Exploit!!""",
-                """
+            """
                 玩家 UseItem 的最大距离.
                 设置为 -1 来禁用最大距离检测.
                 注意: 禁用此项后,
