@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?MC=7E=E8=9B=9F=E9=BE=99?= <1610105206@qq.com>
-Date: Tue, 4 Feb 2025 20:03:35 +0800
+Date: Tue, 4 Feb 2025 21:11:29 +0800
 Subject: [PATCH] Hide specified item components
 
 
@@ -33,18 +33,9 @@ index 97b6605ba56584a44cfc4361af7389e876496ef2..aa438f8a5a1f5df217b6e763e7ee78a6
  
      @Override
 diff --git a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
-index bfc90524bd739ed1d91fe9912e38093b3c28928f..22ea864a0bdd6826eead429327370e28532d919e 100644
+index bfc90524bd739ed1d91fe9912e38093b3c28928f..fbd684e0b6ee36dc0cbda9f22416e07ebb5aedee 100644
 --- a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
-@@ -342,7 +342,7 @@ public abstract class AbstractContainerMenu {
-         if (!this.suppressRemoteUpdates) {
-             ItemStack itemstack1 = (ItemStack) this.remoteSlots.get(slot);
- 
--            if (!ItemStack.matches(itemstack1, stack)) {
-+            if (!org.dreeam.leaf.util.item.ItemStackStripper.matchesStripped(stack, itemstack1)) { // Leaf - Hide specified item components (avoid some frequent client animations)
-                 ItemStack itemstack2 = (ItemStack) copySupplier.get();
- 
-                 this.remoteSlots.set(slot, itemstack2);
 @@ -370,7 +370,7 @@ public abstract class AbstractContainerMenu {
  
      private void synchronizeCarriedToRemote() {
