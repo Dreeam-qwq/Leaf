@@ -224,7 +224,7 @@ index 4f91107f9ae42f96c060c310596db9aa869a8dbc..f9889f593ed144ee8f1f5bd380e631c6
      public boolean visible = true;
  
 diff --git a/src/main/java/net/minecraft/server/level/ServerEntity.java b/src/main/java/net/minecraft/server/level/ServerEntity.java
-index bea671ae16a90e9cb9d2f312eed3c816da05b23c..36026f9f4cad3930cd45918012bf54498f2de973 100644
+index 41802175e4b621fc330abec67274c547851646b3..b909263394101b52b97cf92739e05521683b9458 100644
 --- a/src/main/java/net/minecraft/server/level/ServerEntity.java
 +++ b/src/main/java/net/minecraft/server/level/ServerEntity.java
 @@ -119,7 +119,13 @@ public class ServerEntity {
@@ -314,7 +314,7 @@ index 9a7a76599a44dfd51d5e9e9a0e892994528c7680..4a92789d77313e165ab1252cd469e34a
      }
  
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 0684a8e9e0d91c1724d1e066daa71030bba70904..dd6174a4b695bdaa2229a21c9680e757c6869755 100644
+index 4ecefd90defffeac792d4cb2375ee2d68513b170..94f8140eda0dacf5e32aa55851b75ff9ebb7639d 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1833,7 +1833,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
