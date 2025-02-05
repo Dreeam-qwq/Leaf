@@ -5,7 +5,7 @@ Subject: [PATCH] Micro-optimizations for random tick
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index b588386ade7a23750dcf5f64b383760404359af2..e063a4f331c69528fdc590f535220b3aca66e5d5 100644
+index b588386ade7a23750dcf5f64b383760404359af2..f08e5279e3b46d717b26b67c1c9050f23f3eaa19 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -901,7 +901,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -17,7 +17,7 @@ index b588386ade7a23750dcf5f64b383760404359af2..e063a4f331c69528fdc590f535220b3a
          final net.minecraft.world.level.levelgen.BitRandomSource simpleRandom = this.simpleRandom; // Leaf - Faster random generator - upcasting
          final boolean doubleTickFluids = !ca.spottedleaf.moonrise.common.PlatformHooks.get().configFixMC224294();
  
-@@ -910,41 +910,40 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -910,41 +910,41 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          final int offsetZ = cpos.z << 4;
  
          for (int sectionIndex = 0, sectionsLen = sections.length; sectionIndex < sectionsLen; sectionIndex++) {
@@ -54,7 +54,7 @@ index b588386ade7a23750dcf5f64b383760404359af2..e063a4f331c69528fdc590f535220b3a
 +                final BlockPos pos = new BlockPos((location & 15) | offsetX, (location >>> (4 + 4)) | offsetY, ((location >>> 4) & 15) | offsetZ); // Leaf - no redundant mask
  
 -                state.randomTick((ServerLevel)(Object)this, pos, simpleRandom);
-+                state.randomTick(this, pos, simpleRandom);
++                state.randomTick(this, pos, simpleRandom); // Leaf - no redundant cast
                  if (doubleTickFluids) {
                      final FluidState fluidState = state.getFluidState();
                      if (fluidState.isRandomlyTicking()) {
@@ -66,6 +66,7 @@ index b588386ade7a23750dcf5f64b383760404359af2..e063a4f331c69528fdc590f535220b3a
          }
 -
 -        return;
++        // Leaf - no redundant return
      }
      // Paper end - optimise random ticking
  
