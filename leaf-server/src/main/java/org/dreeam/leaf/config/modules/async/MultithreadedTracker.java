@@ -12,9 +12,9 @@ public class MultithreadedTracker extends ConfigModules {
 
     public static boolean enabled = false;
     public static boolean compatModeEnabled = false;
-    public static boolean autoResize = false;
     public static int asyncEntityTrackerMaxThreads = 0;
     public static int asyncEntityTrackerKeepalive = 60;
+    public static int asyncEntityTrackerQueueSize = 0;
 
     @Override
     public void onLoaded() {
@@ -33,16 +33,9 @@ public class MultithreadedTracker extends ConfigModules {
             """
                 是否启用兼容模式,
                 如果你的服务器安装了 Citizens 或其他类似非发包 NPC 插件, 请开启此项."""));
-        autoResize = config.getBoolean(getBasePath() + ".auto-resize", autoResize, config.pickStringRegionBased("""
-                Auto adjust thread pool size based on server load,
-                This will tweak thread pool size dynamically,
-                overrides max-threads and keepalive.""",
-            """
-                根据服务器负载自动调整线程池大小,
-                这会使线程池大小动态调整,
-                覆盖设置 max-threads 和 keepalive."""));
         asyncEntityTrackerMaxThreads = config.getInt(getBasePath() + ".max-threads", asyncEntityTrackerMaxThreads);
         asyncEntityTrackerKeepalive = config.getInt(getBasePath() + ".keepalive", asyncEntityTrackerKeepalive);
+        asyncEntityTrackerQueueSize = config.getInt(getBasePath() + ".queue-size", asyncEntityTrackerQueueSize);
 
         if (asyncEntityTrackerMaxThreads < 0)
             asyncEntityTrackerMaxThreads = Math.max(Runtime.getRuntime().availableProcessors() + asyncEntityTrackerMaxThreads, 1);
@@ -53,5 +46,8 @@ public class MultithreadedTracker extends ConfigModules {
             asyncEntityTrackerMaxThreads = 0;
         else
             LeafConfig.LOGGER.info("Using {} threads for Async Entity Tracker", asyncEntityTrackerMaxThreads);
+
+        if (asyncEntityTrackerQueueSize <= 0)
+            asyncEntityTrackerQueueSize = asyncEntityTrackerMaxThreads * Math.max(asyncEntityTrackerMaxThreads, 4);
     }
 }

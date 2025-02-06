@@ -20,7 +20,8 @@ import java.util.concurrent.*;
 
 public class MultithreadedTracker {
 
-    private static final Logger LOGGER = LogManager.getLogger("MultithreadedTracker");
+    private static final String THREAD_PREFIX = "Leaf Async Tracker";
+    private static final Logger LOGGER = LogManager.getLogger(THREAD_PREFIX);
     private static long lastWarnMillis = System.currentTimeMillis();
     private static final ThreadPoolExecutor trackerExecutor = new ThreadPoolExecutor(
         getCorePoolSize(),
@@ -128,19 +129,15 @@ public class MultithreadedTracker {
     }
 
     private static int getMaxPoolSize() {
-        return org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? Integer.MAX_VALUE : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads;
+        return org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads;
     }
 
     private static long getKeepAliveTime() {
-        return org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize ? 30L : org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerKeepalive;
+        return org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerKeepalive;
     }
 
     private static BlockingQueue<Runnable> getQueueImpl() {
-        if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.autoResize) {
-            return new SynchronousQueue<>();
-        }
-
-        final int queueCapacity = org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads * (Math.max(org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerMaxThreads, 4));
+        final int queueCapacity = org.dreeam.leaf.config.modules.async.MultithreadedTracker.asyncEntityTrackerQueueSize;
 
         return new LinkedBlockingQueue<>(queueCapacity);
     }
@@ -148,7 +145,7 @@ public class MultithreadedTracker {
     private static @NotNull ThreadFactory getThreadFactory() {
         return new ThreadFactoryBuilder()
             .setThreadFactory(MultithreadedTrackerThread::new)
-            .setNameFormat("Leaf Async Tracker Thread - %d")
+            .setNameFormat(THREAD_PREFIX + " Thread - %d")
             .setPriority(Thread.NORM_PRIORITY - 2)
             .build();
     }

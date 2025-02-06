@@ -1,13 +1,18 @@
 package org.dreeam.leaf.async.path;
 
+import com.destroystokyo.paper.util.SneakyThrow;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.pathfinder.Path;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
@@ -16,19 +21,59 @@ import java.util.function.Consumer;
  */
 public class AsyncPathProcessor {
 
-    private static final Executor pathProcessingExecutor = new ThreadPoolExecutor(
+    private static final String THREAD_PREFIX = "Leaf Async Pathfinding";
+    private static final Logger LOGGER = LogManager.getLogger(THREAD_PREFIX);
+    private static long lastWarnMillis = System.currentTimeMillis();
+    private static final ThreadPoolExecutor pathProcessingExecutor = new ThreadPoolExecutor(
         1,
         org.dreeam.leaf.config.modules.async.AsyncPathfinding.asyncPathfindingMaxThreads,
         org.dreeam.leaf.config.modules.async.AsyncPathfinding.asyncPathfindingKeepalive, TimeUnit.SECONDS,
-        new LinkedBlockingQueue<>(),
+        getQueueImpl(),
         new ThreadFactoryBuilder()
-            .setNameFormat("Leaf Async Pathfinding Thread - %d")
+            .setNameFormat(THREAD_PREFIX + " Thread - %d")
             .setPriority(Thread.NORM_PRIORITY - 2)
-            .build()
+            .build(),
+        new RejectedTaskHandler()
     );
 
+    private static class RejectedTaskHandler implements RejectedExecutionHandler {
+        @Override
+        public void rejectedExecution(Runnable rejectedTask, ThreadPoolExecutor executor) {
+            BlockingQueue<Runnable> workQueue = executor.getQueue();
+            if (!executor.isShutdown()) {
+                switch (org.dreeam.leaf.config.modules.async.AsyncPathfinding.asyncPathfindingRejectPolicy) {
+                    case FLUSH_ALL -> {
+                        if (!workQueue.isEmpty()) {
+                            List<Runnable> pendingTasks = new ArrayList<>(workQueue.size());
+
+                            workQueue.drainTo(pendingTasks);
+
+                            for (Runnable pendingTask : pendingTasks) {
+                                pendingTask.run();
+                            }
+                        }
+                        rejectedTask.run();
+                    }
+                    case CALLER_RUNS -> rejectedTask.run();
+                }
+            }
+
+            if (System.currentTimeMillis() - lastWarnMillis > 30000L) {
+                LOGGER.warn("Async pathfinding processor is busy! Pathfinding tasks will be treated as policy defined in config. Increasing max-threads in Leaf config may help.");
+                lastWarnMillis = System.currentTimeMillis();
+            }
+        }
+    }
+
     protected static CompletableFuture<Void> queue(@NotNull AsyncPath path) {
-        return CompletableFuture.runAsync(path::process, pathProcessingExecutor);
+        return CompletableFuture.runAsync(path::process, pathProcessingExecutor)
+            .orTimeout(60L, TimeUnit.SECONDS)
+            .exceptionally(throwable -> {
+                if (throwable instanceof TimeoutException e) {
+                    LOGGER.warn("Async Pathfinding process timed out", e);
+                } else SneakyThrow.sneaky(throwable);
+                return null;
+            });
     }
 
     /**
@@ -48,4 +93,9 @@ public class AsyncPathProcessor {
             afterProcessing.accept(path);
         }
     }
-}
+
+    private static BlockingQueue<Runnable> getQueueImpl() {
+        final int queueCapacity = org.dreeam.leaf.config.modules.async.AsyncPathfinding.asyncPathfindingQueueSize;
+
+        return new LinkedBlockingQueue<>(queueCapacity);
+    }}

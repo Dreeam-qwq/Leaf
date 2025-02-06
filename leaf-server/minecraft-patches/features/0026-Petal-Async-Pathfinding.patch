@@ -10,6 +10,10 @@ Original project:  https://github.com/KaiijuMC/Kaiiju
 Original license: GPLv3
 Original project: https://github.com/Bloom-host/Petal
 
+Co-authored-by: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Co-authored-by: Taiyou06 <kaandindar21@gmail.com>
+Co-authored-by: Altiami <yoshimo.kristin@gmail.com>
+
 This patch was ported downstream from the Petal fork.
 
 Makes most pathfinding-related work happen asynchronously
