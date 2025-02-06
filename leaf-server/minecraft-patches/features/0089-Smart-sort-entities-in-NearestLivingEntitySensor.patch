@@ -13,7 +13,7 @@ This offers a 10~15% performance improvement in average.
 In best situation, this can give an up to 50% improvement.
 
 diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..c4dcf57f17bed0ae2609cc6f41e772fb657ad8d2 100644
+index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..e893afb9da39105655c06d93aecb01ecaa624d21 100644
 --- a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 @@ -1,7 +1,6 @@
@@ -24,7 +24,7 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..c4dcf57f17bed0ae2609cc6f41e772fb
  import java.util.List;
  import java.util.Set;
  import net.minecraft.server.level.ServerLevel;
-@@ -13,21 +12,162 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+@@ -13,21 +12,163 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
  import net.minecraft.world.phys.AABB;
  
  public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T> {
@@ -83,7 +83,8 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..c4dcf57f17bed0ae2609cc6f41e772fb
 +
 +        // Choose sorting strategy based on array size - Leaf
 +        if (entities.length < BUCKET_SORT_THRESHOLD) {
-+            fastBitRadixSort(entityDistances, 0, entities.length - 1, 63);
++            // Start at bit 62 (exponent's MSB) instead of 63 (sign bit) - Leaf
++            fastBitRadixSort(entityDistances, 0, entities.length - 1, 62);
 +        } else {
 +            bucketSort(entityDistances, maxDist);
 +        }
@@ -148,7 +149,7 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..c4dcf57f17bed0ae2609cc6f41e772fb
 +            if (!bucket.isEmpty()) {
 +                EntityDistance[] bucketArray = bucket.toArray(new EntityDistance[0]);
 +                if (bucketArray.length > 1) {
-+                    fastBitRadixSort(bucketArray, 0, bucketArray.length - 1, 63);
++                    fastBitRadixSort(bucketArray, 0, bucketArray.length - 1, 62);
 +                }
 +                System.arraycopy(bucketArray, 0, arr, currentIndex, bucketArray.length);
 +                currentIndex += bucketArray.length;
