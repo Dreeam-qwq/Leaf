@@ -7,10 +7,11 @@ Co-authored-by: Taiyou06 <kaandindar21@gmail.com>
 
 This patch optimizes sorting algorithm by dynamically sorting based
 on entity count, if entity count doesn't reach the Bucket Sort threshold,
-Quick Sort of Fastutil will be used.
+FastBitRadix Sort will be used. (see https://ieeexplore.ieee.org/document/7822019 for more)
 When entity count reached the threshold, Bucket Sort will be used.
-This offers a 10~15% performance improvement in average.
-In best situation, this can give an up to 50% improvement.
+
+In non-strict testing, this can give ~20-40% improvement (54MSPT -> 44MSPT),
+under 625 villagers situation.
 
 diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..4898381d51cd9ea321ed75c5c253de96bdd46f7d 100644
