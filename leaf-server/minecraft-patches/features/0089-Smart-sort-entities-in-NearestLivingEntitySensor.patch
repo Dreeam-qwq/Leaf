@@ -13,18 +13,10 @@ This offers a 10~15% performance improvement in average.
 In best situation, this can give an up to 50% improvement.
 
 diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..7039adc062b5d26af186f6de5bd5a2e54eab956f 100644
+index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..4898381d51cd9ea321ed75c5c253de96bdd46f7d 100644
 --- a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-@@ -1,7 +1,6 @@
- package net.minecraft.world.entity.ai.sensing;
- 
- import com.google.common.collect.ImmutableSet;
--import java.util.Comparator;
- import java.util.List;
- import java.util.Set;
- import net.minecraft.server.level.ServerLevel;
-@@ -13,18 +12,170 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+@@ -13,6 +13,21 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
  import net.minecraft.world.phys.AABB;
  
  public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T> {
@@ -33,27 +25,24 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..7039adc062b5d26af186f6de5bd5a2e5
 +    private static final int NUM_BUCKETS_MINUS_1 = NUM_BUCKETS - 1;
 +    private static final int BUCKET_SORT_THRESHOLD = (int) Math.floor(NUM_BUCKETS * org.apache.commons.lang3.math.NumberUtils.toDouble(System.getProperty("Leaf.nearestEntitySensorBucketSortThresholdRatio", "2.0"), 2.0D));
 +    private static final List<EntityDistance>[] buckets = new List[NUM_BUCKETS];
-+    // Leaf end - Smart sort entities in NearestLivingEntitySensor
 +    private static final int SMALL_ARRAY_THRESHOLD = 2;
 +
 +    static {
-+        // Leaf start - Initialize bucket array
++        // Initialize bucket array
 +        for (int i = 0; i < NUM_BUCKETS; i++) {
 +            buckets[i] = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
 +        }
-+        // Leaf end - Initialize bucket array
 +    }
++    // Leaf end - Smart sort entities in NearestLivingEntitySensor
 +
      @Override
      protected void doTick(ServerLevel level, T entity) {
          double attributeValue = entity.getAttributeValue(Attributes.FOLLOW_RANGE);
-         AABB aabb = entity.getBoundingBox().inflate(attributeValue, attributeValue, attributeValue);
--        List<LivingEntity> entitiesOfClass = level.getEntitiesOfClass(
--            LivingEntity.class, aabb, matchableEntity -> matchableEntity != entity && matchableEntity.isAlive()
--        );
+@@ -20,11 +35,150 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
+         List<LivingEntity> entitiesOfClass = level.getEntitiesOfClass(
+             LivingEntity.class, aabb, matchableEntity -> matchableEntity != entity && matchableEntity.isAlive()
+         );
 -        entitiesOfClass.sort(Comparator.comparingDouble(entity::distanceToSqr));
-+        List<LivingEntity> entitiesOfClass = level.getEntitiesOfClass(LivingEntity.class, aabb, matchableEntity -> matchableEntity != entity && matchableEntity.isAlive());
-+
 +        // Leaf start - Use smart sorting for entities
 +        LivingEntity[] sortedEntities = smartSortEntities(entitiesOfClass.toArray(new LivingEntity[0]), entity);
 +        List<LivingEntity> sortedList = java.util.Arrays.asList(sortedEntities);
@@ -62,8 +51,10 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..7039adc062b5d26af186f6de5bd5a2e5
          Brain<?> brain = entity.getBrain();
 -        brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, entitiesOfClass);
 -        brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(level, entity, entitiesOfClass));
++        // Leaf start - Use smart sorting for entities
 +        brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, sortedList);
 +        brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(level, entity, sortedList));
++        // Leaf end - Use smart sorting for entities
 +    }
 +
 +    // Leaf start - Smart entity sorting implementation
