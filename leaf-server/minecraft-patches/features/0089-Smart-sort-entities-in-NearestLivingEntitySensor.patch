@@ -7,100 +7,189 @@ Co-authored-by: Taiyou06 <kaandindar21@gmail.com>
 
 This patch optimizes sorting algorithm by dynamically sorting based
 on entity count, if entity count doesn't reach the Bucket Sort threshold,
-Quick Sort of Fastutil will be used.
+FastBitRadix Sort will be used. (see https://ieeexplore.ieee.org/document/7822019 for more)
 When entity count reached the threshold, Bucket Sort will be used.
-This offers a 10~15% performance improvement in average.
-In best situation, this can give an up to 50% improvement.
+
+In non-strict testing, this can give ~20-40% improvement (54MSPT -> 44MSPT),
+under 625 villagers situation.
 
 diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..bcfbb03a75c4e5c80517f9acd24588f1ac703e67 100644
+index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..4898381d51cd9ea321ed75c5c253de96bdd46f7d 100644
 --- a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-@@ -13,6 +13,10 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+@@ -13,6 +13,21 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
  import net.minecraft.world.phys.AABB;
  
  public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T> {
 +    // Leaf start - Smart sort entities in NearestLivingEntitySensor
 +    private static final int NUM_BUCKETS = Integer.getInteger("Leaf.nearestEntitySensorBucketCount", 10);
++    private static final int NUM_BUCKETS_MINUS_1 = NUM_BUCKETS - 1;
 +    private static final int BUCKET_SORT_THRESHOLD = (int) Math.floor(NUM_BUCKETS * org.apache.commons.lang3.math.NumberUtils.toDouble(System.getProperty("Leaf.nearestEntitySensorBucketSortThresholdRatio", "2.0"), 2.0D));
++    private static final List<EntityDistance>[] buckets = new List[NUM_BUCKETS];
++    private static final int SMALL_ARRAY_THRESHOLD = 2;
++
++    static {
++        // Initialize bucket array
++        for (int i = 0; i < NUM_BUCKETS; i++) {
++            buckets[i] = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
++        }
++    }
 +    // Leaf end - Smart sort entities in NearestLivingEntitySensor
++
      @Override
      protected void doTick(ServerLevel level, T entity) {
          double attributeValue = entity.getAttributeValue(Attributes.FOLLOW_RANGE);
-@@ -20,12 +24,73 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
+@@ -20,11 +35,150 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
          List<LivingEntity> entitiesOfClass = level.getEntitiesOfClass(
              LivingEntity.class, aabb, matchableEntity -> matchableEntity != entity && matchableEntity.isAlive()
          );
 -        entitiesOfClass.sort(Comparator.comparingDouble(entity::distanceToSqr));
-+        // Leaf start - Smart sort entities in NearestLivingEntitySensor
++        // Leaf start - Use smart sorting for entities
 +        LivingEntity[] sortedEntities = smartSortEntities(entitiesOfClass.toArray(new LivingEntity[0]), entity);
 +        List<LivingEntity> sortedList = java.util.Arrays.asList(sortedEntities);
-+        // Leaf end - Smart sort entities in NearestLivingEntitySensor
++        // Leaf end - Use smart sorting for entities
++
          Brain<?> brain = entity.getBrain();
 -        brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, entitiesOfClass);
 -        brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(level, entity, entitiesOfClass));
-+        // Leaf start - Smart sort entities in NearestLivingEntitySensor
++        // Leaf start - Use smart sorting for entities
 +        brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, sortedList);
 +        brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(level, entity, sortedList));
-+        // Leaf end - Smart sort entities in NearestLivingEntitySensor
-     }
- 
-+    // Leaf start - Smart sort entities in NearestLivingEntitySensor
++        // Leaf end - Use smart sorting for entities
++    }
++
++    // Leaf start - Smart entity sorting implementation
 +    private LivingEntity[] smartSortEntities(LivingEntity[] entities, T referenceEntity) {
 +        if (entities.length <= 1) {
 +            return entities;
 +        }
 +
-+        final Comparator<LivingEntity> comparator = Comparator.comparingDouble(referenceEntity::distanceToSqr);
++        EntityDistance[] entityDistances = new EntityDistance[entities.length];
++        double maxDist = 0.0;
 +
-+        if (entities.length < BUCKET_SORT_THRESHOLD) {
-+            it.unimi.dsi.fastutil.objects.ObjectArrays.quickSort(entities, comparator);
++        for (int i = 0; i < entities.length; i++) {
++            double distance = referenceEntity.distanceToSqr(entities[i]);
++            maxDist = Math.max(maxDist, distance);
++            entityDistances[i] = new EntityDistance(entities[i], distance);
++        }
++
++        if (maxDist == 0.0) {
 +            return entities;
 +        }
 +
-+        // Create buckets
-+        @SuppressWarnings("unchecked")
-+        List<LivingEntity>[] buckets = new List[NUM_BUCKETS];
++        if (entities.length < BUCKET_SORT_THRESHOLD) {
++            fastBitRadixSort(entityDistances, 0, entities.length - 1, 62);
++        } else {
++            bucketSort(entityDistances, maxDist);
++        }
++
++        for (int i = 0; i < entities.length; i++) {
++            entities[i] = entityDistances[i].entity;
++        }
++
++        return entities;
++    }
++
++    /**
++     * Fast bit radix sort implementation
++     * 1. Partitioning array based on bits of the distance value, starting from most significant bit
++     * 2. For each bit position:
++     *    - Elements with 0 at that bit go to left side
++     *    - Elements with 1 at that bit go to right side
++     * 3. Recursively sorts left and right partitions
++     * 4. Falls back to insertion sort for very small partitions (<=2 elements)
++     */
++    private void fastBitRadixSort(EntityDistance[] arr, int low, int high, int bit) {
++        if (bit < 0 || low >= high) {
++            return;
++        }
++
++        if (high - low <= SMALL_ARRAY_THRESHOLD) {
++            insertionSort(arr, low, high);
++            return;
++        }
++
++        int i = low, j = high;
++
++        while (i <= j) {
++            while (i <= j && !getBit(arr[i], bit)) i++;
++            while (i <= j && getBit(arr[j], bit)) j--;
++
++            if (i < j) {
++                EntityDistance temp = arr[i];
++                arr[i++] = arr[j];
++                arr[j--] = temp;
++            }
++        }
++
++        if (low < j) fastBitRadixSort(arr, low, j, bit - 1);
++        if (i < high) fastBitRadixSort(arr, i, high, bit - 1);
++    }
++
++    /**
++     * Bucket sort implementation
++     * 1. Divides distance range [0, maxDist] into NUM_BUCKETS equal-sized buckets
++     * 2. Places each entity into appropriate bucket based on its distance
++     * 3. Sorts each non-empty bucket using fastBitRadixSort
++     * 4. Concatenates sorted buckets in order
++     */
++    private void bucketSort(EntityDistance[] arr, double maxDist) {
++        for (List<EntityDistance> bucket : buckets) {
++            bucket.clear();
++        }
++        double invMaxDist = 1.0 / maxDist;
 +
 +        for (int i = 0; i < NUM_BUCKETS; i++) {
 +            buckets[i] = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
 +        }
 +
-+        // Find max distance to normalize bucket distribution - Leaf
-+        double maxDistSq = 0.0;
-+
-+        for (LivingEntity e : entities) {
-+            maxDistSq = Math.max(maxDistSq, referenceEntity.distanceToSqr(e));
-+        }
-+
-+        // Handle edge case where all entities are at the same position - Leaf
-+        if (maxDistSq == 0.0) {
-+            return entities;
-+        }
-+
-+        // Distribute entities into buckets
-+        for (LivingEntity e : entities) {
-+            double distSq = referenceEntity.distanceToSqr(e);
-+            int bucketIndex = (int) ((distSq / maxDistSq) * (NUM_BUCKETS - 1));
++        for (int idx = 0; idx < arr.length; idx++) {
++            EntityDistance e = arr[idx];
++            int bucketIndex = (int) (e.distance * invMaxDist * NUM_BUCKETS_MINUS_1);
 +            buckets[bucketIndex].add(e);
 +        }
 +
-+        // Sort each bucket and combine results
 +        int currentIndex = 0;
-+
-+        for (List<LivingEntity> bucket : buckets) {
++        for (List<EntityDistance> bucket : buckets) {
 +            if (!bucket.isEmpty()) {
-+                bucket.sort(comparator);
-+                for (LivingEntity e : bucket) {
-+                    entities[currentIndex++] = e;
++                EntityDistance[] bucketArray = bucket.toArray(new EntityDistance[0]);
++                if (bucketArray.length > 1) {
++                    fastBitRadixSort(bucketArray, 0, bucketArray.length - 1, 62);
 +                }
++                System.arraycopy(bucketArray, 0, arr, currentIndex, bucketArray.length);
++                currentIndex += bucketArray.length;
 +            }
 +        }
-+
-+        return entities;
 +    }
-+    // Leaf end - Smart sort entities in NearestLivingEntitySensor
 +
++    private void insertionSort(EntityDistance[] arr, int low, int high) {
++        for (int i = low + 1; i <= high; i++) {
++            EntityDistance key = arr[i];
++            int j = i - 1;
++            while (j >= low && arr[j].distance > key.distance) {
++                arr[j + 1] = arr[j];
++                j--;
++            }
++            arr[j + 1] = key;
++        }
++    }
++
++    private static boolean getBit(EntityDistance e, int position) {
++        return ((e.bits >> position) & 1) == 1;
++    }
++
++    private static class EntityDistance {
++        final LivingEntity entity;
++        final double distance;
++        final long bits;
++
++        EntityDistance(LivingEntity entity, double distance) {
++            this.entity = entity;
++            this.distance = distance;
++            this.bits = Double.doubleToRawLongBits(distance);
++        }
+     }
++    // Leaf end - Smart entity sorting implementation
+ 
      @Override
      public Set<MemoryModuleType<?>> requires() {
-         return ImmutableSet.of(MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
