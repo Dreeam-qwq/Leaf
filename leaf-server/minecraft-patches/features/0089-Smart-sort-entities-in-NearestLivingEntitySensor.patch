@@ -13,7 +13,7 @@ This offers a 10~15% performance improvement in average.
 In best situation, this can give an up to 50% improvement.
 
 diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..e893afb9da39105655c06d93aecb01ecaa624d21 100644
+index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..d4380c5487902babeef71ef99340c37210497f95 100644
 --- a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 @@ -1,7 +1,6 @@
@@ -24,17 +24,19 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..e893afb9da39105655c06d93aecb01ec
  import java.util.List;
  import java.util.Set;
  import net.minecraft.server.level.ServerLevel;
-@@ -13,21 +12,163 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+@@ -13,21 +12,155 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
  import net.minecraft.world.phys.AABB;
  
  public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T> {
-+    // Constants for optimization tuning - Leaf
++    // Leaf start - Smart sort entities in NearestLivingEntitySensor
 +    private static final int NUM_BUCKETS = Integer.getInteger("Leaf.nearestEntitySensorBucketCount", 10);
++    private static final int NUM_BUCKETS_MINUS_1 = NUM_BUCKETS - 1;
 +    private static final int BUCKET_SORT_THRESHOLD = (int) Math.floor(NUM_BUCKETS *
 +        org.apache.commons.lang3.math.NumberUtils.toDouble(
 +            System.getProperty("Leaf.nearestEntitySensorBucketSortThresholdRatio", "2.0"),
 +            2.0D
 +        ));
++    // Leaf end - Smart sort entities in NearestLivingEntitySensor
 +    private static final int SMALL_ARRAY_THRESHOLD = 2;
 +
      @Override
@@ -65,31 +67,25 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..e893afb9da39105655c06d93aecb01ec
 +            return entities;
 +        }
 +
-+        // Create array to store distances and their corresponding entities - Leaf
 +        EntityDistance[] entityDistances = new EntityDistance[entities.length];
 +        double maxDist = 0.0;
 +
-+        // First pass - calculate distances and find max - Leaf
 +        for (int i = 0; i < entities.length; i++) {
 +            double distance = referenceEntity.distanceToSqr(entities[i]);
 +            maxDist = Math.max(maxDist, distance);
 +            entityDistances[i] = new EntityDistance(entities[i], distance);
 +        }
 +
-+        // Early exit if all distances are the same - Leaf
 +        if (maxDist == 0.0) {
 +            return entities;
 +        }
 +
-+        // Choose sorting strategy based on array size - Leaf
 +        if (entities.length < BUCKET_SORT_THRESHOLD) {
-+            // Start at bit 62 (exponent's MSB) instead of 63 (sign bit) - Leaf
 +            fastBitRadixSort(entityDistances, 0, entities.length - 1, 62);
 +        } else {
 +            bucketSort(entityDistances, maxDist);
 +        }
 +
-+        // Copy back sorted entities - Leaf
 +        for (int i = 0; i < entities.length; i++) {
 +            entities[i] = entityDistances[i].entity;
 +        }
@@ -102,7 +98,6 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..e893afb9da39105655c06d93aecb01ec
 +            return;
 +        }
 +
-+        // Use insertion sort for very small arrays - Leaf
 +        if (high - low <= SMALL_ARRAY_THRESHOLD) {
 +            insertionSort(arr, low, high);
 +            return;
@@ -110,13 +105,10 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..e893afb9da39105655c06d93aecb01ec
 +
 +        int i = low, j = high;
 +
-+        // Partition based on current bit - Leaf
 +        while (i <= j) {
-+            // Move pointers while checking current bit - Leaf
-+            while (i <= j && !getBit(arr[i].distance, bit)) i++;
-+            while (i <= j && getBit(arr[j].distance, bit)) j--;
++            while (i <= j && !getBit(arr[i], bit)) i++;
++            while (i <= j && getBit(arr[j], bit)) j--;
 +
-+            // Swap if needed - Leaf
 +            if (i < j) {
 +                EntityDistance temp = arr[i];
 +                arr[i++] = arr[j];
@@ -124,7 +116,6 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..e893afb9da39105655c06d93aecb01ec
 +            }
 +        }
 +
-+        // Recursively sort partitions if they exist - Leaf
 +        if (low < j) fastBitRadixSort(arr, low, j, bit - 1);
 +        if (i < high) fastBitRadixSort(arr, i, high, bit - 1);
 +    }
@@ -132,18 +123,18 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..e893afb9da39105655c06d93aecb01ec
 +    private void bucketSort(EntityDistance[] arr, double maxDist) {
 +        @SuppressWarnings("unchecked")
 +        List<EntityDistance>[] buckets = new List[NUM_BUCKETS];
++        double invMaxDist = 1.0 / maxDist;
 +
 +        for (int i = 0; i < NUM_BUCKETS; i++) {
 +            buckets[i] = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
 +        }
 +
-+        // Distribute elements into buckets - Leaf
-+        for (EntityDistance e : arr) {
-+            int bucketIndex = (int) ((e.distance / maxDist) * (NUM_BUCKETS - 1));
++        for (int idx = 0; idx < arr.length; idx++) {
++            EntityDistance e = arr[idx];
++            int bucketIndex = (int) (e.distance * invMaxDist * NUM_BUCKETS_MINUS_1);
 +            buckets[bucketIndex].add(e);
 +        }
 +
-+        // Sort buckets and collect results - Leaf
 +        int currentIndex = 0;
 +        for (List<EntityDistance> bucket : buckets) {
 +            if (!bucket.isEmpty()) {
@@ -169,18 +160,19 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..e893afb9da39105655c06d93aecb01ec
 +        }
 +    }
 +
-+    private static boolean getBit(double value, int position) {
-+        long bits = Double.doubleToRawLongBits(value);
-+        return ((bits >> position) & 1) == 1;
++    private static boolean getBit(EntityDistance e, int position) {
++        return ((e.bits >> position) & 1) == 1;
 +    }
 +
 +    private static class EntityDistance {
 +        final LivingEntity entity;
 +        final double distance;
++        final long bits;
 +
 +        EntityDistance(LivingEntity entity, double distance) {
 +            this.entity = entity;
 +            this.distance = distance;
++            this.bits = Double.doubleToRawLongBits(distance);
 +        }
      }
  
