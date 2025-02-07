@@ -11,51 +11,20 @@ Original project: https://github.com/LeavesMC/Leaves
 This patch is Powered by ReplayMod(https://github.com/ReplayMod)
 
 diff --git a/net/minecraft/commands/CommandSourceStack.java b/net/minecraft/commands/CommandSourceStack.java
-index 59c70c567051bc7dba0d308387352d1b15f3c842..6c13bf624bbb1af62f879ea08b72346a9932d75e 100644
+index 59c70c567051bc7dba0d308387352d1b15f3c842..e654387167cf3e9a88f0e62be940fe398387cffa 100644
 --- a/net/minecraft/commands/CommandSourceStack.java
 +++ b/net/minecraft/commands/CommandSourceStack.java
-@@ -629,6 +629,13 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
-         return this.entity instanceof ServerPlayer sourcePlayer && !sourcePlayer.getBukkitEntity().hasPermission("paper.bypass-visibility.tab-completion") ? this.getServer().getPlayerList().getPlayers().stream().filter(serverPlayer -> sourcePlayer.getBukkitEntity().canSee(serverPlayer.getBukkitEntity())).map(serverPlayer -> serverPlayer.getGameProfile().getName()).toList() : Lists.newArrayList(this.server.getPlayerNames()); // Paper - Make CommandSourceStack respect hidden players
-     }
+@@ -626,7 +626,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
  
-+    // Leaves start - skip photographer
-+    @Override
-+    public Collection<String> getOnlineRealPlayerNames() {
-+        return this.entity instanceof ServerPlayer sourcePlayer && !sourcePlayer.getBukkitEntity().hasPermission("paper.bypass-visibility.tab-completion") ? this.getServer().getPlayerList().getPlayers().stream().filter(serverPlayer -> !(serverPlayer instanceof org.leavesmc.leaves.replay.ServerPhotographer) && sourcePlayer.getBukkitEntity().canSee(serverPlayer.getBukkitEntity())).map(serverPlayer -> serverPlayer.getGameProfile().getName()).toList() : Lists.newArrayList(this.server.getPlayerNames()); // Paper - Make CommandSourceStack respect hidden players
-+    }
-+    // Leaves end - skip photographer
-+
      @Override
-     public Collection<String> getAllTeams() {
-         return this.server.getScoreboard().getTeamNames();
-diff --git a/net/minecraft/commands/SharedSuggestionProvider.java b/net/minecraft/commands/SharedSuggestionProvider.java
-index a2f13a86c635acef24ded974c96a400e1439011d..78e7948dfc99dda55455e964c3356b6c5002869c 100644
---- a/net/minecraft/commands/SharedSuggestionProvider.java
-+++ b/net/minecraft/commands/SharedSuggestionProvider.java
-@@ -29,6 +29,8 @@ public interface SharedSuggestionProvider {
- 
-     Collection<String> getOnlinePlayerNames();
- 
-+    Collection<String> getOnlineRealPlayerNames(); // Leaves - skip photographer
-+
-     default Collection<String> getCustomTabSugggestions() {
-         return this.getOnlinePlayerNames();
+     public Collection<String> getOnlinePlayerNames() {
+-        return this.entity instanceof ServerPlayer sourcePlayer && !sourcePlayer.getBukkitEntity().hasPermission("paper.bypass-visibility.tab-completion") ? this.getServer().getPlayerList().getPlayers().stream().filter(serverPlayer -> sourcePlayer.getBukkitEntity().canSee(serverPlayer.getBukkitEntity())).map(serverPlayer -> serverPlayer.getGameProfile().getName()).toList() : Lists.newArrayList(this.server.getPlayerNames()); // Paper - Make CommandSourceStack respect hidden players
++        return this.entity instanceof ServerPlayer sourcePlayer && !(sourcePlayer instanceof org.leavesmc.leaves.replay.ServerPhotographer) && !sourcePlayer.getBukkitEntity().hasPermission("paper.bypass-visibility.tab-completion") ? this.getServer().getPlayerList().getPlayers().stream().filter(serverPlayer -> sourcePlayer.getBukkitEntity().canSee(serverPlayer.getBukkitEntity())).map(serverPlayer -> serverPlayer.getGameProfile().getName()).toList() : Lists.newArrayList(this.server.getPlayerNames()); // Paper - Make CommandSourceStack respect hidden players // Leaves - only real player
      }
-diff --git a/net/minecraft/commands/arguments/EntityArgument.java b/net/minecraft/commands/arguments/EntityArgument.java
-index 0a01df6ebd14afe79bc76364cb1df5e0c5c08074..7eea7e3345b889b885e9a118bb23fa08bc237150 100644
---- a/net/minecraft/commands/arguments/EntityArgument.java
-+++ b/net/minecraft/commands/arguments/EntityArgument.java
-@@ -149,7 +149,7 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
-             return entitySelectorParser.fillSuggestions(
-                 builder,
-                 offsetBuilder -> {
--                    Collection<String> onlinePlayerNames = sharedSuggestionProvider.getOnlinePlayerNames();
-+                    Collection<String> onlinePlayerNames = sharedSuggestionProvider.getOnlineRealPlayerNames(); // Leaves - skip photographer
-                     Iterable<String> iterable = (Iterable<String>)(this.playersOnly
-                         ? onlinePlayerNames
-                         : Iterables.concat(onlinePlayerNames, sharedSuggestionProvider.getSelectedEntities()));
+ 
+     @Override
 diff --git a/net/minecraft/commands/arguments/selector/EntitySelector.java b/net/minecraft/commands/arguments/selector/EntitySelector.java
-index b305ba9bab617bf4e52d0e6ddf160bacc5751a94..b8215b71971d16705bc11f19343823acf9970a3a 100644
+index b305ba9bab617bf4e52d0e6ddf160bacc5751a94..c9b4f00d5ccde83898ecf69efdbfee7a3f91b96d 100644
 --- a/net/minecraft/commands/arguments/selector/EntitySelector.java
 +++ b/net/minecraft/commands/arguments/selector/EntitySelector.java
 @@ -128,11 +128,12 @@ public class EntitySelector {
@@ -89,7 +58,7 @@ index b305ba9bab617bf4e52d0e6ddf160bacc5751a94..b8215b71971d16705bc11f19343823ac
  
                  return this.sortAndLimit(vec3, list);
              }
-@@ -192,27 +194,29 @@ public class EntitySelector {
+@@ -192,27 +194,30 @@ public class EntitySelector {
          this.checkPermissions(source);
          if (this.playerName != null) {
              ServerPlayer playerByName = source.getServer().getPlayerList().getPlayerByName(this.playerName);
@@ -104,8 +73,8 @@ index b305ba9bab617bf4e52d0e6ddf160bacc5751a94..b8215b71971d16705bc11f19343823ac
              AABB absoluteAabb = this.getAbsoluteAabb(vec3);
              Predicate<Entity> predicate = this.getPredicate(vec3, absoluteAabb, null);
              if (this.currentEntity) {
--                return source.getEntity() instanceof ServerPlayer serverPlayer && predicate.test(serverPlayer) && canSee(source, serverPlayer) ? List.of(serverPlayer) : List.of(); // Purpur - Hide hidden players from entity selector
-+                return source.getEntity() instanceof ServerPlayer serverPlayer && predicate.test(serverPlayer) && !(serverPlayer instanceof org.leavesmc.leaves.replay.ServerPhotographer) && canSee(source, serverPlayer) ? List.of(serverPlayer) : List.of(); // Purpur - Hide hidden players from entity selector // Leaves - skip photographer
++                //return source.getEntity() instanceof ServerPlayer serverPlayer && predicate.test(serverPlayer) && !(serverPlayer instanceof org.leavesmc.leaves.replay.ServerPhotographer) && canSee(source, serverPlayer) ? List.of(serverPlayer) : List.of(); // Purpur - Hide hidden players from entity selector // Leaves - skip photographer
+                 return source.getEntity() instanceof ServerPlayer serverPlayer && predicate.test(serverPlayer) && canSee(source, serverPlayer) ? List.of(serverPlayer) : List.of(); // Purpur - Hide hidden players from entity selector
              } else {
                  int resultLimit = this.getResultLimit();
                  List<ServerPlayer> players;
@@ -152,7 +121,7 @@ index 792ba93b531e9586e26aafa00830022a8996fc04..e4ea26ae84efde7ce54e08a246a6ea2a
          AdvancementProgress orStartProgress = this.getOrStartProgress(advancement);
          boolean isDone = orStartProgress.isDone();
 diff --git a/net/minecraft/server/commands/OpCommand.java b/net/minecraft/server/commands/OpCommand.java
-index 5c0a04db38821dbb0cba2bb6f0787f113d167efd..8a071166262fbb7d24735fec394cb19d4dd98096 100644
+index 5c0a04db38821dbb0cba2bb6f0787f113d167efd..cd153db93f709c3142942fac88ae3ca2226a65b3 100644
 --- a/net/minecraft/server/commands/OpCommand.java
 +++ b/net/minecraft/server/commands/OpCommand.java
 @@ -25,7 +25,7 @@ public class OpCommand {
@@ -160,7 +129,7 @@ index 5c0a04db38821dbb0cba2bb6f0787f113d167efd..8a071166262fbb7d24735fec394cb19d
                                  PlayerList playerList = context.getSource().getServer().getPlayerList();
                                  return SharedSuggestionProvider.suggest(
 -                                    playerList.getPlayers()
-+                                    playerList.realPlayers // Leaves - skip
++                                    playerList.realPlayers // Leaves - only real player
                                          .stream()
                                          .filter(player -> !playerList.isOp(player.getGameProfile()))
                                          .map(player -> player.getGameProfile().getName()),
@@ -222,7 +191,7 @@ index 622257dbbe572de33e15abef9055016268730261..dfb4524d80f642eff1b146dd2fbfa07f
      private final ServerStatsCounter stats;
      private float lastRecordedHealthAndAbsorption = Float.MIN_VALUE;
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 03bf654aaf1b4f7df9608ee1ad99230f7aa507f9..8893be00aa731d26a41b5e6b3996425eced33cc4 100644
+index e3d09d5f4efb32bb276e001e5ee747a775b502ee..86ce80765eb7645533806f730b15557f8ea6a9a2 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -132,6 +132,7 @@ public abstract class PlayerList {
@@ -233,12 +202,12 @@ index 03bf654aaf1b4f7df9608ee1ad99230f7aa507f9..8893be00aa731d26a41b5e6b3996425e
  
      // CraftBukkit start
      private org.bukkit.craftbukkit.CraftServer cserver;
-@@ -150,6 +151,105 @@ public abstract class PlayerList {
+@@ -150,6 +151,106 @@ public abstract class PlayerList {
  
      abstract public void loadAndSaveFiles(); // Paper - fix converting txt to json file; moved from DedicatedPlayerList constructor
  
 +    // Leaves start - replay api
-+    public void placeNewPhotographer(Connection connection, org.leavesmc.leaves.replay.ServerPhotographer player, ServerLevel worldserver, org.bukkit.Location location) {
++    public void placeNewPhotographer(Connection connection, org.leavesmc.leaves.replay.ServerPhotographer player, ServerLevel worldserver) {
 +        player.isRealPlayer = true; // Paper
 +        player.loginTime = System.currentTimeMillis(); // Paper
 +
@@ -264,6 +233,7 @@ index 03bf654aaf1b4f7df9608ee1ad99230f7aa507f9..8893be00aa731d26a41b5e6b3996425e
 +        playerconnection.send(new ClientboundSetHeldSlotPacket(player.getInventory().selected));
 +        RecipeManager craftingmanager = this.server.getRecipeManager();
 +        playerconnection.send(new ClientboundUpdateRecipesPacket(craftingmanager.getSynchronizedItemProperties(), craftingmanager.getSynchronizedStonecutterRecipes()));
++
 +        this.sendPlayerPermissionLevel(player);
 +        player.getStats().markAllDirty();
 +        player.getRecipeBook().sendInitialRecipeBook(player);
@@ -339,7 +309,7 @@ index 03bf654aaf1b4f7df9608ee1ad99230f7aa507f9..8893be00aa731d26a41b5e6b3996425e
      public void placeNewPlayer(Connection connection, ServerPlayer player, CommonListenerCookie cookie) {
          player.isRealPlayer = true; // Paper
          player.loginTime = System.currentTimeMillis(); // Paper - Replace OfflinePlayer#getLastPlayed
-@@ -315,6 +415,7 @@ public abstract class PlayerList {
+@@ -315,6 +416,7 @@ public abstract class PlayerList {
  
          // player.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(this.players)); // CraftBukkit - replaced with loop below
          this.players.add(player);
@@ -347,7 +317,7 @@ index 03bf654aaf1b4f7df9608ee1ad99230f7aa507f9..8893be00aa731d26a41b5e6b3996425e
          this.playersByName.put(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT), player); // Spigot
          this.playersByUUID.put(player.getUUID(), player);
          this.addToSendAllPlayerInfoBuckets(player); // Gale - Purpur - spread out sending all player info
-@@ -374,6 +475,12 @@ public abstract class PlayerList {
+@@ -374,6 +476,12 @@ public abstract class PlayerList {
                  continue;
              }
  
@@ -360,7 +330,7 @@ index 03bf654aaf1b4f7df9608ee1ad99230f7aa507f9..8893be00aa731d26a41b5e6b3996425e
              onlinePlayers.add(entityplayer1); // Paper - Use single player info update packet on join
          }
          // Paper start - Use single player info update packet on join
-@@ -515,6 +622,43 @@ public abstract class PlayerList {
+@@ -515,6 +623,43 @@ public abstract class PlayerList {
          }
      }
  
@@ -404,7 +374,7 @@ index 03bf654aaf1b4f7df9608ee1ad99230f7aa507f9..8893be00aa731d26a41b5e6b3996425e
      public net.kyori.adventure.text.Component remove(ServerPlayer player) { // CraftBukkit - return string // Paper - return Component
          // Paper start - Fix kick event leave message not being sent
          return this.remove(player, net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())));
-@@ -591,6 +735,7 @@ public abstract class PlayerList {
+@@ -591,6 +736,7 @@ public abstract class PlayerList {
          player.retireScheduler(); // Paper - Folia schedulers
          player.getAdvancements().stopListening();
          this.players.remove(player);
@@ -412,7 +382,7 @@ index 03bf654aaf1b4f7df9608ee1ad99230f7aa507f9..8893be00aa731d26a41b5e6b3996425e
          this.playersByName.remove(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT)); // Spigot
          this.removeFromSendAllPlayerInfoBuckets(player); // Gale - Purpur - spread out sending all player info
          this.server.getCustomBossEvents().onPlayerDisconnect(player);
-@@ -688,7 +833,7 @@ public abstract class PlayerList {
+@@ -688,7 +834,7 @@ public abstract class PlayerList {
              // return this.players.size() >= this.maxPlayers && !this.canBypassPlayerLimit(gameProfile)
              //     ? Component.translatable("multiplayer.disconnect.server_full")
              //     : null;

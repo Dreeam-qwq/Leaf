@@ -5,10 +5,10 @@ Subject: [PATCH] Configurable connection message
 
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index fe9784751f4291ce100998bf15554d19745025ca..c69fcc9725738136341cc2e9d63b5e2ef11e1fe5 100644
+index 739835ce8c02e485abbe8de2e02d19ce9b3f44f9..9aa924cb58ea6d50572d67f628d35eebb809ae72 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -433,7 +433,7 @@ public abstract class PlayerList {
+@@ -434,7 +434,7 @@ public abstract class PlayerList {
          // Ensure that player inventory is populated with its viewer
          player.containerMenu.transferTo(player.containerMenu, bukkitPlayer);
  
@@ -17,7 +17,7 @@ index fe9784751f4291ce100998bf15554d19745025ca..c69fcc9725738136341cc2e9d63b5e2e
          this.cserver.getPluginManager().callEvent(playerJoinEvent);
  
          if (!player.connection.isAcceptingMessages()) {
-@@ -446,7 +446,7 @@ public abstract class PlayerList {
+@@ -447,7 +447,7 @@ public abstract class PlayerList {
  
          final net.kyori.adventure.text.Component jm = playerJoinEvent.joinMessage();
  
@@ -26,7 +26,7 @@ index fe9784751f4291ce100998bf15554d19745025ca..c69fcc9725738136341cc2e9d63b5e2e
              joinMessage = io.papermc.paper.adventure.PaperAdventure.asVanilla(jm); // Paper - Adventure
              this.server.getPlayerList().broadcastSystemMessage(joinMessage, false); // Paper - Adventure
          }
-@@ -676,7 +676,7 @@ public abstract class PlayerList {
+@@ -677,7 +677,7 @@ public abstract class PlayerList {
              player.closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason.DISCONNECT); // Paper - Inventory close reason
          }
  
@@ -35,7 +35,7 @@ index fe9784751f4291ce100998bf15554d19745025ca..c69fcc9725738136341cc2e9d63b5e2e
          this.cserver.getPluginManager().callEvent(playerQuitEvent);
          player.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
  
-@@ -1667,4 +1667,34 @@ public abstract class PlayerList {
+@@ -1668,4 +1668,34 @@ public abstract class PlayerList {
      public boolean isAllowCommandsForAllPlayers() {
          return this.allowCommandsForAllPlayers;
      }

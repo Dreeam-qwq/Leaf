@@ -5,6 +5,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stat;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -18,21 +19,18 @@ public class BotStatsCounter extends ServerStatsCounter {
 
     @Override
     public void save() {
-
     }
 
     @Override
-    public void setValue(Player player, Stat<?> stat, int value) {
-
+    public void setValue(@NotNull Player player, @NotNull Stat<?> stat, int value) {
     }
 
     @Override
-    public void parseLocal(DataFixer dataFixer, String json) {
-
+    public void parseLocal(@NotNull DataFixer dataFixer, @NotNull String json) {
     }
 
     @Override
-    public int getValue(Stat<?> stat) {
+    public int getValue(@NotNull Stat<?> stat) {
         return 0;
     }
 }

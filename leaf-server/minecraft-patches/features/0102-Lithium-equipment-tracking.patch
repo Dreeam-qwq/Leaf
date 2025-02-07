@@ -76,7 +76,7 @@ index a8c6549f772208cd543607224fef2c2389b14f24..709631db548a16a969a373e26ebbcd69
      public boolean equals(Object other) {
          return this == other
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index ead6a4823d7681109bc0888d0a1fc0d73dad3c98..9a3b27457ff62dfb2ead9c114c287f55504f19f6 100644
+index 4c9c41b3d0f8752e6dc60c513a951b79945a4549..7d88bcb727b53217f10472d73726a96f54ebc31d 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -159,7 +159,7 @@ import org.bukkit.event.entity.EntityTeleportEvent;

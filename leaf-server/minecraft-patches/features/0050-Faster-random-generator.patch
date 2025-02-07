@@ -14,7 +14,7 @@ ThreadUnsafeRandom (Moonrise): 102,265,100 ns
 SimpleThreadUnsafeRandom (Moonrise): 97,054,600 ns
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 92e70e132a86930d9cd0db32f10e106427621c7d..5b61e9e26fd63b938f38753c9ce38a474ffe80e5 100644
+index 4070a6eb52f6097e38c2d85c231d39ea3785cf46..bb76dbf98979fdc725676c98dafe64ea941cb290 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -150,7 +150,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
@@ -27,7 +27,7 @@ index 92e70e132a86930d9cd0db32f10e106427621c7d..5b61e9e26fd63b938f38753c9ce38a47
          final ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData chunkData = ((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemChunkHolder)((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemLevelChunk)levelChunk).moonrise$getChunkAndHolder().holder())
              .moonrise$getRealChunkHolder().holderData;
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 22b929d30938a26837b21511425c62fc1665a669..677e5f31089879235677b82ff554e5b89e335a6d 100644
+index 40b6b5e4a1f73ee447ff0ee192d5d8ba5045f286..f9e335c86684969b744a7d7c1d96458e830bbd35 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -902,7 +902,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -89,7 +89,7 @@ index 98a54bc4de251014342cda6d0951b7fea79ce553..6d56134cc9ed9d73104ae77b1a0baa5a
      RandomSource fork();
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 539cd1fe6ff15a4ebcbd65f41d8711d1f4ce5b97..034e10e912ab9b4b5435ad88c0cd4183c8b5c1a1 100644
+index 761b3806ddec0675935dc2e24d36e4b221c53c9b..8bb2abb01f1af34d6829cbbf759a425d871f3e3f 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -143,7 +143,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
@@ -102,7 +102,7 @@ index 539cd1fe6ff15a4ebcbd65f41d8711d1f4ce5b97..034e10e912ab9b4b5435ad88c0cd4183
      private static final class RandomRandomSource extends ca.spottedleaf.moonrise.common.util.ThreadUnsafeRandom {
          public RandomRandomSource() {
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 13edbcdabc159e3694e7dbe824ccb5bb447fe788..367ba07f63917dc75883d5fd3dde93dc9ffc144a 100644
+index b39d67ab9ed446885111a5387d3332c36b4f3cc9..53cabe7dabc83618c8941c95e95c5b7e23ee694e 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -126,7 +126,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl

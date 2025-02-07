@@ -1,9 +1,5 @@
 package org.leavesmc.leaves.protocol.jade.accessor;
 
-import java.util.function.Supplier;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.Tag;
@@ -12,6 +8,9 @@ import net.minecraft.network.codec.StreamEncoder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.util.function.Supplier;
 
 public abstract class AccessorImpl<T extends HitResult> implements Accessor<T> {
 

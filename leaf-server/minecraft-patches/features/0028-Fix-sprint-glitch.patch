@@ -5,7 +5,7 @@ Subject: [PATCH] Fix sprint glitch
 
 
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 9f36d063168c262fec7e69a96bad375b4eaff797..d7bb99b6d0a5818ccd68aa361c77a8733023f1ea 100644
+index 4fb6102c8ef930de80356c66397ca2167b1d0174..c7f58236400dbb9d26cf4a5b83b3a9202b10471d 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -1379,7 +1379,8 @@ public abstract class LivingEntity extends Entity implements Attackable {

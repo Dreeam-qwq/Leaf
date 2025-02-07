@@ -11,18 +11,10 @@ Original project: https://github.com/LeavesMC/Leaves
 This patch is Powered by ReplayMod(https://github.com/ReplayMod)
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index d67af3fdc4434817cea29673069430a33fb30a8e..1e32c10f3e7687cbd55985a2e03f0ab6c5f93b31 100644
+index d67af3fdc4434817cea29673069430a33fb30a8e..c8699e7b186caf0735a888f78ed4b777e1c119fe 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -3047,6 +3047,7 @@ public final class Bukkit {
-         return server.spigot();
-     }
- 
-+
-     // Purpur start - Bring back server name
-     /**
-      * Get the name of this server
-@@ -3175,4 +3176,10 @@ public final class Bukkit {
+@@ -3175,4 +3175,10 @@ public final class Bukkit {
          server.clearBlockHighlights();
      }
      // Purpur end - Debug Marker API
@@ -34,24 +26,16 @@ index d67af3fdc4434817cea29673069430a33fb30a8e..1e32c10f3e7687cbd55985a2e03f0ab6
 +    // Leaves end - Photographer API
  }
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 6790ca1648a17cf30063522f68b3ac3e82e3bd8c..223f3a4545996073872d1650c9a84feacfd2c493 100644
+index 6790ca1648a17cf30063522f68b3ac3e82e3bd8c..91c6808a6500c3f2e43818a7a30ab5d83d89f539 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -66,6 +66,7 @@ import org.jetbrains.annotations.ApiStatus;
- import org.jetbrains.annotations.Contract;
- import org.jetbrains.annotations.NotNull;
- import org.jetbrains.annotations.Nullable;
-+import org.leavesmc.leaves.entity.PhotographerManager;
- 
- /**
-  * Represents a server implementation.
-@@ -2858,4 +2859,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2858,4 +2858,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       */
      void clearBlockHighlights();
      // Purpur end - Debug Marker API
 +
 +    // Leaves start - Photographer API
-+    @NotNull PhotographerManager getPhotographerManager();
++    @NotNull org.leavesmc.leaves.entity.PhotographerManager getPhotographerManager();
 +    // Leaves end - Photographer API
  }
 diff --git a/src/main/java/org/leavesmc/leaves/entity/Photographer.java b/src/main/java/org/leavesmc/leaves/entity/Photographer.java

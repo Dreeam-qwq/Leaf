@@ -5,7 +5,7 @@ Subject: [PATCH] Virtual thread for user authenticator
 
 
 diff --git a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index fec84afa274f8b7cc3e0e9bf500e672c16be53d4..9081780cff9d97b0f4a93afade62f5ef0d448209 100644
+index 4567067bd91000bb98052cd5a139292e4615b13f..069477e524a28b20a0289221858bdc802704a890 100644
 --- a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -55,7 +55,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,

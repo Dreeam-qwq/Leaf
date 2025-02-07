@@ -91,7 +91,7 @@ index 30bd254542d631676494f349ff3f44f52d54ab2f..63e6411d8bac1629e143cc620fe35dba
  
      public record Favicon(byte[] iconBytes) {
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index 22b0f33dc3ef9f51ba2ca3cb665b07a16bd1c9d9..7b1e5addd6a1b815498233ba9032f224494af12a 100644
+index 6e7ac9128378586160230bd33462edb7d6880154..92eda3826518cf54891cccb46eed9e0d3da165ba 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -667,6 +667,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -138,10 +138,10 @@ index ee8cdd532b73180cb484fcc37c36f09c40faacda..becadda1642c1b9342f2fdff1fc062a2
          if (packet == null || this.processedDisconnect) { // Spigot
              return;
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 0bb8c326a468e79a7f5a4f3395a3c2fe84352f47..fe9784751f4291ce100998bf15554d19745025ca 100644
+index 2d8c20ddd675173e9ea5734cfde6687ac042e01d..739835ce8c02e485abbe8de2e02d19ce9b3f44f9 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -1515,7 +1515,7 @@ public abstract class PlayerList {
+@@ -1516,7 +1516,7 @@ public abstract class PlayerList {
      public void broadcastChatMessage(PlayerChatMessage message, Predicate<ServerPlayer> shouldFilterMessageTo, @Nullable ServerPlayer sender, ChatType.Bound boundChatType, @Nullable Function<net.kyori.adventure.audience.Audience, Component> unsignedFunction) {
          // Paper end
          boolean flag = this.verifyChatTrusted(message);
@@ -150,7 +150,7 @@ index 0bb8c326a468e79a7f5a4f3395a3c2fe84352f47..fe9784751f4291ce100998bf15554d19
          OutgoingChatMessage outgoingChatMessage = OutgoingChatMessage.create(message);
          boolean flag1 = false;
  
-@@ -1540,6 +1540,7 @@ public abstract class PlayerList {
+@@ -1541,6 +1541,7 @@ public abstract class PlayerList {
      }
  
      public boolean verifyChatTrusted(PlayerChatMessage message) { // Paper - private -> public

@@ -6,10 +6,10 @@ Subject: [PATCH] Do not place player if the server is full
 Fix https://github.com/PaperMC/Paper/issues/10668
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 5fe6a295f5b5285a20c535a026e1342f89896fd7..8233b250a8d0e9f26302f6756931d2edfe017504 100644
+index 9aa924cb58ea6d50572d67f628d35eebb809ae72..6327d508252b35fcbd2daebad078f00d44291c6e 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -340,6 +340,13 @@ public abstract class PlayerList {
+@@ -341,6 +341,13 @@ public abstract class PlayerList {
              return;
          }
          // Gale end - MultiPaper - do not place player in world if kicked before being spawned in
@@ -23,7 +23,7 @@ index 5fe6a295f5b5285a20c535a026e1342f89896fd7..8233b250a8d0e9f26302f6756931d2ed
  
          org.bukkit.Location loc = ev.getSpawnLocation();
          serverLevel = ((org.bukkit.craftbukkit.CraftWorld) loc.getWorld()).getHandle();
-@@ -834,7 +841,7 @@ public abstract class PlayerList {
+@@ -835,7 +842,7 @@ public abstract class PlayerList {
              // return this.players.size() >= this.maxPlayers && !this.canBypassPlayerLimit(gameProfile)
              //     ? Component.translatable("multiplayer.disconnect.server_full")
              //     : null;

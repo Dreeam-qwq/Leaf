@@ -14,7 +14,7 @@ In non-strict testing, this can give ~20-40% improvement (54MSPT -> 44MSPT),
 under 625 villagers situation.
 
 diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..4898381d51cd9ea321ed75c5c253de96bdd46f7d 100644
+index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..66374b79ade5cd10fa6e1d9187bf6b1112da4827 100644
 --- a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 @@ -13,6 +13,21 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;

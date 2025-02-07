@@ -6,7 +6,7 @@ Subject: [PATCH] Fix-MC-119417
 Related MC issue: https://bugs.mojang.com/browse/MC-119417
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 09c9ca038f359372bda3a3d8b743d497a530ce97..ef20741ab2a7feaa8a86759ee0ae6283e4d4651c 100644
+index 2c67693cc3781eb5aee10b4dfb9617cbe107e922..e1a1bddfc11da20f3a1b9a2773b19d4317fac914 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -2260,6 +2260,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc

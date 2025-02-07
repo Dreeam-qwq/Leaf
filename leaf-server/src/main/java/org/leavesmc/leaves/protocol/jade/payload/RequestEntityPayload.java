@@ -6,10 +6,10 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.leavesmc.leaves.protocol.core.LeavesCustomPayload;
+import org.leavesmc.leaves.protocol.core.ProtocolUtils;
 import org.leavesmc.leaves.protocol.jade.JadeProtocol;
 import org.leavesmc.leaves.protocol.jade.accessor.EntityAccessor;
 import org.leavesmc.leaves.protocol.jade.accessor.EntityAccessorImpl;
@@ -38,12 +38,12 @@ public record RequestEntityPayload(EntityAccessorImpl.SyncData data,
 
     @Override
     public void write(FriendlyByteBuf buf) {
-        CODEC.encode(new RegistryFriendlyByteBuf(buf, MinecraftServer.getServer().registryAccess()), this);
+        CODEC.encode(ProtocolUtils.decorate(buf), this);
     }
 
     @New
     public static RequestEntityPayload create(ResourceLocation location, FriendlyByteBuf buf) {
-        return CODEC.decode(new RegistryFriendlyByteBuf(buf, MinecraftServer.getServer().registryAccess()));
+        return CODEC.decode(ProtocolUtils.decorate(buf));
     }
 
     @Override

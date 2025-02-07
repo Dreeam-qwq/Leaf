@@ -6,7 +6,7 @@ Subject: [PATCH] Use caffeine cache for kickPermission instead of using
 
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 2857e71ddb37f2a98c72df8cb439e2eab97d6f67..23092d6f6bca4eff4aaceabed51927e13156b30d 100644
+index 44f2182b5d78b0e51e8f5253fa9c89ea687b72df..7b493b28f57977c92c4a45049cedcb0cedbe8ae9 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -328,17 +328,12 @@ public class ServerGamePacketListenerImpl

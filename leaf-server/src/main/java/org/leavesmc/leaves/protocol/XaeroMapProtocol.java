@@ -21,13 +21,13 @@ public class XaeroMapProtocol {
     }
 
     @Contract("_ -> new")
-    public static @NotNull ResourceLocation idMini(String path) {
-        return new ResourceLocation(PROTOCOL_ID_MINI, path);
+    public static ResourceLocation idMini(String path) {
+        return ResourceLocation.tryBuild(PROTOCOL_ID_MINI, path);
     }
 
     @Contract("_ -> new")
-    public static @NotNull ResourceLocation idWorld(String path) {
-        return new ResourceLocation(PROTOCOL_ID_WORLD, path);
+    public static ResourceLocation idWorld(String path) {
+        return ResourceLocation.tryBuild(PROTOCOL_ID_WORLD, path);
     }
 
     public static void onSendWorldInfo(@NotNull ServerPlayer player) {

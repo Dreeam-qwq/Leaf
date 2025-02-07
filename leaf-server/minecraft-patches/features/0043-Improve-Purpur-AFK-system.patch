@@ -53,10 +53,10 @@ index dfb4524d80f642eff1b146dd2fbfa07f21d844c6..2c67693cc3781eb5aee10b4dfb9617cb
              } else {
                  getBukkitEntity().setPlayerListName(prefix + scoreboardName + suffix, true);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 5078887fc6056a0f3ef5acd5e052116107737e62..9c5ba056376a731871a2c00654cc179915d4dafd 100644
+index 5cd5234e9f2b8a17b6f9fdaa62e8fc0a9aa6331b..44f2182b5d78b0e51e8f5253fa9c89ea687b72df 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -2261,6 +2261,8 @@ public class ServerGamePacketListenerImpl
+@@ -2260,6 +2260,8 @@ public class ServerGamePacketListenerImpl
          }
      }
  
@@ -65,7 +65,7 @@ index 5078887fc6056a0f3ef5acd5e052116107737e62..9c5ba056376a731871a2c00654cc1799
      @Override
      public void handleChatCommand(ServerboundChatCommandPacket packet) {
          this.tryHandleChat(packet.command(), () -> {
-@@ -2281,6 +2283,32 @@ public class ServerGamePacketListenerImpl
+@@ -2280,6 +2282,32 @@ public class ServerGamePacketListenerImpl
              LOGGER.info("{} issued server command: {}", this.player.getScoreboardName(), prefixedCommand);
          }
  
@@ -98,7 +98,7 @@ index 5078887fc6056a0f3ef5acd5e052116107737e62..9c5ba056376a731871a2c00654cc1799
          PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(this.getCraftPlayer(), prefixedCommand, new LazyPlayerSet(this.server));
          this.cserver.getPluginManager().callEvent(event);
  
-@@ -2318,11 +2346,37 @@ public class ServerGamePacketListenerImpl
+@@ -2317,11 +2345,37 @@ public class ServerGamePacketListenerImpl
  
      private void performSignedChatCommand(ServerboundChatCommandSignedPacket packet, LastSeenMessages lastSeenMessages) {
          // CraftBukkit start
@@ -138,10 +138,10 @@ index 5078887fc6056a0f3ef5acd5e052116107737e62..9c5ba056376a731871a2c00654cc1799
          this.cserver.getPluginManager().callEvent(event);
          command = event.getMessage().substring(1);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 831d1a60a5ed57d4f09b5ece6ffb50e061398cc0..0bb8c326a468e79a7f5a4f3395a3c2fe84352f47 100644
+index 29275d0fd6b3d320d5e444fb32aa4004f4370720..2d8c20ddd675173e9ea5734cfde6687ac042e01d 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -667,6 +667,7 @@ public abstract class PlayerList {
+@@ -668,6 +668,7 @@ public abstract class PlayerList {
          org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerLeave(player); // Leaves - protocol
          // Paper end - Fix kick event leave message not being sent
          org.purpurmc.purpur.task.BossBarTask.removeFromAll(player.getBukkitEntity()); // Purpur - Implement TPSBar
@@ -150,7 +150,7 @@ index 831d1a60a5ed57d4f09b5ece6ffb50e061398cc0..0bb8c326a468e79a7f5a4f3395a3c2fe
          player.awardStat(Stats.LEAVE_GAME);
          // CraftBukkit start - Quitting must be before we do final save of data, in case plugins need to modify it
 diff --git a/org/purpurmc/purpur/PurpurConfig.java b/org/purpurmc/purpur/PurpurConfig.java
-index c168e9d2c395044a662efd2d9ccde8b20c070b22..ee254498e71d50d461b7d6716704df8c2733037e 100644
+index b8c8806789bd0060cd3faee5815bbf25c8715a9b..c726406ac67980f0403cc524d96f08916218667a 100644
 --- a/org/purpurmc/purpur/PurpurConfig.java
 +++ b/org/purpurmc/purpur/PurpurConfig.java
 @@ -175,6 +175,11 @@ public class PurpurConfig {

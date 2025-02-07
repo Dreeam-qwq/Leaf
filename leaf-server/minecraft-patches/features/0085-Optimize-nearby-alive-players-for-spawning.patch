@@ -20,7 +20,7 @@ index 002ec5f1ec14411ca48ae04b3379db0c70f81942..d2ca99f8b5ad46c59b663cd56f3ee2bd
      // Paper end - Affects Spawning API
  
 diff --git a/net/minecraft/world/entity/monster/Zombie.java b/net/minecraft/world/entity/monster/Zombie.java
-index 660dff3fe7aacfe964dae22bb38b72aa36f0b8e3..4f7a5d6391f045693a6208ff5cd99e5e0b58b194 100644
+index ecdfadca31c5833e2a685163925540df4b72dc81..9c83f1406c0aaad36383a23cebf270b8dc6ced33 100644
 --- a/net/minecraft/world/entity/monster/Zombie.java
 +++ b/net/minecraft/world/entity/monster/Zombie.java
 @@ -406,7 +406,7 @@ public class Zombie extends Monster {
@@ -46,7 +46,7 @@ index 8de482367f3d9d91048b7c85cbaefcda9f9fbcdc..8c6f8cb08b247dcf497822ae991aa3af
  
      public void clientTick(Level level, BlockPos pos) {
 diff --git a/net/minecraft/world/level/EntityGetter.java b/net/minecraft/world/level/EntityGetter.java
-index f41e41d01aa42f3578ffb3bc888416e74d17cd1d..9d3b5ea3f0cd8d662ffe99e70bf0af22f6ba0512 100644
+index 7719bc8ff1fbbc67cdf15e1fec28dc9233cea207..670860df81a3abfc1b8b53be505fce0ee32ee2c4 100644
 --- a/net/minecraft/world/level/EntityGetter.java
 +++ b/net/minecraft/world/level/EntityGetter.java
 @@ -112,6 +112,89 @@ public interface EntityGetter extends ca.spottedleaf.moonrise.patches.chunk_syst

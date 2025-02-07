@@ -60,7 +60,7 @@ public class ServerPhotographer extends ServerPlayer {
         photographer.createState = state;
 
         photographer.recorder.start();
-        MinecraftServer.getServer().getPlayerList().placeNewPhotographer(photographer.recorder, photographer, world, state.loc);
+        MinecraftServer.getServer().getPlayerList().placeNewPhotographer(photographer.recorder, photographer, world);
         photographer.serverLevel().chunkSource.move(photographer);
         photographer.setInvisible(true);
         photographers.add(photographer);

@@ -38,8 +38,8 @@ public class AppleSkinProtocol {
     }
 
     @Contract("_ -> new")
-    public static @NotNull ResourceLocation id(String path) {
-        return new ResourceLocation(PROTOCOL_ID, path);
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.tryBuild(PROTOCOL_ID, path);
     }
 
     @ProtocolHandler.PlayerJoin

@@ -7,7 +7,7 @@ import org.leavesmc.leaves.protocol.core.LeavesCustomPayload;
 public record SyncmaticaPayload(ResourceLocation packetType,
                                 FriendlyByteBuf data) implements LeavesCustomPayload<SyncmaticaPayload> {
 
-    private static final ResourceLocation NETWORK_ID = new ResourceLocation(SyncmaticaProtocol.PROTOCOL_ID, "main");
+    private static final ResourceLocation NETWORK_ID = ResourceLocation.tryBuild(SyncmaticaProtocol.PROTOCOL_ID, "main");
 
     @New
     public static SyncmaticaPayload decode(ResourceLocation location, FriendlyByteBuf buf) {

@@ -3,6 +3,9 @@ From: violetc <58360096+s-yh-china@users.noreply.github.com>
 Date: Thu, 28 Sep 2023 20:30:46 +0800
 Subject: [PATCH] Leaves: Disable moved wrongly threshold
 
+Removed since MC 1.21.4, Mojang added it as gamerule,
+use `/gamerule disablePlayerMovementCheck` instead
+
 Original license: GPLv3
 Original project: https://github.com/LeavesMC/Leaves
 

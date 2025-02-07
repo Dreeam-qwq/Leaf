@@ -173,7 +173,7 @@ public class LeavesProtocolManager {
                 if (receiver.sendFabricRegister() && !receiver.ignoreId()) {
                     for (String payloadId : receiver.payloadId()) {
                         for (String namespace : protocol.namespace()) {
-                            ALL_KNOWN_ID.add(new ResourceLocation(namespace, payloadId));
+                            ALL_KNOWN_ID.add(ResourceLocation.tryBuild(namespace, payloadId));
                         }
                     }
                 }
@@ -323,7 +323,6 @@ public class LeavesProtocolManager {
     }
 
     public record EmptyPayload(ResourceLocation id) implements LeavesCustomPayload<EmptyPayload> {
-
         @New
         public EmptyPayload(ResourceLocation location, FriendlyByteBuf buf) {
             this(location);
@@ -336,7 +335,6 @@ public class LeavesProtocolManager {
 
     public record LeavesPayload(FriendlyByteBuf data,
                                 ResourceLocation id) implements LeavesCustomPayload<LeavesPayload> {
-
         @New
         public LeavesPayload(ResourceLocation location, FriendlyByteBuf buf) {
             this(new FriendlyByteBuf(buf.readBytes(buf.readableBytes())), location);
