@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Minecraft Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 4f481858a32b9636fcd19f539f13fb03e1bbf443
+Commit: 9680ad8e578abc81fd92f1bb2b30357eab103057
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "net/minecraft/CrashReport.java.patch"
@@ -13239,7 +13239,7 @@ index d3814f351e3b0cd00b2b9ad0d122ca376c18e6a3..a23ff3defe4e49cd04008b7d793994bf
                  } else if (this.isFuel(item)) {
                      if (!this.moveItemStackTo(item, 1, 2, false)) {
 diff --git a/net/minecraft/world/inventory/AnvilMenu.java b/net/minecraft/world/inventory/AnvilMenu.java
-index aaa022ac3656d68bad8dbd4c80a90b62fb6f9a16..fa468068552b29661d3d258f5365a3ef06f68920 100644
+index aaa022ac3656d68bad8dbd4c80a90b62fb6f9a16..84c438f922321bb80906589ebee30bff83f4ebfa 100644
 --- a/net/minecraft/world/inventory/AnvilMenu.java
 +++ b/net/minecraft/world/inventory/AnvilMenu.java
 @@ -20,6 +20,12 @@ import net.minecraft.world.level.block.AnvilBlock;
@@ -13306,7 +13306,7 @@ index aaa022ac3656d68bad8dbd4c80a90b62fb6f9a16..fa468068552b29661d3d258f5365a3ef
              ItemStack itemStack = item.copy();
              ItemStack item1 = this.inputSlots.getItem(1);
              ItemEnchantments.Mutable mutable = new ItemEnchantments.Mutable(EnchantmentHelper.getEnchantmentsForCrafting(itemStack));
-@@ -191,23 +212,36 @@ public class AnvilMenu extends ItemCombinerMenu {
+@@ -191,23 +212,34 @@ public class AnvilMenu extends ItemCombinerMenu {
                          int intValue = entry.getIntValue();
                          intValue = level == intValue ? intValue + 1 : Math.max(intValue, level);
                          Enchantment enchantment = holder.value();
@@ -13319,25 +13319,21 @@ index aaa022ac3656d68bad8dbd4c80a90b62fb6f9a16..fa468068552b29661d3d258f5365a3ef
                              canEnchant = true;
                          }
  
--                        for (Holder<Enchantment> holder1 : mutable.keySet()) {
-+                        // Purpur start - Config to allow unsafe enchants
-+                        java.util.Iterator<Holder<Enchantment>> mutableIterator = mutable.keySet().iterator();
-+                        while (mutableIterator.hasNext()) {
-+                            Holder<Enchantment> holder1 = mutableIterator.next();
-+                        // Purpur end - Config to allow unsafe enchants
++                        java.util.Set<Holder<Enchantment>> removedEnchantments = new java.util.HashSet<>(); // Purpur - Config to allow unsafe enchants
+                         for (Holder<Enchantment> holder1 : mutable.keySet()) {
                              if (!holder1.equals(holder) && !Enchantment.areCompatible(holder, holder1)) {
 -                                canEnchant = false;
--                                i++;
-+                                canEnchant1 = this.canDoUnsafeEnchants || org.purpurmc.purpur.PurpurConfig.allowIncompatibleEnchants; // Purpur - Anvil API // Purpur - flag3 -> canEnchant1 - Config to allow unsafe enchants
++                                canEnchant1 = this.canDoUnsafeEnchants || org.purpurmc.purpur.PurpurConfig.allowIncompatibleEnchants; // Purpur - Anvil API // Purpur - canEnchant -> canEnchant1 - Config to allow unsafe enchants
 +                                // Purpur start - Config to allow unsafe enchants
 +                                if (!canEnchant1 && org.purpurmc.purpur.PurpurConfig.replaceIncompatibleEnchants) {
-+                                    mutableIterator.remove(); // replace current enchant with the incompatible one trying to be applied // TODO: is this needed?
++                                    removedEnchantments.add(holder1);
 +                                    canEnchant1 = true;
 +                                }
 +                                // Purpur end - Config to allow unsafe enchants
-+                                ++i;
+                                 i++;
                              }
                          }
++                        mutable.removeIf(removedEnchantments::contains); // Purpur - Config to allow unsafe enchants
  
 -                        if (!canEnchant) {
 +                        if (!canEnchant || !canEnchant1) { // Purpur - Config to allow unsafe enchants
@@ -13349,7 +13345,7 @@ index aaa022ac3656d68bad8dbd4c80a90b62fb6f9a16..fa468068552b29661d3d258f5365a3ef
                                  intValue = enchantment.getMaxLevel();
                              }
  
-@@ -236,6 +270,54 @@ public class AnvilMenu extends ItemCombinerMenu {
+@@ -236,6 +268,54 @@ public class AnvilMenu extends ItemCombinerMenu {
                  if (!this.itemName.equals(item.getHoverName().getString())) {
                      i1 = 1;
                      i += i1;
@@ -13404,7 +13400,7 @@ index aaa022ac3656d68bad8dbd4c80a90b62fb6f9a16..fa468068552b29661d3d258f5365a3ef
                      itemStack.set(DataComponents.CUSTOM_NAME, Component.literal(this.itemName));
                  }
              } else if (item.has(DataComponents.CUSTOM_NAME)) {
-@@ -260,6 +342,12 @@ public class AnvilMenu extends ItemCombinerMenu {
+@@ -260,6 +340,12 @@ public class AnvilMenu extends ItemCombinerMenu {
                  this.onlyRenaming = true;
              }
  
@@ -13417,7 +13413,7 @@ index aaa022ac3656d68bad8dbd4c80a90b62fb6f9a16..fa468068552b29661d3d258f5365a3ef
              if (this.cost.get() >= this.maximumRepairCost && !this.player.getAbilities().instabuild) { // CraftBukkit
                  itemStack = ItemStack.EMPTY;
              }
-@@ -280,6 +368,13 @@ public class AnvilMenu extends ItemCombinerMenu {
+@@ -280,6 +366,13 @@ public class AnvilMenu extends ItemCombinerMenu {
  
              org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(this.getBukkitView(), itemStack); // CraftBukkit
              this.broadcastChanges();
@@ -13431,7 +13427,7 @@ index aaa022ac3656d68bad8dbd4c80a90b62fb6f9a16..fa468068552b29661d3d258f5365a3ef
          } else {
              org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(this.getBukkitView(), ItemStack.EMPTY); // CraftBukkit
              this.cost.set(AnvilMenu.DEFAULT_DENIED_COST); // CraftBukkit - use a variable for set a cost for denied item
-@@ -288,7 +383,7 @@ public class AnvilMenu extends ItemCombinerMenu {
+@@ -288,7 +381,7 @@ public class AnvilMenu extends ItemCombinerMenu {
      }
  
      public static int calculateIncreasedRepairCost(int oldRepairCost) {
@@ -16763,7 +16759,7 @@ index 85148858db1fd5e9da8bbdde4b0d84110d80e373..c9c6e4e460ad8435f12761704bb9b028
  }
 diff --git a/org/purpurmc/purpur/PurpurConfig.java b/org/purpurmc/purpur/PurpurConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e0db3230c3912588ed527e131751bef082665294
+index 0000000000000000000000000000000000000000..bbfd05509dfc2ee453f847d299b3d261324b6fa9
 --- /dev/null
 +++ b/org/purpurmc/purpur/PurpurConfig.java
 @@ -0,0 +1,581 @@
@@ -16843,8 +16839,8 @@ index 0000000000000000000000000000000000000000..e0db3230c3912588ed527e131751bef0
 +        commands = new HashMap<>();
 +        commands.put("purpur", new PurpurCommand("purpur"));
 +
-+        version = getInt("config-version", 40);
-+        set("config-version", 40);
++        version = getInt("config-version", 41);
++        set("config-version", 41);
 +
 +        readConfig(PurpurConfig.class, null);
 +
@@ -17350,14 +17346,16 @@ index 0000000000000000000000000000000000000000..e0db3230c3912588ed527e131751bef0
 +}
 diff --git a/org/purpurmc/purpur/PurpurWorldConfig.java b/org/purpurmc/purpur/PurpurWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..40ee86981c24b79b209b5a0fb0705ff62fb65863
+index 0000000000000000000000000000000000000000..b3fca75c66b16e35f6841c3b7df9103d68f1308e
 --- /dev/null
 +++ b/org/purpurmc/purpur/PurpurWorldConfig.java
-@@ -0,0 +1,3445 @@
+@@ -0,0 +1,3468 @@
 +package org.purpurmc.purpur;
 +
 +import java.util.ArrayList;
 +import java.util.HashMap;
++import java.util.HashSet;
++import java.util.Set;
 +import java.util.function.Predicate;
 +import java.util.logging.Level;
 +import net.minecraft.core.registries.BuiltInRegistries;
@@ -19862,18 +19860,39 @@ index 0000000000000000000000000000000000000000..40ee86981c24b79b209b5a0fb0705ff6
 +        ravagerScale = Mth.clamp(getDouble("mobs.ravager.attributes.scale", ravagerScale), 0.0625D, 16.0D);
 +        ravagerBypassMobGriefing = getBoolean("mobs.ravager.bypass-mob-griefing", ravagerBypassMobGriefing);
 +        ravagerTakeDamageFromWater = getBoolean("mobs.ravager.takes-damage-from-water", ravagerTakeDamageFromWater);
-+        getList("mobs.ravager.griefable-blocks", new ArrayList<String>(){{
-+            add("minecraft:oak_leaves");
-+            add("minecraft:spruce_leaves");
-+            add("minecraft:birch_leaves");
-+            add("minecraft:jungle_leaves");
-+            add("minecraft:acacia_leaves");
-+            add("minecraft:dark_oak_leaves");
-+            add("minecraft:beetroots");
-+            add("minecraft:carrots");
-+            add("minecraft:potatoes");
-+            add("minecraft:wheat");
-+        }}).forEach(key -> {
++        List<String> defaultRavagerGriefableBlocks = List.of(
++            "minecraft:oak_leaves",
++            "minecraft:spruce_leaves",
++            "minecraft:birch_leaves",
++            "minecraft:jungle_leaves",
++            "minecraft:acacia_leaves",
++            "minecraft:cherry_leaves",
++            "minecraft:dark_oak_leaves",
++            "minecraft:pale_oak_leaves",
++            "minecraft:mangrove_leaves",
++            "minecraft:azalea_leaves",
++            "minecraft:flowering_azalea_leaves",
++            "minecraft:wheat",
++            "minecraft:carrots",
++            "minecraft:potatoes",
++            "minecraft:torchflower_crop",
++            "minecraft:pitcher_crop",
++            "minecraft:beetroots"
++        );
++        if (PurpurConfig.version < 41) {
++            Set<String> set = new HashSet<>();
++            getList("mobs.ravager.griefable-blocks", defaultRavagerGriefableBlocks)
++                .forEach(key -> set.add(key.toString()));
++            set.add("minecraft:cherry_leaves");
++            set.add("minecraft:pale_oak_leaves");
++            set.add("minecraft:mangrove_leaves");
++            set.add("minecraft:azalea_leaves");
++            set.add("minecraft:flowering_azalea_leaves");
++            set.add("minecraft:torchflower_crop");
++            set.add("minecraft:pitcher_crop");
++            set("mobs.ravager.griefable-blocks", new ArrayList<>(set));
++        }
++        getList("mobs.ravager.griefable-blocks", defaultRavagerGriefableBlocks).forEach(key -> {
 +            Block block = BuiltInRegistries.BLOCK.getValue(ResourceLocation.parse(key.toString()));
 +            if (!block.defaultBlockState().isAir()) {
 +                ravagerGriefableBlocks.add(block);
