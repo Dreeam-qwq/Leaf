@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Minecraft Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 9680ad8e578abc81fd92f1bb2b30357eab103057
+Commit: 71f219d84d5787e5e2944f639ecea2da808aa7fe
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "net/minecraft/CrashReport.java.patch"
@@ -9764,7 +9764,7 @@ index d0d3c825cf8088df4794cf5bfde12a69f4d71754..c1ebb74b0d4a8e2eb8880ccaf20f0f9b
              return false;
          } else {
 diff --git a/net/minecraft/world/entity/monster/Phantom.java b/net/minecraft/world/entity/monster/Phantom.java
-index a91aba11ecda561d117c9d8db85c92cdcd81887e..39f94cee78e8fc14d892cb64fb5234bf88d964ad 100644
+index a91aba11ecda561d117c9d8db85c92cdcd81887e..3c105d164acd9e45de2335ef28ddecf3fa48d267 100644
 --- a/net/minecraft/world/entity/monster/Phantom.java
 +++ b/net/minecraft/world/entity/monster/Phantom.java
 @@ -47,19 +47,123 @@ public class Phantom extends FlyingMob implements Enemy {
@@ -9949,22 +9949,19 @@ index a91aba11ecda561d117c9d8db85c92cdcd81887e..39f94cee78e8fc14d892cb64fb5234bf
      @Override
      public void tick() {
          super.tick();
-@@ -146,7 +279,13 @@ public class Phantom extends FlyingMob implements Enemy {
+@@ -146,10 +279,7 @@ public class Phantom extends FlyingMob implements Enemy {
  
      @Override
      public void aiStep() {
 -        if (this.isAlive() && this.shouldBurnInDay && this.isSunBurnTick()) { // Paper - shouldBurnInDay API
+-            this.igniteForSeconds(8.0F);
+-        }
+-
 +        // Purpur - implemented in LivingEntity; moved down to shouldBurnInDay() - API for any mob to burn daylight
-+        // Purpur start - Phantoms burn in light
-+        boolean burnFromDaylight = this.shouldBurnInDay && this.isSunBurnTick() && this.level().purpurConfig.phantomBurnInDaylight;
-+        boolean burnFromLightSource = this.level().purpurConfig.phantomBurnInLight > 0 && this.level().getMaxLocalRawBrightness(blockPosition()) >= this.level().purpurConfig.phantomBurnInLight;
-+        if (this.isAlive() && (burnFromDaylight || burnFromLightSource)) { // Paper - shouldBurnInDay API
-+        // Purpur end - Phantoms burn in light
-+            if (getRider() == null || !this.isControllable()) // Purpur - Ridables
-             this.igniteForSeconds(8.0F);
-         }
+         super.aiStep();
+     }
  
-@@ -158,7 +297,11 @@ public class Phantom extends FlyingMob implements Enemy {
+@@ -158,7 +288,11 @@ public class Phantom extends FlyingMob implements Enemy {
          ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData
      ) {
          this.anchorPoint = this.blockPosition().above(5);
@@ -9977,7 +9974,7 @@ index a91aba11ecda561d117c9d8db85c92cdcd81887e..39f94cee78e8fc14d892cb64fb5234bf
          return super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
      }
  
-@@ -175,7 +318,7 @@ public class Phantom extends FlyingMob implements Enemy {
+@@ -175,7 +309,7 @@ public class Phantom extends FlyingMob implements Enemy {
          if (compound.hasUUID("Paper.SpawningEntity")) {
              this.spawningEntity = compound.getUUID("Paper.SpawningEntity");
          }
@@ -9986,7 +9983,7 @@ index a91aba11ecda561d117c9d8db85c92cdcd81887e..39f94cee78e8fc14d892cb64fb5234bf
              this.shouldBurnInDay = compound.getBoolean("Paper.ShouldBurnInDay");
          }
          // Paper end
-@@ -192,7 +335,7 @@ public class Phantom extends FlyingMob implements Enemy {
+@@ -192,7 +326,7 @@ public class Phantom extends FlyingMob implements Enemy {
          if (this.spawningEntity != null) {
              compound.putUUID("Paper.SpawningEntity", this.spawningEntity);
          }
@@ -9995,7 +9992,7 @@ index a91aba11ecda561d117c9d8db85c92cdcd81887e..39f94cee78e8fc14d892cb64fb5234bf
          // Paper end
      }
  
-@@ -262,6 +405,7 @@ public class Phantom extends FlyingMob implements Enemy {
+@@ -262,6 +396,7 @@ public class Phantom extends FlyingMob implements Enemy {
                  List<Player> nearbyPlayers = serverLevel.getNearbyPlayers(
                      this.attackTargeting, Phantom.this, Phantom.this.getBoundingBox().inflate(16.0, 64.0, 16.0)
                  );
@@ -10003,7 +10000,7 @@ index a91aba11ecda561d117c9d8db85c92cdcd81887e..39f94cee78e8fc14d892cb64fb5234bf
                  if (!nearbyPlayers.isEmpty()) {
                      nearbyPlayers.sort(Comparator.<Player, Double>comparing(Entity::getY).reversed());
  
-@@ -407,25 +551,160 @@ public class Phantom extends FlyingMob implements Enemy {
+@@ -407,25 +542,160 @@ public class Phantom extends FlyingMob implements Enemy {
          }
      }
  
@@ -10167,7 +10164,7 @@ index a91aba11ecda561d117c9d8db85c92cdcd81887e..39f94cee78e8fc14d892cb64fb5234bf
              if (Phantom.this.horizontalCollision) {
                  Phantom.this.setYRot(Phantom.this.getYRot() + 180.0F);
                  this.speed = 0.1F;
-@@ -492,6 +771,12 @@ public class Phantom extends FlyingMob implements Enemy {
+@@ -492,6 +762,12 @@ public class Phantom extends FlyingMob implements Enemy {
                  return false;
              } else if (!target.isAlive()) {
                  return false;
