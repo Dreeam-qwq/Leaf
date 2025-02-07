@@ -2,9 +2,9 @@ name: Build Leaf 1.21.4
 
 on:
   push:
-    branches: [ "dev/1.21.4" ]
+    branches: [ "ver/1.21.4" ]
   pull_request:
-    branches: [ "dev/1.21.4" ]
+    branches: [ "ver/1.21.4" ]
 
 jobs:
   build:
@@ -67,4 +67,4 @@ jobs:
           automatic_release_tag: "ver-1.21.4"
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           files: "./leaf-1.21.4.jar"
-          prerelease: true
+          prerelease: false
