@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 7 Feb 2025 21:22:20 +0100
+Subject: [PATCH] Sepals-Rearrange-the-attackable-conditions
+
+
+diff --git a/net/minecraft/world/entity/ai/sensing/FrogAttackablesSensor.java b/net/minecraft/world/entity/ai/sensing/FrogAttackablesSensor.java
+index d163a363273b52b3b3f0b5a74ac4d4ab37d24bb7..e88479ba1ebeff67a93baad4f6f8c83119ff5ff7 100644
+--- a/net/minecraft/world/entity/ai/sensing/FrogAttackablesSensor.java
++++ b/net/minecraft/world/entity/ai/sensing/FrogAttackablesSensor.java
+@@ -13,11 +13,11 @@ public class FrogAttackablesSensor extends NearestVisibleLivingEntitySensor {
+ 
+     @Override
+     protected boolean isMatchingEntity(ServerLevel level, LivingEntity entity, LivingEntity target) {
+-        return !entity.getBrain().hasMemoryValue(MemoryModuleType.HAS_HUNTING_COOLDOWN)
++        return Frog.canEat(target)
++            && !entity.getBrain().hasMemoryValue(MemoryModuleType.HAS_HUNTING_COOLDOWN)
++            && target.closerThan(entity, 10.0)
+             && Sensor.isEntityAttackable(level, entity, target)
+-            && Frog.canEat(target)
+-            && !this.isUnreachableAttackTarget(entity, target)
+-            && target.closerThan(entity, 10.0);
++            && !this.isUnreachableAttackTarget(entity, target); // Sepals - Rearrange the attackable conditions
+     }
+ 
+     private boolean isUnreachableAttackTarget(LivingEntity attacker, LivingEntity target) {
