@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 7 Feb 2025 21:07:58 +0100
+Subject: [PATCH] Fix-MC-117075-TE-Unload-Lag-Spike
+
+
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index 53cabe7dabc83618c8941c95e95c5b7e23ee694e..57b97c433475655362cc7735af4bfeb4f11f5e25 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -113,7 +113,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+     public static final int TICKS_PER_DAY = 24000;
+     public static final int MAX_ENTITY_SPAWN_Y = 20000000;
+     public static final int MIN_ENTITY_SPAWN_Y = -20000000;
+-    public final List<TickingBlockEntity> blockEntityTickers = Lists.newArrayList(); // Paper - public
++    public final org.dreeam.leaf.util.list.BlockEntityTickersList blockEntityTickers = new org.dreeam.leaf.util.list.BlockEntityTickersList();
+     protected final NeighborUpdater neighborUpdater;
+     private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
+     private boolean tickingBlockEntities;
+@@ -1530,7 +1530,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+             TickingBlockEntity tickingBlockEntity = this.blockEntityTickers.get(this.tileTickPosition);
+             // Spigot end
+             if (tickingBlockEntity.isRemoved()) {
+-                toRemove.add(tickingBlockEntity); // Paper - Fix MC-117075; use removeAll
++                this.blockEntityTickers.markAsRemoved(this.tileTickPosition); // toRemove.add(tickingBlockEntity); // SparklyPaper - optimize block entity removals // Paper - Fix MC-117075; use removeAll
+             } else if (runsNormally && this.shouldTickBlocksAt(tickingBlockEntity.getPos())) {
+                 tickingBlockEntity.tick();
+                 // Paper start - rewrite chunk system
+@@ -1540,7 +1540,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+                 // Paper end - rewrite chunk system
+             }
+         }
+-        this.blockEntityTickers.removeAll(toRemove); // Paper - Fix MC-117075
++        this.blockEntityTickers.removeMarkedEntries(); // SparklyPaper - optimize block entity removals
+ 
+         this.tickingBlockEntities = false;
+         this.spigotConfig.currentPrimedTnt = 0; // Spigot
