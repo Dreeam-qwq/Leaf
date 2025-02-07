@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 7 Feb 2025 23:01:57 +0100
+Subject: [PATCH] Reset-dirty-flag-when-loading-maps-from-the-disk
+
+
+diff --git a/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java b/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
+index 3a8c5a252ea5986b2366fa774ea1754494af1d59..4cef20a063ad6d9bee9ec4294b506f03029c2e8c 100644
+--- a/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
++++ b/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
+@@ -198,6 +198,7 @@ public class MapItemSavedData extends SavedData {
+             }
+         }
+ 
++        mapItemSavedData.setDirty(false); // SparklyPaper - reset dirty flag when loading maps from the disk (context for updates: this modification is at the end of the map "load" function)
+         return mapItemSavedData;
+     }
+ 
