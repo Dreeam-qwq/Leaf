@@ -5,14 +5,14 @@ Subject: [PATCH] Cache-ItemStack-max-stack-size
 
 
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index fd7c1e800cbd4919a1a47f6c468c8776535bd028..06a11dfe61d764069411b2c1215c0a0c6a037db4 100644
+index fd7c1e800cbd4919a1a47f6c468c8776535bd028..fdd7e89bacc98e23f067ba17d0bd93ee84a388cb 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -194,6 +194,7 @@ public final class ItemStack implements DataComponentHolder, net.caffeinemc.mods
      private static final Logger LOGGER = LogUtils.getLogger();
      public static final ItemStack EMPTY = new ItemStack((Void)null);
      private static final Component DISABLED_ITEM_TOOLTIP = Component.translatable("item.disabled").withStyle(ChatFormatting.RED);
-+    private final int maxStackSize;
++    private int maxStackSize;
      private int count;
      private int popTime;
      @Deprecated
