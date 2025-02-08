@@ -45,13 +45,13 @@ index bfc90524bd739ed1d91fe9912e38093b3c28928f..c1f644abcb374addb8ad6a914e670da4
                  this.remoteCarried = this.getCarried().copy();
                  if (this.synchronizer != null) {
                      this.synchronizer.sendCarriedChange(this, this.remoteCarried);
-diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/HideItemComponent.java b/src/main/java/org/dreeam/leaf/config/modules/misc/HideItemComponent.java
+diff --git a/src/main/java/org/dreeam/leaf/config/modules/gameplay/HideItemComponent.java b/src/main/java/org/dreeam/leaf/config/modules/gameplay/HideItemComponent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8ddc7bbcefc5367095fcbd6f79d13b3888181bc9
+index 0000000000000000000000000000000000000000..4e647eb06d0c59f5deb99054c9ca2315abb1c8b1
 --- /dev/null
-+++ b/src/main/java/org/dreeam/leaf/config/modules/misc/HideItemComponent.java
++++ b/src/main/java/org/dreeam/leaf/config/modules/gameplay/HideItemComponent.java
 @@ -0,0 +1,62 @@
-+package org.dreeam.leaf.config.modules.misc;
++package org.dreeam.leaf.config.modules.gameplay;
 +
 +import net.minecraft.core.component.DataComponentType;
 +import net.minecraft.core.registries.BuiltInRegistries;
@@ -72,7 +72,7 @@ index 0000000000000000000000000000000000000000..8ddc7bbcefc5367095fcbd6f79d13b38
 +public class HideItemComponent extends ConfigModules {
 +
 +    public String getBasePath() {
-+        return EnumConfigCategory.MISC.getBaseKeyName() + ".hide-item-component";
++        return EnumConfigCategory.GAMEPLAY.getBaseKeyName() + ".hide-item-component";
 +    }
 +
 +    public static boolean enabled = false;
@@ -115,7 +115,7 @@ index 0000000000000000000000000000000000000000..8ddc7bbcefc5367095fcbd6f79d13b38
 +}
 diff --git a/src/main/java/org/dreeam/leaf/util/item/ItemStackStripper.java b/src/main/java/org/dreeam/leaf/util/item/ItemStackStripper.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8c3e463367e1ee6e201e5ed6d4554ee69fb706cd
+index 0000000000000000000000000000000000000000..9e70d46e367b3f0b3287f59d11b32ca72b177f55
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/util/item/ItemStackStripper.java
 @@ -0,0 +1,80 @@
@@ -124,7 +124,7 @@ index 0000000000000000000000000000000000000000..8c3e463367e1ee6e201e5ed6d4554ee6
 +import net.minecraft.core.component.DataComponentMap;
 +import net.minecraft.core.component.DataComponentType;
 +import net.minecraft.world.item.ItemStack;
-+import org.dreeam.leaf.config.modules.misc.HideItemComponent;
++import org.dreeam.leaf.config.modules.gameplay.HideItemComponent;
 +
 +import java.util.ArrayList;
 +import java.util.List;
