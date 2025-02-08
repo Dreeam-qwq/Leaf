@@ -5,7 +5,7 @@ Subject: [PATCH] Hide specified item components
 
 
 diff --git a/src/main/java/net/minecraft/network/protocol/game/ClientboundContainerSetContentPacket.java b/src/main/java/net/minecraft/network/protocol/game/ClientboundContainerSetContentPacket.java
-index 8d5939e03a065197af125d95a10134abbccd07ec..09bf1392852730305bf0c63b6387944c689d63ba 100644
+index 8d5939e03a065197af125d95a10134abbccd07ec..8125e0680a274ad867d5bf8541b63475d03bbf0e 100644
 --- a/src/main/java/net/minecraft/network/protocol/game/ClientboundContainerSetContentPacket.java
 +++ b/src/main/java/net/minecraft/network/protocol/game/ClientboundContainerSetContentPacket.java
 @@ -54,8 +54,8 @@ public class ClientboundContainerSetContentPacket implements Packet<ClientGamePa
@@ -14,13 +14,13 @@ index 8d5939e03a065197af125d95a10134abbccd07ec..09bf1392852730305bf0c63b6387944c
          buf.writeVarInt(this.stateId);
 -        ItemStack.OPTIONAL_LIST_STREAM_CODEC.encode(buf, this.items);
 -        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, this.carriedItem);
-+        ItemStack.OPTIONAL_LIST_STREAM_CODEC.encode(buf, this.items.stream().map(item -> org.dreeam.leaf.util.item.ItemStackStripper.strip(item, true)).toList()); // Leaf - Hide specified item components
-+        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, org.dreeam.leaf.util.item.ItemStackStripper.strip(this.carriedItem, true));
++        ItemStack.OPTIONAL_LIST_STREAM_CODEC.encode(buf, org.dreeam.leaf.util.item.ItemStackStripper.strip(this.items, true)); // Leaf - Hide specified item components
++        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, org.dreeam.leaf.util.item.ItemStackStripper.strip(this.carriedItem, true)); // Leaf - Hide specified item components
      }
  
      @Override
 diff --git a/src/main/java/net/minecraft/network/protocol/game/ClientboundContainerSetSlotPacket.java b/src/main/java/net/minecraft/network/protocol/game/ClientboundContainerSetSlotPacket.java
-index 97b6605ba56584a44cfc4361af7389e876496ef2..aa438f8a5a1f5df217b6e763e7ee78a6e28eb585 100644
+index 97b6605ba56584a44cfc4361af7389e876496ef2..08fdafbf6d0249adc502e661216f1fcdeee647d2 100644
 --- a/src/main/java/net/minecraft/network/protocol/game/ClientboundContainerSetSlotPacket.java
 +++ b/src/main/java/net/minecraft/network/protocol/game/ClientboundContainerSetSlotPacket.java
 @@ -33,7 +33,7 @@ public class ClientboundContainerSetSlotPacket implements Packet<ClientGamePacke
@@ -28,12 +28,12 @@ index 97b6605ba56584a44cfc4361af7389e876496ef2..aa438f8a5a1f5df217b6e763e7ee78a6
          buf.writeVarInt(this.stateId);
          buf.writeShort(this.slot);
 -        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, this.itemStack);
-+        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, org.dreeam.leaf.util.item.ItemStackStripper.strip(this.itemStack, true));
++        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, org.dreeam.leaf.util.item.ItemStackStripper.strip(this.itemStack, true)); // Leaf - Hide specified item components
      }
  
      @Override
 diff --git a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
-index bfc90524bd739ed1d91fe9912e38093b3c28928f..fbd684e0b6ee36dc0cbda9f22416e07ebb5aedee 100644
+index bfc90524bd739ed1d91fe9912e38093b3c28928f..c1f644abcb374addb8ad6a914e670da4f033199b 100644
 --- a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -370,7 +370,7 @@ public abstract class AbstractContainerMenu {
@@ -41,16 +41,16 @@ index bfc90524bd739ed1d91fe9912e38093b3c28928f..fbd684e0b6ee36dc0cbda9f22416e07e
      private void synchronizeCarriedToRemote() {
          if (!this.suppressRemoteUpdates) {
 -            if (!ItemStack.matches(this.getCarried(), this.remoteCarried)) {
-+            if (!org.dreeam.leaf.util.item.ItemStackStripper.matchesStripped(this.getCarried(), this.remoteCarried)) { // Leaf - Hide specified item components (avoid some frequent client animations)
++            if (!org.dreeam.leaf.util.item.ItemStackStripper.matchesStripped(this.getCarried(), this.remoteCarried)) { // Leaf - Hide specified item components - Avoid some frequent client animations
                  this.remoteCarried = this.getCarried().copy();
                  if (this.synchronizer != null) {
                      this.synchronizer.sendCarriedChange(this, this.remoteCarried);
 diff --git a/src/main/java/org/dreeam/leaf/config/modules/misc/HideItemComponent.java b/src/main/java/org/dreeam/leaf/config/modules/misc/HideItemComponent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..3a2e43fa4367b82b2c59b9aa9cb29959dc99f3dd
+index 0000000000000000000000000000000000000000..8ddc7bbcefc5367095fcbd6f79d13b3888181bc9
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/config/modules/misc/HideItemComponent.java
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,62 @@
 +package org.dreeam.leaf.config.modules.misc;
 +
 +import net.minecraft.core.component.DataComponentType;
@@ -84,27 +84,29 @@ index 0000000000000000000000000000000000000000..3a2e43fa4367b82b2c59b9aa9cb29959
 +                Controls whether specified component information would be sent to clients.
 +                It may break resource packs and mods that rely on the information.
 +                Also, it can avoid some frequent client animations.
-+                Attention: This is not same as Paper does, we only hide specified component information from player's inventory.""",
++                Attention: This is not same as Paper's item-obfuscation, we only hide specified component information from player's inventory.""",
 +            """
 +                控制哪些物品组件信息会被发送至客户端.
 +                可能会导致依赖物品组件的资源包/模组无法正常工作.
 +                可以避免一些客户端动画效果.
-+                注意: 此项与 Paper 的 item-obfuscation 不同, 我们只从玩家的库存中隐藏指定的组件信息.""");
++                注意: 此项与 Paper 的 item-obfuscation 不同, 我们只从玩家背包中隐藏物品指定的组件信息.""");
 +        List<String> list = config.getList(getBasePath() + ".hidden-types", new ArrayList<>(), config.pickStringRegionBased("""
 +                Which type of components will be hidden from clients.
 +                It needs a component type list, incorrect things will not work.""",
-+            "被隐藏的物品组件类型列表."));
++            """
++                被隐藏的物品组件类型列表.
++                该配置项接受一个物品组件列表, 格式不正确将不会启用."""));
 +        enabled = config.getBoolean(getBasePath() + ".enabled", enabled, config.pickStringRegionBased(
-+            "If enables, specified component information from player's inventory will be hid.",
-+            "启用后, 玩家背包内的指定物品组件信息会被隐藏."
++            "If enabled, specified item component information from player's inventory will be hided.",
++            "启用后, 玩家背包内物品的指定组件信息会被隐藏."
 +        ));
 +
 +        final List<DataComponentType<?>> types = new ArrayList<>(list.size());
 +
-+        for (String name : list) {
-+            BuiltInRegistries.DATA_COMPONENT_TYPE.get(ResourceLocation.parse(name)).ifPresentOrElse(
++        for (String componentType : list) {
++            BuiltInRegistries.DATA_COMPONENT_TYPE.get(ResourceLocation.parse(componentType)).ifPresentOrElse(
 +                optional -> types.add(optional.value()),
-+                () -> LeafConfig.LOGGER.warn("Unknown component type: {}", name)
++                () -> LeafConfig.LOGGER.warn("Unknown component type: {}", componentType)
 +            );
 +        }
 +
@@ -113,10 +115,10 @@ index 0000000000000000000000000000000000000000..3a2e43fa4367b82b2c59b9aa9cb29959
 +}
 diff --git a/src/main/java/org/dreeam/leaf/util/item/ItemStackStripper.java b/src/main/java/org/dreeam/leaf/util/item/ItemStackStripper.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0a591408878cb0a511301cca575ef4d91cdbcec6
+index 0000000000000000000000000000000000000000..8c3e463367e1ee6e201e5ed6d4554ee69fb706cd
 --- /dev/null
 +++ b/src/main/java/org/dreeam/leaf/util/item/ItemStackStripper.java
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,80 @@
 +package org.dreeam.leaf.util.item;
 +
 +import net.minecraft.core.component.DataComponentMap;
@@ -124,6 +126,8 @@ index 0000000000000000000000000000000000000000..0a591408878cb0a511301cca575ef4d9
 +import net.minecraft.world.item.ItemStack;
 +import org.dreeam.leaf.config.modules.misc.HideItemComponent;
 +
++import java.util.ArrayList;
++import java.util.List;
 +import java.util.Objects;
 +
 +/**
@@ -135,8 +139,8 @@ index 0000000000000000000000000000000000000000..0a591408878cb0a511301cca575ef4d9
 +public class ItemStackStripper {
 +
 +    public static ItemStack strip(final ItemStack itemStack, final boolean copy) {
-+        if (!HideItemComponent.enabled ||
-+            itemStack.isEmpty() || itemStack.getComponentsPatch().isEmpty()) return itemStack;
++        if (!HideItemComponent.enabled || itemStack.isEmpty() || itemStack.getComponentsPatch().isEmpty())
++            return itemStack;
 +
 +        final ItemStack copied = copy ? itemStack.copy() : itemStack;
 +
@@ -147,6 +151,31 @@ index 0000000000000000000000000000000000000000..0a591408878cb0a511301cca575ef4d9
 +        }
 +
 +        return copied;
++    }
++
++    public static List<ItemStack> strip(final List<ItemStack> itemStacks, final boolean copy) {
++        if (!HideItemComponent.enabled) return itemStacks;
++
++        final List<ItemStack> copiedItems = new ArrayList<>();
++
++        for (ItemStack itemStack : itemStacks) {
++            if (itemStack.isEmpty() || itemStack.getComponentsPatch().isEmpty()) {
++                copiedItems.add(itemStack);
++                continue;
++            }
++
++            final ItemStack copied = copy ? itemStack.copy() : itemStack;
++
++            // Remove specified types
++            for (DataComponentType<?> type : HideItemComponent.hiddenTypes) {
++                // Only remove, no others
++                copied.remove(type);
++            }
++
++            copiedItems.add(copied);
++        }
++
++        return copiedItems;
 +    }
 +
 +    /**
