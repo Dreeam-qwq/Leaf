@@ -9,7 +9,7 @@ Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerEntity.java b/src/main/java/net/minecraft/server/level/ServerEntity.java
-index 709d9997f25369a9a0ac5af94cfe391604081ea1..bea671ae16a90e9cb9d2f312eed3c816da05b23c 100644
+index a7a44fa556a41512d6a76626618afceccd139c64..41802175e4b621fc330abec67274c547851646b3 100644
 --- a/src/main/java/net/minecraft/server/level/ServerEntity.java
 +++ b/src/main/java/net/minecraft/server/level/ServerEntity.java
 @@ -243,6 +243,8 @@ public class ServerEntity {
