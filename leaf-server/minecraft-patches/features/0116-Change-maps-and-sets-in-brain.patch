@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sat, 8 Feb 2025 20:45:14 +0100
+Subject: [PATCH] Change-maps-and-sets-in-brain
+
+
+diff --git a/net/minecraft/world/entity/ai/Brain.java b/net/minecraft/world/entity/ai/Brain.java
+index ea6c8e85ccff67b1c24109732f74f1e8199cad07..c6fe58e48c6ab4065e7330304ef59a837e051d52 100644
+--- a/net/minecraft/world/entity/ai/Brain.java
++++ b/net/minecraft/world/entity/ai/Brain.java
+@@ -273,9 +273,9 @@ public class Brain<E extends LivingEntity> {
+     public List<BehaviorControl<? super E>> getRunningBehaviors() {
+         List<BehaviorControl<? super E>> list = new ObjectArrayList<>();
+ 
+-        for (Map<Activity, Set<BehaviorControl<? super E>>> map : this.availableBehaviorsByPriority.values()) {
+-            for (Set<BehaviorControl<? super E>> set : map.values()) {
+-                for (BehaviorControl<? super E> behaviorControl : set) {
++        for (Map<Activity, Set<BehaviorControl<? super E>>> priorityMap : this.availableBehaviorsByPriority.values()) {
++            for (Set<BehaviorControl<? super E>> behaviorSet : priorityMap.values()) {
++                for (BehaviorControl<? super E> behaviorControl : behaviorSet) {
+                     if (behaviorControl.getStatus() == Behavior.Status.RUNNING) {
+                         list.add(behaviorControl);
+                     }
+@@ -390,8 +390,8 @@ public class Brain<E extends LivingEntity> {
+ 
+         for (Pair<Integer, ? extends BehaviorControl<? super E>> pair : tasks) {
+             this.availableBehaviorsByPriority
+-                .computeIfAbsent(pair.getFirst(), integer -> Maps.newHashMap())
+-                .computeIfAbsent(activity, activity1 -> Sets.newLinkedHashSet())
++                .computeIfAbsent(pair.getFirst(), integer -> new it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap<>())
++                .computeIfAbsent(activity, activity1 -> new it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet<>())
+                 .add((BehaviorControl<? super E>)pair.getSecond());
+         }
+     }
