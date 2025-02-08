@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sat, 8 Feb 2025 22:36:31 +0100
+Subject: [PATCH] Optimize-baby-villager-sensor
+
+
+diff --git a/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java b/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
+index 24d1928445b5571e040a2b12d5c82e77a880d9bd..35771058a84521724797d80ca3469d23febaf37f 100644
+--- a/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
++++ b/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
+@@ -22,7 +22,18 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
+     }
+ 
+     private List<LivingEntity> getNearestVillagerBabies(LivingEntity livingEntity) {
+-        return ImmutableList.copyOf(this.getVisibleEntities(livingEntity).findAll(this::isVillagerBaby));
++        NearestVisibleLivingEntities visibleEntities = this.getVisibleEntities(livingEntity);
++        ImmutableList.Builder<LivingEntity> babies = ImmutableList.builder();
++
++        // Get filtered iterable using existing logic
++        Iterable<LivingEntity> filtered = visibleEntities.findAll(this::isVillagerBaby);
++
++        // Manually iterate using enhanced for-loop
++        for (LivingEntity entity : filtered) {
++            babies.add(entity);
++        }
++
++        return babies.build();
+     }
+ 
+     private boolean isVillagerBaby(LivingEntity livingEntity) {
