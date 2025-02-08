@@ -3,6 +3,8 @@ From: Spottedleaf <Spottedleaf@users.noreply.github.com>
 Date: Wed, 17 Jul 2024 07:25:48 -0700
 Subject: [PATCH] Moonrise: Optimize nearby players for spawning iteration
 
+Removed since Paper 1.21.4
+
 Original license: GPLv3
 Original project: https://github.com/Tuinity/Moonrise
 
