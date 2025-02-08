@@ -1,0 +1,114 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sat, 8 Feb 2025 16:59:51 +0100
+Subject: [PATCH] Optimize-SortedArraySet
+
+
+diff --git a/net/minecraft/util/SortedArraySet.java b/net/minecraft/util/SortedArraySet.java
+index 339b19e88567be382e550ed54477fabd58d51faa..6622815c58e2986758956bac150b37a35d587b05 100644
+--- a/net/minecraft/util/SortedArraySet.java
++++ b/net/minecraft/util/SortedArraySet.java
+@@ -17,37 +17,83 @@ public class SortedArraySet<T> extends AbstractSet<T> implements ca.spottedleaf.
+     // Paper start - rewrite chunk system
+     @Override
+     public final boolean removeIf(final java.util.function.Predicate<? super T> filter) {
+-        // prev. impl used an iterator, which could be n^2 and creates garbage
+-        int i = 0;
+         final int len = this.size;
+-        final T[] backingArray = this.contents;
++        if (len == 0) {
++            return false;
++        }
+ 
+-        for (;;) {
+-            if (i >= len) {
+-                return false;
++        final T[] backingArray = this.contents;
++        final int CHUNK_SIZE = 32; //idk the magical number for here
++
++        // Leaf - Find first chunk containing an element to remove
++        int chunkStart = 0;
++        while (chunkStart < len) {
++            int chunkEnd = Math.min(chunkStart + CHUNK_SIZE, len);
++            boolean foundRemovable = false;
++
++            // Leaf - Quick scan of chunk
++            for (int i = chunkStart; i < chunkEnd; i++) {
++                if (filter.test(backingArray[i])) {
++                    foundRemovable = true;
++                    break;
++                }
+             }
+-            if (!filter.test(backingArray[i])) {
+-                ++i;
+-                continue;
++
++            if (foundRemovable) {
++                break;
+             }
+-            break;
++            chunkStart = chunkEnd;
++        }
++
++        // Leaf - Nothing to remove
++        if (chunkStart >= len) {
++            return false;
+         }
+ 
+-        // we only want to write back to backingArray if we really need to
++        // Leaf - Start copying from first chunk with removals
++        int writePos = chunkStart;
++
++        // Leaf - Process remaining elements in chunks
++        for (int readPos = chunkStart; readPos < len; readPos += CHUNK_SIZE) {
++            int chunkEnd = Math.min(readPos + CHUNK_SIZE, len);
+ 
+-        int lastIndex = i; // this is where new elements are shifted to
++            // Leaf - Try fast path - check if whole chunk can be kept or removed
++            boolean allKeep = true;
++            boolean allRemove = true;
+ 
+-        for (; i < len; ++i) {
+-            final T curr = backingArray[i];
+-            if (!filter.test(curr)) { // if test throws we're screwed
+-                backingArray[lastIndex++] = curr;
++            for (int i = readPos; i < chunkEnd; i++) {
++                boolean remove = filter.test(backingArray[i]);
++                allKeep &= !remove;
++                allRemove &= remove;
++                if (!allKeep && !allRemove) {
++                    break;
++                }
+             }
++
++            if (allKeep) {
++                // Leaf - Keep entire chunk in one copy
++                if (writePos != readPos) {
++                    System.arraycopy(backingArray, readPos, backingArray, writePos, chunkEnd - readPos);
++                }
++                writePos += chunkEnd - readPos;
++            } else if (!allRemove) {
++                // Leaf - Mixed chunk - copy elements to keep
++                for (int i = readPos; i < chunkEnd; i++) {
++                    final T curr = backingArray[i];
++                    if (!filter.test(curr)) {
++                        backingArray[writePos++] = curr;
++                    }
++                }
++            }
++            // Leaf - If allRemove, skip chunk entirely
+         }
+ 
+-        // cleanup end
+-        Arrays.fill(backingArray, lastIndex, len, null);
+-        this.size = lastIndex;
+-        return true;
++        // Leaf - Clear out old references and update size
++        final int oldSize = this.size;
++        Arrays.fill(backingArray, writePos, oldSize, null);
++        this.size = writePos;
++
++        return writePos < oldSize;
+     }
+ 
+     @Override
