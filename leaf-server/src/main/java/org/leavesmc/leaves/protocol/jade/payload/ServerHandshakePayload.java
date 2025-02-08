@@ -43,4 +43,9 @@ public record ServerHandshakePayload(Map<ResourceLocation, Object> serverConfig,
     public ResourceLocation id() {
         return PACKET_SERVER_HANDSHAKE;
     }
+
+    @New
+    public static ServerHandshakePayload create(ResourceLocation location, FriendlyByteBuf buf) {
+        return CODEC.decode(ProtocolUtils.decorate(buf));
+    }
 }

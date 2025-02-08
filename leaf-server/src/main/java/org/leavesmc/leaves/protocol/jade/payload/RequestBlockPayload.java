@@ -38,14 +38,14 @@ public record RequestBlockPayload(BlockAccessorImpl.SyncData data, List<@Nullabl
         CODEC.encode(ProtocolUtils.decorate(buf), this);
     }
 
-    @New
-    public static RequestBlockPayload create(ResourceLocation location, FriendlyByteBuf buf) {
-        return CODEC.decode(ProtocolUtils.decorate(buf));
-    }
-
     @Override
     @NotNull
     public ResourceLocation id() {
         return PACKET_REQUEST_BLOCK;
+    }
+
+    @New
+    public static RequestBlockPayload create(ResourceLocation location, FriendlyByteBuf buf) {
+        return CODEC.decode(ProtocolUtils.decorate(buf));
     }
 }

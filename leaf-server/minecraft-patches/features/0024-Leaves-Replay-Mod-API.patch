@@ -191,7 +191,7 @@ index 622257dbbe572de33e15abef9055016268730261..dfb4524d80f642eff1b146dd2fbfa07f
      private final ServerStatsCounter stats;
      private float lastRecordedHealthAndAbsorption = Float.MIN_VALUE;
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index e3d09d5f4efb32bb276e001e5ee747a775b502ee..86ce80765eb7645533806f730b15557f8ea6a9a2 100644
+index e3d09d5f4efb32bb276e001e5ee747a775b502ee..78b15d750d75e5d4c2318a3a18e83afdd5f4fbe1 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -132,6 +132,7 @@ public abstract class PlayerList {
@@ -206,7 +206,7 @@ index e3d09d5f4efb32bb276e001e5ee747a775b502ee..86ce80765eb7645533806f730b15557f
  
      abstract public void loadAndSaveFiles(); // Paper - fix converting txt to json file; moved from DedicatedPlayerList constructor
  
-+    // Leaves start - replay api
++    // Leaves start - replay mod api
 +    public void placeNewPhotographer(Connection connection, org.leavesmc.leaves.replay.ServerPhotographer player, ServerLevel worldserver) {
 +        player.isRealPlayer = true; // Paper
 +        player.loginTime = System.currentTimeMillis(); // Paper
@@ -304,7 +304,7 @@ index e3d09d5f4efb32bb276e001e5ee747a775b502ee..86ce80765eb7645533806f730b15557f
 +            );
 +        }
 +    }
-+    // Leaves end - replay api
++    // Leaves end - replay mod api
 +
      public void placeNewPlayer(Connection connection, ServerPlayer player, CommonListenerCookie cookie) {
          player.isRealPlayer = true; // Paper
