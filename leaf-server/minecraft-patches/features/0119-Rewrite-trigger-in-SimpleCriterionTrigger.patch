@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sun, 9 Feb 2025 01:36:24 +0100
+Subject: [PATCH] Rewrite-trigger-in-SimpleCriterionTrigger
+
+
+diff --git a/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java b/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java
+index 4b2ae046413146b11912e7aa4a9a3d643de6afd1..6f281d957b92b92beb310bbf07a8bc01c74d621e 100644
+--- a/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java
++++ b/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java
+@@ -8,6 +8,8 @@ import java.util.Map;
+ import java.util.Optional;
+ import java.util.Set;
+ import java.util.function.Predicate;
++
++import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+ import net.minecraft.advancements.CriterionTrigger;
+ import net.minecraft.advancements.CriterionTriggerInstance;
+ import net.minecraft.server.PlayerAdvancements;
+@@ -40,20 +42,19 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
+ 
+     protected void trigger(ServerPlayer player, Predicate<T> testTrigger) {
+         PlayerAdvancements advancements = player.getAdvancements();
+-        Set<CriterionTrigger.Listener<T>> set = (Set) advancements.criterionData.get(this); // Paper - fix PlayerAdvancements leak
++        Set<CriterionTrigger.Listener<T>> set = (Set) advancements.criterionData.get(this);
+         if (set != null && !set.isEmpty()) {
+-            LootContext lootContext = null; // EntityPredicate.createContext(player, player); // Paper - Perf: lazily create LootContext for criterions
+-            List<CriterionTrigger.Listener<T>> list = null;
++            LootContext lootContext = null;
++            ObjectArrayList<CriterionTrigger.Listener<T>> list = null;
+ 
+             for (CriterionTrigger.Listener<T> listener : set) {
+                 T simpleInstance = listener.trigger();
+                 if (testTrigger.test(simpleInstance)) {
+                     Optional<ContextAwarePredicate> optional = simpleInstance.player();
+-                    if (optional.isEmpty() || optional.get().matches(lootContext = (lootContext == null ? EntityPredicate.createContext(player, player) : lootContext))) { // Paper - Perf: lazily create LootContext for criterions
++                    if (optional.isEmpty() || optional.get().matches(lootContext = (lootContext == null ? EntityPredicate.createContext(player, player) : lootContext))) {
+                         if (list == null) {
+-                            list = Lists.newArrayList();
++                            list = new ObjectArrayList<>();
+                         }
+-
+                         list.add(listener);
+                     }
+                 }
