@@ -5,19 +5,29 @@ Subject: [PATCH] Rewrite-trigger-in-SimpleCriterionTrigger
 
 
 diff --git a/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java b/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java
-index 4b2ae046413146b11912e7aa4a9a3d643de6afd1..a4deec69f5f0a1a212c161d94bf98b4142251335 100644
+index 4b2ae046413146b11912e7aa4a9a3d643de6afd1..68caf6f6294089ec0ebdf4ae941e326195041997 100644
 --- a/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java
 +++ b/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java
-@@ -8,6 +8,8 @@ import java.util.Map;
+@@ -8,6 +8,9 @@ import java.util.Map;
  import java.util.Optional;
  import java.util.Set;
  import java.util.function.Predicate;
 +
 +import it.unimi.dsi.fastutil.objects.ObjectArrayList;
++import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
  import net.minecraft.advancements.CriterionTrigger;
  import net.minecraft.advancements.CriterionTriggerInstance;
  import net.minecraft.server.PlayerAdvancements;
-@@ -43,7 +45,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
+@@ -19,7 +22,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
+ 
+     @Override
+     public final void addPlayerListener(PlayerAdvancements playerAdvancements, CriterionTrigger.Listener<T> listener) {
+-        playerAdvancements.criterionData.computeIfAbsent(this, managerx -> Sets.newHashSet()).add(listener); // Paper - fix PlayerAdvancements leak
++        playerAdvancements.criterionData.computeIfAbsent(this, managerx -> new ObjectOpenHashSet<>()).add(listener); // Paper - fix PlayerAdvancements leak
+     }
+ 
+     @Override
+@@ -43,7 +46,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
          Set<CriterionTrigger.Listener<T>> set = (Set) advancements.criterionData.get(this); // Paper - fix PlayerAdvancements leak
          if (set != null && !set.isEmpty()) {
              LootContext lootContext = null; // EntityPredicate.createContext(player, player); // Paper - Perf: lazily create LootContext for criterions
@@ -26,7 +36,7 @@ index 4b2ae046413146b11912e7aa4a9a3d643de6afd1..a4deec69f5f0a1a212c161d94bf98b41
  
              for (CriterionTrigger.Listener<T> listener : set) {
                  T simpleInstance = listener.trigger();
-@@ -51,9 +53,8 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
+@@ -51,9 +54,8 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
                      Optional<ContextAwarePredicate> optional = simpleInstance.player();
                      if (optional.isEmpty() || optional.get().matches(lootContext = (lootContext == null ? EntityPredicate.createContext(player, player) : lootContext))) { // Paper - Perf: lazily create LootContext for criterions
                          if (list == null) {
