@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sun, 9 Feb 2025 02:46:09 +0100
+Subject: [PATCH] Cache-and-optimize-fluidOnEyes
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index d9861d2abc3f37e47b2127eb032a8a83fcaeba3e..4e493c47eca9605c4c173b21ecd3701d5c144eeb 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -261,7 +261,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     public boolean wasTouchingWater;
+     protected Object2DoubleMap<TagKey<Fluid>> fluidHeight = new Object2DoubleArrayMap<>(2);
+     protected boolean wasEyeInWater;
+-    private final Set<TagKey<Fluid>> fluidOnEyes = new HashSet<>();
++    private final Set<TagKey<Fluid>> fluidOnEyes = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>();
+     public int invulnerableTime;
+     protected boolean firstTick = true;
+     protected final SynchedEntityData entityData;
+@@ -1993,9 +1993,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+         }
+     }
+ 
++    private Set<TagKey<Fluid>> cachedFluidOnEyes = Set.of();
++
+     private void updateFluidOnEyes() {
+         this.wasEyeInWater = this.isEyeInFluid(FluidTags.WATER);
+         this.fluidOnEyes.clear();
++        this.cachedFluidOnEyes = Set.copyOf(this.fluidOnEyes); // Create immutable snapshot
+         double eyeY = this.getEyeY();
+         if (!(
+             this.getVehicle() instanceof AbstractBoat abstractBoat
+@@ -2088,7 +2091,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     }
+ 
+     public boolean isEyeInFluid(TagKey<Fluid> fluidTag) {
+-        return this.fluidOnEyes.contains(fluidTag);
++        return this.cachedFluidOnEyes.contains(fluidTag);
+     }
+ 
+     public boolean isInLava() {
