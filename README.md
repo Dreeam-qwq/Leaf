@@ -35,8 +35,7 @@
 - QQ Group: `619278377`
 
 ## 📫 Donation
-If you love my work, feel free to donate :)
-- AFDIAN: https://afdian.com/a/Dreeam
+If you love our work, feel free to donate via our [Open Collective](https://opencollective.com/Winds-Studio) or [Dreeam's AFDIAN](https://afdian.com/a/Dreeam) :)
 
 ## 📥 Download
 You can find the latest successful build in [GitHub Action](https://github.com/Winds-Studio/Leaf/actions) or [Releases](https://github.com/Winds-Studio/Leaf/releases)

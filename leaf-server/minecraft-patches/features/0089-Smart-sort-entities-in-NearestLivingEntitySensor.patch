@@ -14,7 +14,7 @@ In non-strict testing, this can give ~20-40% improvement (54MSPT -> 44MSPT),
 under 625 villagers situation.
 
 diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
-index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..66374b79ade5cd10fa6e1d9187bf6b1112da4827 100644
+index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..7f67848eff9f74881e7a9cd56a2e69ec6fd81e44 100644
 --- a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
 @@ -13,6 +13,21 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
@@ -39,7 +39,7 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..66374b79ade5cd10fa6e1d9187bf6b11
      @Override
      protected void doTick(ServerLevel level, T entity) {
          double attributeValue = entity.getAttributeValue(Attributes.FOLLOW_RANGE);
-@@ -20,11 +35,150 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
+@@ -20,11 +35,145 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
          List<LivingEntity> entitiesOfClass = level.getEntitiesOfClass(
              LivingEntity.class, aabb, matchableEntity -> matchableEntity != entity && matchableEntity.isAlive()
          );
@@ -139,12 +139,7 @@ index b0c5e41fefc7c9adf1a61bd5b52861736657d37e..66374b79ade5cd10fa6e1d9187bf6b11
 +        }
 +        double invMaxDist = 1.0 / maxDist;
 +
-+        for (int i = 0; i < NUM_BUCKETS; i++) {
-+            buckets[i] = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
-+        }
-+
-+        for (int idx = 0; idx < arr.length; idx++) {
-+            EntityDistance e = arr[idx];
++        for (EntityDistance e : arr) {
 +            int bucketIndex = (int) (e.distance * invMaxDist * NUM_BUCKETS_MINUS_1);
 +            buckets[bucketIndex].add(e);
 +        }
