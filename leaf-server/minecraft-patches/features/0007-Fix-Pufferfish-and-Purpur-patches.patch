@@ -240,10 +240,10 @@ index 1323cedcacd3072cdf5f1eac644688cd098b53db..ad19bbd6989bfb98966872b304f6ece0
          AxolotlAi.updateActivity(this);
          if (!this.isNoAi()) {
 diff --git a/net/minecraft/world/entity/animal/frog/Frog.java b/net/minecraft/world/entity/animal/frog/Frog.java
-index 4ecc6b6247a6ab14a5d46f9a05d5df8412ae2a5f..4aadf347811df904e634ea7ebcc5361ea6cb7e7a 100644
+index aca0877319d507c3a672589bd4de5268d7a4c3dc..e5ec23c413e0d7da6f6b9c43925a7aa247946895 100644
 --- a/net/minecraft/world/entity/animal/frog/Frog.java
 +++ b/net/minecraft/world/entity/animal/frog/Frog.java
-@@ -241,8 +241,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
+@@ -242,8 +242,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
      private int behaviorTick = 0; // Pufferfish
      @Override
      protected void customServerAiStep(ServerLevel level) {
@@ -282,7 +282,7 @@ index 35d1b99b873d9f8c9aa2a1178a449a8625b18406..9b3ff19b3ce1a4780cab01bae6561d45
          GoatAi.updateActivity(this);
          super.customServerAiStep(level);
 diff --git a/net/minecraft/world/entity/monster/hoglin/Hoglin.java b/net/minecraft/world/entity/monster/hoglin/Hoglin.java
-index 24725009d7619b0e9043d7d0039f805c611aedf6..f89a3c4f75a40981aff7253cd04bcdf3c8c26952 100644
+index 7c119b089259add643cd112efac55f92024d0275..f20ae21f38b621b0e3bab887c40bbb8237b87e34 100644
 --- a/net/minecraft/world/entity/monster/hoglin/Hoglin.java
 +++ b/net/minecraft/world/entity/monster/hoglin/Hoglin.java
 @@ -203,8 +203,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {

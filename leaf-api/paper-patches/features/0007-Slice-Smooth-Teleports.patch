@@ -9,10 +9,10 @@ Original project: https://github.com/Cryptite/Slice
 Co-authored-by: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index a7abbf0b8645f394a30dc27995919a32c7a424d5..425062e31d81cd160f4e3d896741f28ac1e91d05 100644
+index 2a8abee51e8fad62b0aa58a47eadfbac2bf51fdf..716f99b4d09ffd415f8a53a90031c92d8931f125 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -3734,6 +3734,33 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -3709,6 +3709,33 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      String getClientBrandName();
      // Paper end
  
@@ -28,7 +28,7 @@ index a7abbf0b8645f394a30dc27995919a32c7a424d5..425062e31d81cd160f4e3d896741f28a
 +    // Slice start
 +    @org.jetbrains.annotations.ApiStatus.Experimental
 +    @Deprecated(since = "1.21.1", forRemoval = true)
-+    void teleportWithoutRespawn(@NotNull Location location);
++    void teleportWithoutRespawn(Location location);
 +
 +    /**
 +     * This abuses some of how Minecraft works and attempts to teleport a player to another world without
@@ -40,7 +40,7 @@ index a7abbf0b8645f394a30dc27995919a32c7a424d5..425062e31d81cd160f4e3d896741f28a
 +     * @return Whether the teleport was successful
 +     */
 +    @org.jetbrains.annotations.ApiStatus.Experimental
-+    boolean teleportWithoutRespawnOptionally(@NotNull Location location);
++    boolean teleportWithoutRespawnOptionally(Location location);
 +    // Slice end
 +
      // Paper start - Teleport API

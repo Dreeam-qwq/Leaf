@@ -64,14 +64,13 @@ index a7168edb338c5a77c884e9eef1e48bcdc3623fa4..e5f24eaa18045f6a33248c6f907ebcd9
          CamelAi.updateActivity(this);
          super.customServerAiStep(level);
 diff --git a/net/minecraft/world/entity/animal/frog/Frog.java b/net/minecraft/world/entity/animal/frog/Frog.java
-index 2eb664047eab21a16627fece83ad4a4e5d4bf46f..fca179b8c30083eab1f4a3057d24f0f9100d490d 100644
+index 6e5cb137b3aa91321528d00a1433009cb9a0e656..fca179b8c30083eab1f4a3057d24f0f9100d490d 100644
 --- a/net/minecraft/world/entity/animal/frog/Frog.java
 +++ b/net/minecraft/world/entity/animal/frog/Frog.java
-@@ -169,6 +169,24 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
-         return this.level().purpurConfig.frogBreedingTicks;
+@@ -170,6 +170,23 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
      }
      // Purpur end - Make entity breeding times configurable
-+
+ 
 +    // Leaf start - Plazma - Add missing purpur configuration options
 +    @Override
 +    public boolean isSensitiveToWater() {

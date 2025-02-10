@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur API Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 71f219d84d5787e5e2944f639ecea2da808aa7fe
+Commit: e6a1ebd3f6e4cfe93f96dd82ecb3234f0482768a
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "co/aikar/timings/TimedEventExecutor.java.patch"
@@ -70,10 +70,10 @@ index 6b2f6ab137ae37ff0db4827886614436b7ed5dcb..66a9fc729182476c4f601cdb32bcb109
      /**
       * The brand id for Pufferfish.
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index c3cdfd40386b0844712e9561b35e7acc6f83142b..d67af3fdc4434817cea29673069430a33fb30a8e 100644
+index 4d0ec80ace15ab46e888a3f6e7452842bda8c60c..7ce5e34bfb3d8db97b32e9f8ec010e4ff088be65 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -3046,4 +3046,133 @@ public final class Bukkit {
+@@ -3050,4 +3050,133 @@ public final class Bukkit {
      public static Server.Spigot spigot() {
          return server.spigot();
      }
@@ -335,12 +335,12 @@ index 9afafc00e457c721a1b20b05c6a5d330caa40dfb..6469d4e1097e694d8bf00610ed8d34de
 +    // Purpur end - ItemStack convenience methods
  }
 diff --git a/src/main/java/org/bukkit/OfflinePlayer.java b/src/main/java/org/bukkit/OfflinePlayer.java
-index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064feed28f37 100644
+index ed8e11001c8d3c475dc851aedf6e6812a872dc54..c597c298795fb9893447bc822d941c1748dcb9c5 100644
 --- a/src/main/java/org/bukkit/OfflinePlayer.java
 +++ b/src/main/java/org/bukkit/OfflinePlayer.java
-@@ -573,4 +573,106 @@ public interface OfflinePlayer extends ServerOperator, AnimalTamer, Configuratio
+@@ -567,4 +567,104 @@ public interface OfflinePlayer extends ServerOperator, AnimalTamer, Configuratio
      @Override
-     io.papermc.paper.persistence.@NotNull PersistentDataContainerView getPersistentDataContainer();
+     io.papermc.paper.persistence.PersistentDataContainerView getPersistentDataContainer();
      // Paper end - add pdc to offline player
 +
 +    // Purpur start - OfflinePlayer API
@@ -350,7 +350,7 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +     *
 +     * @return True if the player is allowed to fly.
 +     */
-+    public boolean getAllowFlight();
++    boolean getAllowFlight();
 +
 +    /**
 +     * Sets if the OfflinePlayer is allowed to fly via jump key double-tap like in
@@ -358,21 +358,21 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +     *
 +     * @param flight If flight should be allowed.
 +     */
-+    public void setAllowFlight(boolean flight);
++    void setAllowFlight(boolean flight);
 +
 +    /**
 +     * Checks to see if this player is currently flying or not.
 +     *
 +     * @return True if the player is flying, else false.
 +     */
-+    public boolean isFlying();
++    boolean isFlying();
 +
 +    /**
 +     * Makes this player start or stop flying.
 +     *
 +     * @param value True to fly.
 +     */
-+    public void setFlying(boolean value);
++    void setFlying(boolean value);
 +
 +    /**
 +     * Sets the speed at which a client will fly. Negative values indicate
@@ -382,7 +382,7 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +     * @throws IllegalArgumentException If new speed is less than -1 or
 +     *     greater than 1
 +     */
-+    public void setFlySpeed(float value) throws IllegalArgumentException;
++    void setFlySpeed(float value) throws IllegalArgumentException;
 +
 +    /**
 +     * Sets the speed at which a client will walk. Negative values indicate
@@ -392,21 +392,21 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +     * @throws IllegalArgumentException If new speed is less than -1 or
 +     *     greater than 1
 +     */
-+    public void setWalkSpeed(float value) throws IllegalArgumentException;
++    void setWalkSpeed(float value) throws IllegalArgumentException;
 +
 +    /**
 +     * Gets the current allowed speed that a client can fly.
 +     *
 +     * @return The current allowed speed, from -1 to 1
 +     */
-+    public float getFlySpeed();
++    float getFlySpeed();
 +
 +    /**
 +     * Gets the current allowed speed that a client can walk.
 +     *
 +     * @return The current allowed speed, from -1 to 1
 +     */
-+    public float getWalkSpeed();
++    float getWalkSpeed();
 +
 +    /**
 +     * Sets OfflinePlayer's location. If player is online, it falls back to the Player#teleport implementation.
@@ -414,7 +414,7 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +     * @param destination
 +     * @return true if teleportation was successful
 +     */
-+    public boolean teleportOffline(@NotNull org.bukkit.Location destination);
++    boolean teleportOffline(org.bukkit.Location destination);
 +
 +    /**
 +     * Sets OfflinePlayer's location. If player is online, it falls back to the Player#teleport implementation.
@@ -423,7 +423,7 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +     * @param cause Teleport cause used if player is online
 +     * @return true if teleportation was successful
 +     */
-+    public boolean teleportOffline(@NotNull org.bukkit.Location destination, @NotNull org.bukkit.event.player.PlayerTeleportEvent.TeleportCause cause);
++    boolean teleportOffline(org.bukkit.Location destination, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause cause);
 +
 +    /**
 +     * Sets OfflinePlayer's location. If player is online, it falls back to the Player#teleportAsync implementation.
@@ -431,8 +431,7 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +     * @param destination
 +     * @return <code>true</code> if teleportation successful
 +     */
-+    @NotNull
-+    public java.util.concurrent.CompletableFuture<Boolean> teleportOfflineAsync(@NotNull Location destination);
++    java.util.concurrent.CompletableFuture<Boolean> teleportOfflineAsync(Location destination);
 +
 +    /**
 +     * Sets OfflinePlayer's location. If player is online, it falls back to the Player#teleportAsync implementation.
@@ -441,15 +440,14 @@ index 5622fe3165baad8138c22cfc016ed6c3834cf702..6d31b561d915180fcd473b317721064f
 +     * @param cause Teleport cause used if player is online
 +     * @return <code>true</code> if teleportation successful
 +     */
-+    @NotNull
-+    public java.util.concurrent.CompletableFuture<Boolean> teleportOfflineAsync(@NotNull Location destination, @NotNull org.bukkit.event.player.PlayerTeleportEvent.TeleportCause cause);
++    java.util.concurrent.CompletableFuture<Boolean> teleportOfflineAsync(Location destination, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause cause);
 +    // Purpur end - OfflinePlayer API
  }
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 7ffe592b88d5f57723c9373f326e09e68da716bd..6790ca1648a17cf30063522f68b3ac3e82e3bd8c 100644
+index 84b5626a0ccd4fd1976f28eeb2ae99acdb62afa8..13346dfe2a6d848cf63cbba95d8dea8dfdddf905 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -2382,6 +2382,18 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2386,6 +2386,18 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
  
          // Paper end
  
@@ -468,7 +466,7 @@ index 7ffe592b88d5f57723c9373f326e09e68da716bd..6790ca1648a17cf30063522f68b3ac3e
          // Leaf start - Leaf config - API
          @NotNull
          public org.bukkit.configuration.file.YamlConfiguration getLeafConfig()
-@@ -2739,4 +2751,111 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2743,4 +2755,111 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       */
      long getLastTickOversleepTime();
      // Gale end - YAPFA - last tick time - API
@@ -1010,13 +1008,13 @@ index bc84b892cae5fe7019a3ad481e9da79956efa1fe..48eb5b00c460cccde29d327cef1d63fc
 +    // Purpur end
  }
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc9ba56ce8 100644
+index a6356997a51a441ca65414dd7e3579c1c0f885d4..ca8abdebf8e9d23e982883a7283fdedf12a36170 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -3938,4 +3938,123 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -3912,4 +3912,123 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @return the result of this method, holding leftovers and spawned items.
       */
-     @NotNull PlayerGiveResult give(@NotNull Collection<@NotNull ItemStack> items, boolean dropIfFull);
+     PlayerGiveResult give(Collection<ItemStack> items, boolean dropIfFull);
 +
 +    // Purpur start
 +    /**
@@ -1024,7 +1022,7 @@ index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc
 +     *
 +     * @return true if player uses PurpurClient
 +     */
-+    public boolean usesPurpurClient();
++    boolean usesPurpurClient();
 +
 +    /**
 +     * Check if player is AFK
@@ -1053,7 +1051,7 @@ index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc
 +     * @param location Location to highlight
 +     * @param duration Duration for highlight to show in milliseconds
 +     */
-+    void sendBlockHighlight(@NotNull Location location, int duration);
++    void sendBlockHighlight(Location location, int duration);
 +
 +    /**
 +     * Creates debug block highlight on specified block location and show it to this player.
@@ -1063,7 +1061,7 @@ index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc
 +     * @param duration Duration for highlight to show in milliseconds
 +     * @param argb Color of the highlight. ARGB int. Will be ignored on some versions of vanilla client
 +     */
-+    void sendBlockHighlight(@NotNull Location location, int duration, int argb);
++    void sendBlockHighlight(Location location, int duration, int argb);
 +
 +    /**
 +     * Creates debug block highlight on specified block location and show it to this player.
@@ -1073,7 +1071,7 @@ index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc
 +     * @param duration Duration for highlight to show in milliseconds
 +     * @param text Text to show above the highlight
 +     */
-+    void sendBlockHighlight(@NotNull Location location, int duration, @NotNull String text);
++    void sendBlockHighlight(Location location, int duration, String text);
 +
 +    /**
 +     * Creates debug block highlight on specified block location and show it to this player.
@@ -1084,7 +1082,7 @@ index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc
 +     * @param text Text to show above the highlight
 +     * @param argb Color of the highlight. ARGB int. Will be ignored on some versions of vanilla client
 +     */
-+    void sendBlockHighlight(@NotNull Location location, int duration, @NotNull String text, int argb);
++    void sendBlockHighlight(Location location, int duration, String text, int argb);
 +
 +    /**
 +     * Creates debug block highlight on specified block location and show it to this player.
@@ -1096,7 +1094,7 @@ index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc
 +     * @param transparency Transparency of the highlight
 +     * @throws IllegalArgumentException If transparency is outside 0-255 range
 +     */
-+    void sendBlockHighlight(@NotNull Location location, int duration, @NotNull org.bukkit.Color color, int transparency);
++    void sendBlockHighlight(Location location, int duration, org.bukkit.Color color, int transparency);
 +
 +    /**
 +     * Creates debug block highlight on specified block location and show it to this player.
@@ -1109,7 +1107,7 @@ index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc
 +     * @param transparency Transparency of the highlight
 +     * @throws IllegalArgumentException If transparency is outside 0-255 range
 +     */
-+    void sendBlockHighlight(@NotNull Location location, int duration, @NotNull String text, @NotNull org.bukkit.Color color, int transparency);
++    void sendBlockHighlight(Location location, int duration, String text, org.bukkit.Color color, int transparency);
 +
 +    /**
 +     * Clears all debug block highlights
@@ -1121,7 +1119,7 @@ index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc
 +     *
 +     * @param message The death message to show the player
 +     */
-+    void sendDeathScreen(@NotNull net.kyori.adventure.text.Component message);
++    void sendDeathScreen(net.kyori.adventure.text.Component message);
 +
 +    /**
 +     * Sends a player the death screen with a specified death message,
@@ -1132,7 +1130,7 @@ index f9b3ecbab5826efb50adc2e1831051232e6b3b22..c39bd414cb3b1e12867cfee150f0ccfc
 +     * @deprecated Use {@link #sendDeathScreen(net.kyori.adventure.text.Component)} instead, as 1.20 removed the killer ID from the packet.
 +     */
 +    @Deprecated(since = "1.20")
-+    default void sendDeathScreen(@NotNull net.kyori.adventure.text.Component message, @Nullable Entity killer) {
++    default void sendDeathScreen(net.kyori.adventure.text.Component message, @Nullable Entity killer) {
 +        sendDeathScreen(message);
 +    }
 +    // Purpur end

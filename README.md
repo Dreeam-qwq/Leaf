@@ -10,7 +10,7 @@
 </div>
 
 > [!WARNING]  
-> Leaf is an **EXPERIMENTAL** fork of [Paper](https://papermc.io/) there MAY BE issues depending on server to server, test and backup servers before switching to it.
+> Leaf is a performance-oriented fork. Make sure to take backups **before** switching to it. Everyone is welcome to contribute by optimizing or reporting issues.
 
 ## 🍃 Features
  - **Based on [Gale](https://github.com/Dreeam-qwq/Gale)** for better performance

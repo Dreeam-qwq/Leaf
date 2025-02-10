@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Minecraft Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 71f219d84d5787e5e2944f639ecea2da808aa7fe
+Commit: e6a1ebd3f6e4cfe93f96dd82ecb3234f0482768a
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "net/minecraft/CrashReport.java.patch"
@@ -267,7 +267,7 @@ index fe4ae6bcdcbb55c47e9f9a4d63ead4c39e6d63cf..ec0998369158286fccb38c8e10c3cfa2
              public boolean isLocalPlayer() {
                  return true;
 diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
-index 208efae06c7c44f220d4192219a86ec55c98a2fe..3baf29818d82aa7ba1cc565aaeb26288e5a23a33 100644
+index e1000d8ab5ae0034b56a3524d2caee8c299b50e7..7b78c0af4a83bd39a5bc2d6554cc677bd4c0c822 100644
 --- a/net/minecraft/network/Connection.java
 +++ b/net/minecraft/network/Connection.java
 @@ -588,11 +588,20 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
@@ -3070,7 +3070,7 @@ index 84afd8646b05409c582f29d73f9fea4b09feb603..32779b121322688a4b14e460b1f902ef
          } else {
              workAtPoi = new WorkAtPoi();
 diff --git a/net/minecraft/world/entity/ai/behavior/VillagerMakeLove.java b/net/minecraft/world/entity/ai/behavior/VillagerMakeLove.java
-index 4fb63e58eac5d67fcd31c3233dca1dae72b98bc4..dd8d315eba203db121e24e3402f2117fc0f3043f 100644
+index 8fe5bd54b5a4848da1f08ea65fe2bc3514bed8c8..54eeb72b638127b180470887a3b59d55773f3bc9 100644
 --- a/net/minecraft/world/entity/ai/behavior/VillagerMakeLove.java
 +++ b/net/minecraft/world/entity/ai/behavior/VillagerMakeLove.java
 @@ -118,8 +118,10 @@ public class VillagerMakeLove extends Behavior<Villager> {
@@ -3084,7 +3084,7 @@ index 4fb63e58eac5d67fcd31c3233dca1dae72b98bc4..dd8d315eba203db121e24e3402f2117f
 +            partner.setAge(level.purpurConfig.villagerBreedingTicks);
 +            // Purpur end - Make entity breeding times configurable
              level.addFreshEntityWithPassengers(breedOffspring, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING);
-             // CraftBukkit end
+             // CraftBukkit end - call EntityBreedEvent
              level.broadcastEntityEvent(breedOffspring, (byte)12);
 diff --git a/net/minecraft/world/entity/ai/control/MoveControl.java b/net/minecraft/world/entity/ai/control/MoveControl.java
 index 0f9bf0cb0655a6ed449a86e99b17f89b4e3264df..1860b4ab2314f5da017313977c6423e735a4f96b 100644
@@ -3491,7 +3491,7 @@ index c0997c8c0f8ee4474d3acdd5938b1879c4e589a2..28ae152125ed83d8917674b6068f227f
                  double d = this.wantedX - this.fish.getX();
                  double d1 = this.wantedY - this.fish.getY();
 diff --git a/net/minecraft/world/entity/animal/Animal.java b/net/minecraft/world/entity/animal/Animal.java
-index e34e3b949676aa28dd7c82a47f2ed3b44ad200e3..fa34e7f1c20dfd569b52a9c8e0a8d4d5e659ce20 100644
+index 28697020ba838c86dde5b2b11b2fe8f347a147a7..452270f7f1c54ca98c34dcf9a9d29acae77737c8 100644
 --- a/net/minecraft/world/entity/animal/Animal.java
 +++ b/net/minecraft/world/entity/animal/Animal.java
 @@ -40,6 +40,7 @@ public abstract class Animal extends AgeableMob {
@@ -3534,10 +3534,10 @@ index e34e3b949676aa28dd7c82a47f2ed3b44ad200e3..fa34e7f1c20dfd569b52a9c8e0a8d4d5
              int experience = this.getRandom().nextInt(7) + 1;
              org.bukkit.event.entity.EntityBreedEvent entityBreedEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityBreedEvent(breedOffspring, this, mate, breeder, this.breedItem, experience);
              if (entityBreedEvent.isCancelled()) {
-@@ -269,8 +280,10 @@ public abstract class Animal extends AgeableMob {
+@@ -272,8 +283,10 @@ public abstract class Animal extends AgeableMob {
              player.awardStat(Stats.ANIMALS_BRED);
              CriteriaTriggers.BRED_ANIMALS.trigger(player, this, animal, baby);
-         } // Paper
+         } // Paper - call EntityBreedEvent
 -        this.setAge(6000);
 -        animal.setAge(6000);
 +        // Purpur start - Make entity breeding times configurable
@@ -4359,7 +4359,7 @@ index 4141052dfd635804195a5cfa24dbd0394355a7da..7003b532182737a745491e397a967b72
          }
  
 diff --git a/net/minecraft/world/entity/animal/Fox.java b/net/minecraft/world/entity/animal/Fox.java
-index 44bb04cc9796a16f5477d8f2ad22af62c9af1fc3..aa610af9db105081fcabc1f299e5f2dd1f4d907e 100644
+index b4f3bc7938060cf55b6b242759606bf5100a1f56..90452f0945e761077608692877677f522d38bccd 100644
 --- a/net/minecraft/world/entity/animal/Fox.java
 +++ b/net/minecraft/world/entity/animal/Fox.java
 @@ -129,6 +129,73 @@ public class Fox extends Animal implements VariantHolder<Fox.Variant> {
@@ -4502,7 +4502,7 @@ index 44bb04cc9796a16f5477d8f2ad22af62c9af1fc3..aa610af9db105081fcabc1f299e5f2dd
      @Override
      // Paper start - Cancellable death event
      protected org.bukkit.event.entity.EntityDeathEvent dropAllDeathLoot(ServerLevel level, DamageSource damageSource) {
-@@ -892,8 +990,10 @@ public class Fox extends Animal implements VariantHolder<Fox.Variant> {
+@@ -896,8 +994,10 @@ public class Fox extends Animal implements VariantHolder<Fox.Variant> {
                      CriteriaTriggers.BRED_ANIMALS.trigger(serverPlayer, this.animal, this.partner, fox);
                  }
  
@@ -5990,7 +5990,7 @@ index fa5f7f7d54083f9ea2095dd44362069d00e0b9a5..41074e7847583583331ef8d685a9f9b8
          return "entity.minecraft.tropical_fish.predefined." + variantId;
      }
 diff --git a/net/minecraft/world/entity/animal/Turtle.java b/net/minecraft/world/entity/animal/Turtle.java
-index 354ec2b987882d8f40ef4ac5257183d2fda73bb8..bc6acbc801e5b371859e731b8419736324e81bf0 100644
+index 354ec2b987882d8f40ef4ac5257183d2fda73bb8..3c877699914c906fca265c96770b1c29ed89a1e2 100644
 --- a/net/minecraft/world/entity/animal/Turtle.java
 +++ b/net/minecraft/world/entity/animal/Turtle.java
 @@ -84,6 +84,52 @@ public class Turtle extends Animal {
@@ -6054,7 +6054,20 @@ index 354ec2b987882d8f40ef4ac5257183d2fda73bb8..bc6acbc801e5b371859e731b84197363
          this.goalSelector.addGoal(0, new Turtle.TurtlePanicGoal(this, 1.2));
          this.goalSelector.addGoal(1, new Turtle.TurtleBreedGoal(this, 1.0));
          this.goalSelector.addGoal(1, new Turtle.TurtleLayEggGoal(this, 1.0));
-@@ -539,12 +586,14 @@ public class Turtle extends Animal {
+@@ -368,8 +415,10 @@ public class Turtle extends Animal {
+             }
+ 
+             this.turtle.setHasEgg(true);
+-            this.animal.setAge(6000);
+-            this.partner.setAge(6000);
++            // Purpur start - Make entity breeding times configurable
++            this.animal.setAge(this.animal.getPurpurBreedTime());
++            this.partner.setAge(this.partner.getPurpurBreedTime());
++            // Purpur end - Make entity breeding times configurable
+             this.animal.resetLove();
+             this.partner.resetLove();
+             RandomSource random = this.animal.getRandom();
+@@ -539,12 +588,14 @@ public class Turtle extends Animal {
          }
      }
  
@@ -6070,7 +6083,7 @@ index 354ec2b987882d8f40ef4ac5257183d2fda73bb8..bc6acbc801e5b371859e731b84197363
          }
  
          private void updateSpeed() {
-@@ -563,7 +612,7 @@ public class Turtle extends Animal {
+@@ -563,7 +614,7 @@ public class Turtle extends Animal {
          }
  
          @Override
@@ -6079,7 +6092,7 @@ index 354ec2b987882d8f40ef4ac5257183d2fda73bb8..bc6acbc801e5b371859e731b84197363
              this.updateSpeed();
              if (this.operation == MoveControl.Operation.MOVE_TO && !this.turtle.getNavigation().isDone()) {
                  double d = this.wantedX - this.turtle.getX();
-@@ -577,7 +626,7 @@ public class Turtle extends Animal {
+@@ -577,7 +628,7 @@ public class Turtle extends Animal {
                      float f = (float)(Mth.atan2(d2, d) * 180.0F / (float)Math.PI) - 90.0F;
                      this.turtle.setYRot(this.rotlerp(this.turtle.getYRot(), f, 90.0F));
                      this.turtle.yBodyRot = this.turtle.getYRot();
@@ -6581,7 +6594,7 @@ index 1ac4b13554d2699c3e04d41946e1adfd5e854a17..64ff0d2923f16a567aa753cad028a1b2
      protected SoundEvent getAmbientSound() {
          return SoundEvents.CAMEL_AMBIENT;
 diff --git a/net/minecraft/world/entity/animal/frog/Frog.java b/net/minecraft/world/entity/animal/frog/Frog.java
-index 10a0779bf8611ade19e64031bb00beb277e98598..4ecc6b6247a6ab14a5d46f9a05d5df8412ae2a5f 100644
+index 10a0779bf8611ade19e64031bb00beb277e98598..aca0877319d507c3a672589bd4de5268d7a4c3dc 100644
 --- a/net/minecraft/world/entity/animal/frog/Frog.java
 +++ b/net/minecraft/world/entity/animal/frog/Frog.java
 @@ -104,6 +104,8 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
@@ -6593,7 +6606,7 @@ index 10a0779bf8611ade19e64031bb00beb277e98598..4ecc6b6247a6ab14a5d46f9a05d5df84
  
      public Frog(EntityType<? extends Animal> entityType, Level level) {
          super(entityType, level);
-@@ -111,8 +113,62 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
+@@ -111,7 +113,62 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
          this.setPathfindingMalus(PathType.WATER, 4.0F);
          this.setPathfindingMalus(PathType.TRAPDOOR, -1.0F);
          this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.02F, 0.1F, true);
@@ -6633,8 +6646,8 @@ index 10a0779bf8611ade19e64031bb00beb277e98598..4ecc6b6247a6ab14a5d46f9a05d5df84
 +    @Override
 +    public boolean isControllable() {
 +        return level().purpurConfig.frogControllable;
-     }
- 
++    }
++
 +    @Override
 +    protected void registerGoals() {
 +        this.goalSelector.addGoal(0, new org.purpurmc.purpur.entity.ai.HasRider(this)); // Purpur - Ridables
@@ -6651,12 +6664,12 @@ index 10a0779bf8611ade19e64031bb00beb277e98598..4ecc6b6247a6ab14a5d46f9a05d5df84
 +    @Override
 +    public int getPurpurBreedTime() {
 +        return this.level().purpurConfig.frogBreedingTicks;
-+    }
+     }
 +    // Purpur end - Make entity breeding times configurable
+ 
      @Override
      protected Brain.Provider<Frog> brainProvider() {
-         return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
-@@ -185,6 +241,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
+@@ -185,6 +242,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
      private int behaviorTick = 0; // Pufferfish
      @Override
      protected void customServerAiStep(ServerLevel level) {
@@ -6664,7 +6677,7 @@ index 10a0779bf8611ade19e64031bb00beb277e98598..4ecc6b6247a6ab14a5d46f9a05d5df84
          if (this.behaviorTick++ % this.activatedPriority == 0) // Pufferfish
          this.getBrain().tick(level, this);
          FrogAi.updateActivity(this);
-@@ -375,7 +432,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
+@@ -375,7 +433,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
          return level.getBlockState(pos.below()).is(BlockTags.FROGS_SPAWNABLE_ON) && isBrightEnoughToSpawn(level, pos);
      }
  
@@ -11906,10 +11919,10 @@ index 6cd7d0f82bd97c6adb521eda3bc84c60f87c0cda..2c6833753950f1bb0941b0cbe54bebdd
          }
      }
 diff --git a/net/minecraft/world/entity/monster/hoglin/Hoglin.java b/net/minecraft/world/entity/monster/hoglin/Hoglin.java
-index f93d6564c59ae9a144b56ea3355c4c7425b99eeb..24725009d7619b0e9043d7d0039f805c611aedf6 100644
+index f93d6564c59ae9a144b56ea3355c4c7425b99eeb..7c119b089259add643cd112efac55f92024d0275 100644
 --- a/net/minecraft/world/entity/monster/hoglin/Hoglin.java
 +++ b/net/minecraft/world/entity/monster/hoglin/Hoglin.java
-@@ -90,11 +90,57 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
+@@ -90,6 +90,52 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
          this.xpReward = 5;
      }
  
@@ -11938,11 +11951,6 @@ index f93d6564c59ae9a144b56ea3355c4c7425b99eeb..24725009d7619b0e9043d7d0039f805c
 +    }
 +    // Purpur end - Configurable entity base attributes
 +
-     @VisibleForTesting
-     public void setTimeInOverworld(int timeInOverworld) {
-         this.timeInOverworld = timeInOverworld;
-     }
- 
 +    // Purpur start - Make entity breeding times configurable
 +    @Override
 +    public int getPurpurBreedTime() {
@@ -11964,9 +11972,9 @@ index f93d6564c59ae9a144b56ea3355c4c7425b99eeb..24725009d7619b0e9043d7d0039f805c
 +    }
 +    // Purpur end - Mobs always drop experience
 +
-     @Override
-     public boolean canBeLeashed() {
-         return true;
+     @VisibleForTesting
+     public void setTimeInOverworld(int timeInOverworld) {
+         this.timeInOverworld = timeInOverworld;
 @@ -157,6 +203,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
      private int behaviorTick; // Pufferfish
      @Override
