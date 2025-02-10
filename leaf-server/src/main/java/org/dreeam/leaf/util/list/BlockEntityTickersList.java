@@ -10,17 +10,20 @@ import java.util.Collection;
 /**
  * A list for ServerLevel's blockEntityTickers
  * <p>
- * This list is behaves identically to ObjectArrayList, but it has an additional method, `removeAllByIndex`, that allows a list of integers to be passed indicating what
+ * This list behaves identically to ObjectArrayList, but it has an additional method, `removeAllByIndex`, that allows a list of integers to be passed indicating what
  * indexes should be deleted from the list
  * <p>
  * This is faster than using removeAll, since we don't need to compare the identity of each block entity, and faster than looping thru each index manually and deleting with remove,
  * since we don't need to resize the array every single remove.
  */
 public final class BlockEntityTickersList extends ObjectArrayList<TickingBlockEntity> {
+
     private final IntOpenHashSet toRemove = new IntOpenHashSet();
     private int startSearchFromIndex = -1;
 
-    /** Creates a new array list with {@link #DEFAULT_INITIAL_CAPACITY} capacity. */
+    /**
+     * Creates a new array list with {@link #DEFAULT_INITIAL_CAPACITY} capacity.
+     */
     public BlockEntityTickersList() {
         super();
     }
@@ -43,6 +46,7 @@ public final class BlockEntityTickersList extends ObjectArrayList<TickingBlockEn
         // The block entities list always loop starting from 0, so we only need to check if the startSearchFromIndex is -1 and that's it
         if (this.startSearchFromIndex == -1)
             this.startSearchFromIndex = index;
+
         this.toRemove.add(index);
     }
 
@@ -92,6 +96,7 @@ public final class BlockEntityTickersList extends ObjectArrayList<TickingBlockEn
                 break;
             }
         }
+
         Arrays.fill(a, j, size, null);
         size = j;
     }

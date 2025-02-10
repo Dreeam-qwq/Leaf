@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.*;
 
 public class PlayerQuadtree {
+
     private static final int MAX_OBJECTS = 4;
     private static final int MAX_LEVELS = 5;
     private static final int INITIAL_CAPACITY = 64;
@@ -44,7 +45,9 @@ public class PlayerQuadtree {
         }
     }
 
-    /** Splits the node into 4 subnodes */
+    /**
+     * Splits the node into 4 subnodes
+     */
     private void split() {
         int subWidth = bounds.width / 2;
         int subHeight = bounds.height / 2;
@@ -78,10 +81,13 @@ public class PlayerQuadtree {
             if (topQuadrant) return 1; // Top-right
             if (bottomQuadrant) return 3; // Bottom-right
         }
+
         return -1; // Doesn't fully fit in a quadrant
     }
 
-    /** Inserts a player into the quadtree */
+    /**
+     * Inserts a player into the quadtree
+     */
 
     public void insert(ServerPlayer player) {
         if (nodes != null) {
@@ -144,8 +150,8 @@ public class PlayerQuadtree {
             int count = node.playerCount;
             for (int j = 0; j < count; j++) {
                 ServerPlayer player = nodePlayers[j];
-                int px = (int)player.getX();
-                int pz = (int)player.getZ();
+                int px = (int) player.getX();
+                int pz = (int) player.getZ();
                 if (px >= areaMinX && px < areaMaxX &&
                     pz >= areaMinZ && pz < areaMaxZ) {
                     results.add(player);
@@ -182,7 +188,9 @@ public class PlayerQuadtree {
         return results;
     }
 
-    /** Determines which node (if any) fully contains the given area */
+    /**
+     * Determines which node (if any) fully contains the given area
+     */
     private int getIndex(Rectangle2D area) {
         double midX = bounds.x + bounds.width / 2.0;
         double midZ = bounds.z + bounds.height / 2.0;
@@ -201,7 +209,9 @@ public class PlayerQuadtree {
         return -1; // Area overlaps multiple quadrants
     }
 
-    /** Rectangle class for 2D (XZ) spatial partitioning */
+    /**
+     * Rectangle class for 2D (XZ) spatial partitioning
+     */
     public static class Rectangle2D {
         public final int x, z, width, height;
 
@@ -224,6 +234,7 @@ public class PlayerQuadtree {
             for (PlayerQuadtree node : nodes) {
                 node.clear();
             }
+
             nodes = null;
         }
     }
