@@ -4,8 +4,19 @@ Date: Sun, 9 Feb 2025 18:09:27 +0100
 Subject: [PATCH] Use QuadTree on isChunkNearPlayers
 
 
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java b/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java
+index 7eafc5b7cba23d8dec92ecc1050afe3fd8c9e309..4429eb0ce65da7211d7136e3b9569fa09a924d79 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java
+@@ -141,4 +141,4 @@ public final class ChunkUnloadQueue {
+             this.order = order;
+         }
+     }
+-}
+\ No newline at end of file
++}
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index dd956431bb882daa70267685f2283d0c358336be..881a962c4b69ff4d22b4cf8c007188048a65de37 100644
+index dd956431bb882daa70267685f2283d0c358336be..edf649f2996b15076836b2f34ad6475fa235c4e8 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -68,6 +68,12 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
@@ -14,17 +25,18 @@ index dd956431bb882daa70267685f2283d0c358336be..881a962c4b69ff4d22b4cf8c00718804
      private final Set<ChunkHolder> chunkHoldersToBroadcast = new ReferenceOpenHashSet<>();
 +    private static final int PLAYER_CHECK_INTERVAL = 10; // Ticks between full player checks
 +    private int playerCheckCounter = 0;
-+    private final java.util.Map<ChunkPos, Boolean> chunkPlayerPresenceCache = new java.util.HashMap<>();
++    private final it.unimi.dsi.fastutil.longs.Long2BooleanOpenHashMap chunkPlayerPresenceCache = new it.unimi.dsi.fastutil.longs.Long2BooleanOpenHashMap(256);
 +    org.dreeam.leaf.util.quadtree.PlayerQuadtree.Rectangle2D worldBounds = new org.dreeam.leaf.util.quadtree.PlayerQuadtree.Rectangle2D(-30000000, -30000000, 60000000, 60000000);
 +    org.dreeam.leaf.util.quadtree.PlayerQuadtree globalPlayerTree = new org.dreeam.leaf.util.quadtree.PlayerQuadtree(0, worldBounds);
 +
      @Nullable
      @VisibleForDebug
      private NaturalSpawner.SpawnState lastSpawnState;
-@@ -152,30 +158,44 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -151,31 +157,45 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+     // Paper end - rewrite chunk system
      // Paper start - chunk tick iteration optimisations
      private final net.minecraft.world.level.levelgen.BitRandomSource shuffleRandom = org.dreeam.leaf.config.modules.opt.FastRNG.enabled ? new org.dreeam.leaf.util.math.random.FasterRandomSource(0L) : new ca.spottedleaf.moonrise.common.util.SimpleThreadUnsafeRandom(0L); // Leaf - Faster random generator
-     private boolean isChunkNearPlayer(final ChunkMap chunkMap, final ChunkPos chunkPos, final LevelChunk levelChunk) {
+-    private boolean isChunkNearPlayer(final ChunkMap chunkMap, final ChunkPos chunkPos, final LevelChunk levelChunk) {
 -        final ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData chunkData = ((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemChunkHolder)((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemLevelChunk)levelChunk).moonrise$getChunkAndHolder().holder())
 -            .moonrise$getRealChunkHolder().holderData;
 -        final ca.spottedleaf.moonrise.common.misc.NearbyPlayers.TrackedChunk nearbyPlayers = chunkData.nearbyPlayers;
@@ -37,10 +49,11 @@ index dd956431bb882daa70267685f2283d0c358336be..881a962c4b69ff4d22b4cf8c00718804
 -        if (players == null) {
 -            return false;
 -        }
-+        // Check cache first
-+        Boolean cached = chunkPlayerPresenceCache.get(chunkPos);
-+        if (cached != null) {
-+            return cached;
++    private boolean isChunkNearPlayer(ChunkMap chunkMap, final ChunkPos chunkPos, LevelChunk level) {
++        // Check cache first using chunk key
++        long chunkKey = chunkPos.toLong();
++        if (chunkPlayerPresenceCache.containsKey(chunkKey)) {
++            return chunkPlayerPresenceCache.get(chunkKey);
 +        }
 +
 +        // Compute chunk center
@@ -67,7 +80,7 @@ index dd956431bb882daa70267685f2283d0c358336be..881a962c4b69ff4d22b4cf8c00718804
 -                return true;
 +        boolean result = false;
 +        for (ServerPlayer player : candidates) {
-+            if (!levelChunk.isInsideBuildHeight((int) player.getY())) {
++            if (!level.isInsideBuildHeight((int) player.getY())) {
 +                continue;
 +            }
 +            double dx = player.getX() - centerX;
@@ -79,8 +92,8 @@ index dd956431bb882daa70267685f2283d0c358336be..881a962c4b69ff4d22b4cf8c00718804
          }
  
 -        return false;
-+        // Cache the result
-+        chunkPlayerPresenceCache.put(chunkPos, result);
++        // Cache the result using chunk key
++        chunkPlayerPresenceCache.put(chunkKey, result);
 +        return result;
      }
      // Paper end - chunk tick iteration optimisations
