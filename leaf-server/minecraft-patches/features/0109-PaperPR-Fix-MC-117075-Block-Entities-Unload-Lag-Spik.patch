@@ -1,8 +1,15 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Taiyou06 <kaandindar21@gmail.com>
-Date: Fri, 7 Feb 2025 21:07:58 +0100
-Subject: [PATCH] Fix-MC-117075-TE-Unload-Lag-Spike
+From: MrPowerGamerBR <git@mrpowergamerbr.com>
+Date: Sun, 26 Nov 2023 13:02:16 -0300
+Subject: [PATCH] PaperPR: Fix MC-117075: Block Entities Unload Lag Spike
 
+Original license: GPLv3
+Original project: https://github.com/SparklyPower/SparklyPaper
+Paper pull request: https://github.com/PaperMC/Paper/pull/9970
+
+We replaced the `blockEntityTickers` list with a custom list based on fastutil's `ObjectArrayList` with a small yet huge change for us: A method that allows us to remove a list of indexes from the list.
+
+This is WAY FASTER than using `removeAll` with a list of entries to be removed, because we don't need to calculate the identity of each block entity to be removed, and we can jump directly to where the search should begin, giving a performance boost for small removals (because we don't need to loop thru the entire list to find what element should be removed) and a performance boost for big removals (no need to calculate the identity of each block entity).
 
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
 index 53cabe7dabc83618c8941c95e95c5b7e23ee694e..57b97c433475655362cc7735af4bfeb4f11f5e25 100644

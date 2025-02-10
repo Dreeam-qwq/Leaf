@@ -1,8 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Taiyou06 <kaandindar21@gmail.com>
 Date: Fri, 7 Feb 2025 21:41:51 +0100
-Subject: [PATCH] Cache-ItemStack-max-stack-size
+Subject: [PATCH] Cache ItemStack max stack size
 
+TODO: check this, fix get max stack size
 
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
 index fd7c1e800cbd4919a1a47f6c468c8776535bd028..fdd7e89bacc98e23f067ba17d0bd93ee84a388cb 100644
