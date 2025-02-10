@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Taiyou06 <kaandindar21@gmail.com>
 Date: Sat, 8 Feb 2025 22:11:16 +0100
-Subject: [PATCH] Remove-streams-from-villagers
+Subject: [PATCH] Remove streams from villagers
 
 
 diff --git a/net/minecraft/world/entity/ai/behavior/TradeWithVillager.java b/net/minecraft/world/entity/ai/behavior/TradeWithVillager.java

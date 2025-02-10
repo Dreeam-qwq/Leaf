@@ -1,65 +1,30 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Taiyou06 <kaandindar21@gmail.com>
 Date: Sun, 9 Feb 2025 18:09:27 +0100
-Subject: [PATCH] Use-QuadTree-on-isChunkNearPlayers
+Subject: [PATCH] Use QuadTree on isChunkNearPlayers
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index dd956431bb882daa70267685f2283d0c358336be..3ab56a3d776b45c8c0131932cda2806d8b3a69dc 100644
+index dd956431bb882daa70267685f2283d0c358336be..881a962c4b69ff4d22b4cf8c007188048a65de37 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -6,10 +6,7 @@ import com.mojang.logging.LogUtils;
- import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
- import java.io.IOException;
- import java.nio.file.Path;
--import java.util.ArrayList;
--import java.util.Arrays;
--import java.util.List;
--import java.util.Set;
-+import java.util.*;
- import java.util.concurrent.CompletableFuture;
- import java.util.concurrent.CompletionStage;
- import java.util.concurrent.Executor;
-@@ -29,12 +26,7 @@ import net.minecraft.util.thread.BlockableEventLoop;
- import net.minecraft.world.entity.Entity;
- import net.minecraft.world.entity.MobCategory;
- import net.minecraft.world.entity.ai.village.poi.PoiManager;
--import net.minecraft.world.level.ChunkPos;
--import net.minecraft.world.level.GameRules;
--import net.minecraft.world.level.Level;
--import net.minecraft.world.level.LightLayer;
--import net.minecraft.world.level.LocalMobCapCalculator;
--import net.minecraft.world.level.NaturalSpawner;
-+import net.minecraft.world.level.*;
- import net.minecraft.world.level.chunk.ChunkAccess;
- import net.minecraft.world.level.chunk.ChunkGenerator;
- import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
-@@ -48,6 +40,7 @@ import net.minecraft.world.level.levelgen.RandomState;
- import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
- import net.minecraft.world.level.storage.DimensionDataStorage;
- import net.minecraft.world.level.storage.LevelStorageSource;
-+import org.dreeam.leaf.util.quadtree.PlayerQuadtree;
- import org.slf4j.Logger;
- 
- public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moonrise.patches.chunk_system.world.ChunkSystemServerChunkCache { // Paper - rewrite chunk system
-@@ -68,6 +61,12 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -68,6 +68,12 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
      private final ChunkAccess[] lastChunk = new ChunkAccess[4];
      private final List<LevelChunk> tickingChunks = new ArrayList<>();
      private final Set<ChunkHolder> chunkHoldersToBroadcast = new ReferenceOpenHashSet<>();
 +    private static final int PLAYER_CHECK_INTERVAL = 10; // Ticks between full player checks
 +    private int playerCheckCounter = 0;
-+    private final Map<ChunkPos, Boolean> chunkPlayerPresenceCache = new HashMap<>();
-+    PlayerQuadtree.Rectangle2D worldBounds = new PlayerQuadtree.Rectangle2D(-30000000, -30000000, 60000000, 60000000);
-+    PlayerQuadtree globalPlayerTree = new PlayerQuadtree(0, worldBounds);
++    private final java.util.Map<ChunkPos, Boolean> chunkPlayerPresenceCache = new java.util.HashMap<>();
++    org.dreeam.leaf.util.quadtree.PlayerQuadtree.Rectangle2D worldBounds = new org.dreeam.leaf.util.quadtree.PlayerQuadtree.Rectangle2D(-30000000, -30000000, 60000000, 60000000);
++    org.dreeam.leaf.util.quadtree.PlayerQuadtree globalPlayerTree = new org.dreeam.leaf.util.quadtree.PlayerQuadtree(0, worldBounds);
 +
      @Nullable
      @VisibleForDebug
      private NaturalSpawner.SpawnState lastSpawnState;
-@@ -151,31 +150,45 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
-     // Paper end - rewrite chunk system
+@@ -152,30 +158,44 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
      // Paper start - chunk tick iteration optimisations
      private final net.minecraft.world.level.levelgen.BitRandomSource shuffleRandom = org.dreeam.leaf.config.modules.opt.FastRNG.enabled ? new org.dreeam.leaf.util.math.random.FasterRandomSource(0L) : new ca.spottedleaf.moonrise.common.util.SimpleThreadUnsafeRandom(0L); // Leaf - Faster random generator
--    private boolean isChunkNearPlayer(final ChunkMap chunkMap, final ChunkPos chunkPos, final LevelChunk levelChunk) {
+     private boolean isChunkNearPlayer(final ChunkMap chunkMap, final ChunkPos chunkPos, final LevelChunk levelChunk) {
 -        final ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData chunkData = ((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemChunkHolder)((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemLevelChunk)levelChunk).moonrise$getChunkAndHolder().holder())
 -            .moonrise$getRealChunkHolder().holderData;
 -        final ca.spottedleaf.moonrise.common.misc.NearbyPlayers.TrackedChunk nearbyPlayers = chunkData.nearbyPlayers;
@@ -72,7 +37,6 @@ index dd956431bb882daa70267685f2283d0c358336be..3ab56a3d776b45c8c0131932cda2806d
 -        if (players == null) {
 -            return false;
 -        }
-+    private boolean isChunkNearPlayer(ChunkMap chunkMap, final ChunkPos chunkPos, LevelHeightAccessor level) {
 +        // Check cache first
 +        Boolean cached = chunkPlayerPresenceCache.get(chunkPos);
 +        if (cached != null) {
@@ -85,7 +49,7 @@ index dd956431bb882daa70267685f2283d0c358336be..3ab56a3d776b45c8c0131932cda2806d
 +        final double queryRadius = 128.0;
 +
 +        // Define query area
-+        PlayerQuadtree.Rectangle2D queryArea = new PlayerQuadtree.Rectangle2D(
++        org.dreeam.leaf.util.quadtree.PlayerQuadtree.Rectangle2D queryArea = new org.dreeam.leaf.util.quadtree.PlayerQuadtree.Rectangle2D(
 +            (int) (centerX - queryRadius),
 +            (int) (centerZ - queryRadius),
 +            (int) (queryRadius * 2),
@@ -103,7 +67,7 @@ index dd956431bb882daa70267685f2283d0c358336be..3ab56a3d776b45c8c0131932cda2806d
 -                return true;
 +        boolean result = false;
 +        for (ServerPlayer player : candidates) {
-+            if (!level.isInsideBuildHeight((int) player.getY())) {
++            if (!levelChunk.isInsideBuildHeight((int) player.getY())) {
 +                continue;
 +            }
 +            double dx = player.getX() - centerX;
@@ -121,7 +85,7 @@ index dd956431bb882daa70267685f2283d0c358336be..3ab56a3d776b45c8c0131932cda2806d
      }
      // Paper end - chunk tick iteration optimisations
  
-@@ -477,6 +490,12 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -477,6 +497,12 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
  
      @Override
      public void tick(BooleanSupplier hasTimeLeft, boolean tickChunks) {
@@ -134,7 +98,7 @@ index dd956431bb882daa70267685f2283d0c358336be..3ab56a3d776b45c8c0131932cda2806d
          if (this.level.tickRateManager().runsNormally() || !tickChunks || this.level.spigotConfig.unloadFrozenChunks) { // Spigot
              this.distanceManager.purgeStaleTickets();
          }
-@@ -749,15 +768,36 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -749,15 +775,36 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
  
      public void move(ServerPlayer player) {
          if (!player.isRemoved()) {

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Taiyou06 <kaandindar21@gmail.com>
 Date: Sun, 9 Feb 2025 02:46:09 +0100
-Subject: [PATCH] Cache-and-optimize-fluidOnEyes
+Subject: [PATCH] Cache and optimize fluidOnEyes
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java

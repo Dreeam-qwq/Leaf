@@ -5,7 +5,7 @@ Subject: [PATCH] Avoid useless deque clear on LevelTicks#cleanupAfterTick
 
 
 diff --git a/net/minecraft/world/ticks/LevelTicks.java b/net/minecraft/world/ticks/LevelTicks.java
-index fbf0d3b808c66e8971c747619f6acf7417af5ef7..4a58125bbdb52aa8b70e47a9df12d12edc3dc157 100644
+index fbf0d3b808c66e8971c747619f6acf7417af5ef7..d4542a86a2a9bfcfa7b6b7a213f233542ffed797 100644
 --- a/net/minecraft/world/ticks/LevelTicks.java
 +++ b/net/minecraft/world/ticks/LevelTicks.java
 @@ -182,7 +182,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
@@ -13,7 +13,7 @@ index fbf0d3b808c66e8971c747619f6acf7417af5ef7..4a58125bbdb52aa8b70e47a9df12d12e
  
      private void cleanupAfterTick() {
 -        this.toRunThisTick.clear();
-+        //this.toRunThisTick.clear(); // Leaf - This method runs after toRunThisTick is polled so this is always empty
++        //this.toRunThisTick.clear(); // Leaf - Avoid useless deque clear on LevelTicks#cleanupAfterTick - This method runs after toRunThisTick is polled so this is always empty
          this.containersToTick.clear();
          this.alreadyRunThisTick.clear();
          this.toRunThisTickSet.clear();
