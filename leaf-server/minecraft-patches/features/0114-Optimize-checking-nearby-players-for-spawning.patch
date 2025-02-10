@@ -1,0 +1,73 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sat, 8 Feb 2025 05:32:30 +0100
+Subject: [PATCH] Optimize checking nearby players for spawning
+
+
+diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
+index 8986c059e7aadb58ae8d9ab7b848de10f9faa6b2..d4983be13cfe471bf874ea0840ebbbc0c4a35754 100644
+--- a/net/minecraft/server/level/ChunkMap.java
++++ b/net/minecraft/server/level/ChunkMap.java
+@@ -719,38 +719,48 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+     }
+ 
+     private boolean anyPlayerCloseEnoughForSpawningInternal(ChunkPos chunkPos, boolean reducedRange) {
+-        double blockRange; // Paper - use from event
+-        // Spigot end
+-        // Paper start - chunk tick iteration optimisation
+-        final ca.spottedleaf.moonrise.common.list.ReferenceList<ServerPlayer> players = ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.level).moonrise$getNearbyPlayers().getPlayers(
++        final ca.spottedleaf.moonrise.common.list.ReferenceList<ServerPlayer> players = ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel) this.level).moonrise$getNearbyPlayers().getPlayers(
+             chunkPos, ca.spottedleaf.moonrise.common.misc.NearbyPlayers.NearbyMapType.SPAWN_RANGE
+         );
++
+         if (players == null) {
+             return false;
+         }
+ 
+         final ServerPlayer[] raw = players.getRawDataUnchecked();
+         final int len = players.size();
++        // Precompute chunk center once
++        final double centerX = (chunkPos.x << 4) + 8;
++        final double centerZ = (chunkPos.z << 4) + 8;
+ 
+-        Objects.checkFromIndexSize(0, len, raw.length);
+         for (int i = 0; i < len; ++i) {
+-            final ServerPlayer serverPlayer = raw[i];
+-            // Paper start - PlayerNaturallySpawnCreaturesEvent
+-            com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event;
+-            blockRange = 16384.0D;
++            final ServerPlayer player = raw[i];
++
++            if (player.isSpectator()) continue; // Skip spectators early
++
++            final double blockRangeSquared;
++
+             if (reducedRange) {
+-                event = serverPlayer.playerNaturallySpawnedEvent;
++                // Handle reduced range from PlayerNaturallySpawnCreaturesEvent
++                // Paper start - PlayerNaturallySpawnCreaturesEvent
++                final com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event = player.playerNaturallySpawnedEvent;
+                 if (event == null || event.isCancelled()) continue;
+-                blockRange = (double) ((event.getSpawnRadius() << 4) * (event.getSpawnRadius() << 4));
++                final int spawnRadius = event.getSpawnRadius();
++                blockRangeSquared = (double) (spawnRadius * spawnRadius) * 256.0; // (radius << 4)^2
++                // Paper end - PlayerNaturallySpawnCreaturesEvent
++            } else {
++                blockRangeSquared = 16384.0D; // Default 128^2
+             }
+-            // Paper end - PlayerNaturallySpawnCreaturesEvent
+-            if (this.playerIsCloseEnoughForSpawning(serverPlayer, chunkPos, blockRange)) {
++
++            // Calculate squared distance using precomputed center
++            final double dx = player.getX() - centerX;
++            final double dz = player.getZ() - centerZ;
++            if (dx * dx + dz * dz < blockRangeSquared) {
+                 return true;
+             }
+         }
+ 
+         return false;
+-        // Paper end - chunk tick iteration optimisation
+     }
+ 
+     public List<ServerPlayer> getPlayersCloseForSpawning(ChunkPos chunkPos) {
