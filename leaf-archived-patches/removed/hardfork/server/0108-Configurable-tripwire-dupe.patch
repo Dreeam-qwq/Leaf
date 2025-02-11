@@ -3,6 +3,8 @@ From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Tue, 24 Dec 2024 13:28:56 -0500
 Subject: [PATCH] Configurable tripwire dupe
 
+Removed since Paper 1.21.4
+
 Bring back MC-59471, MC-129055 on 1.21.2+, which fixed in 1.21.2 snapshots 24w33a and 24w36a
 
 diff --git a/net/minecraft/world/level/block/TripWireHookBlock.java b/net/minecraft/world/level/block/TripWireHookBlock.java
