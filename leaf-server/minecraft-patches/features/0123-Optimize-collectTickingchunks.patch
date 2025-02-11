@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize collectTickingchunks
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 9c8c38ab69c2fc21d5e0fa75e262af29db7314a8..47a86fe0f74099edcd6a3e68c7c9e67845039e98 100644
+index dd956431bb882daa70267685f2283d0c358336be..e2a2aef273d7e5bef025a4acc99f4b427e089194 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -1,5 +1,7 @@
@@ -16,7 +16,7 @@ index 9c8c38ab69c2fc21d5e0fa75e262af29db7314a8..47a86fe0f74099edcd6a3e68c7c9e678
  import com.google.common.annotations.VisibleForTesting;
  import com.mojang.datafixers.DataFixer;
  import com.mojang.logging.LogUtils;
-@@ -589,27 +591,38 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -566,27 +568,38 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
      }
  
      private void collectTickingChunks(List<LevelChunk> output) {
