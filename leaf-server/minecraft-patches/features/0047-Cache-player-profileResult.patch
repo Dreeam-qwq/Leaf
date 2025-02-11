@@ -5,7 +5,7 @@ Subject: [PATCH] Cache player profileResult
 
 
 diff --git a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index 069477e524a28b20a0289221858bdc802704a890..595cfb31dd2c026ef9946429608c2c7497bf9de0 100644
+index 069477e524a28b20a0289221858bdc802704a890..21ecbbdd97204477dadd2ade1d93f64cf91c7dfe 100644
 --- a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -71,6 +71,11 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
@@ -13,7 +13,7 @@ index 069477e524a28b20a0289221858bdc802704a890..595cfb31dd2c026ef9946429608c2c74
      public boolean iKnowThisMayNotBeTheBestIdeaButPleaseDisableUsernameValidation = false; // Paper - username validation overriding
      private int velocityLoginMessageId = -1; // Paper - Add Velocity IP Forwarding Support
 +    // Leaf start - Cache player profileResult
-+    private static final com.github.benmanes.caffeine.cache.Cache<String, ProfileResult> playerProfileResultCahce = com.github.benmanes.caffeine.cache.Caffeine.newBuilder()
++    private static final com.github.benmanes.caffeine.cache.Cache<String, ProfileResult> playerProfileResultCache = com.github.benmanes.caffeine.cache.Caffeine.newBuilder()
 +        .expireAfterWrite(org.dreeam.leaf.config.modules.misc.Cache.cachePlayerProfileResultTimeout, java.util.concurrent.TimeUnit.MINUTES)
 +        .build();
 +    // Leaf end - Cache player profileResult
@@ -30,13 +30,13 @@ index 069477e524a28b20a0289221858bdc802704a890..595cfb31dd2c026ef9946429608c2c74
 +                    // Leaf start - Cache player profileResult
 +                    ProfileResult profileResult;
 +                    if (org.dreeam.leaf.config.modules.misc.Cache.cachePlayerProfileResult) {
-+                        profileResult = playerProfileResultCahce.getIfPresent(string1);
++                        profileResult = playerProfileResultCache.getIfPresent(string1);
 +
 +                        if (profileResult == null) {
 +                            profileResult = ServerLoginPacketListenerImpl.this.server
 +                                .getSessionService()
 +                                .hasJoinedServer(string1, string, this.getAddress());
-+                            playerProfileResultCahce.put(string1, profileResult);
++                            playerProfileResultCache.put(string1, profileResult);
 +                        }
 +                    } else {
 +                        profileResult = ServerLoginPacketListenerImpl.this.server

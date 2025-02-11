@@ -164,7 +164,7 @@ index f106373ef3ac4a8685c2939c9e8361688a285913..51ae390c68e7a3aa193329cc3bc47ca6
      public boolean visible = true;
  
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index 1b9e34574fb5b8955fa37795baebf588fdaeca2a..2cca2c7b826dc64c0642751fda006f65e80befc1 100644
+index d8298c7925e3bcea07ead4d438478cc51abcfa16..75670751064add901c2628d53d8028350f966c5d 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
 @@ -110,8 +110,16 @@ public class ServerEntity {
@@ -186,7 +186,7 @@ index 1b9e34574fb5b8955fa37795baebf588fdaeca2a..2cca2c7b826dc64c0642751fda006f65
                          }
                      }
                  );
-@@ -441,12 +449,15 @@ public class ServerEntity {
+@@ -435,12 +443,15 @@ public class ServerEntity {
          if (this.entity instanceof LivingEntity) {
              Set<AttributeInstance> attributesToSync = ((LivingEntity)this.entity).getAttributes().getAttributesToSync();
              if (!attributesToSync.isEmpty()) {

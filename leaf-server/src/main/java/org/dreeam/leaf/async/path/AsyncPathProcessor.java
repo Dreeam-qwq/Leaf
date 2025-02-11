@@ -1,6 +1,5 @@
 package org.dreeam.leaf.async.path;
 
-import com.destroystokyo.paper.util.SneakyThrow;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import net.minecraft.server.MinecraftServer;
@@ -71,7 +70,7 @@ public class AsyncPathProcessor {
             .exceptionally(throwable -> {
                 if (throwable instanceof TimeoutException e) {
                     LOGGER.warn("Async Pathfinding process timed out", e);
-                } else SneakyThrow.sneaky(throwable);
+                } else LOGGER.warn("Error occurred while processing async path", throwable);
                 return null;
             });
     }

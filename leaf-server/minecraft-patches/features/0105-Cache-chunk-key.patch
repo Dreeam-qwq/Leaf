@@ -9,7 +9,7 @@ This patch didn't cahce SectionPos or BlockPos to chunkKey, since it needs to co
 TODO: Cache block pos and section pos, whether need?
 
 diff --git a/ca/spottedleaf/moonrise/common/misc/NearbyPlayers.java b/ca/spottedleaf/moonrise/common/misc/NearbyPlayers.java
-index 1b8193587814225c2ef2c5d9e667436eb50ff6c5..d7d1d4b31043279753888b9c1e299acead7c91e1 100644
+index 1b8193587814225c2ef2c5d9e667436eb50ff6c5..288a3eb57f3431dd624ad8a4b08684563abbc5ad 100644
 --- a/ca/spottedleaf/moonrise/common/misc/NearbyPlayers.java
 +++ b/ca/spottedleaf/moonrise/common/misc/NearbyPlayers.java
 @@ -127,7 +127,7 @@ public final class NearbyPlayers {
@@ -17,7 +17,7 @@ index 1b8193587814225c2ef2c5d9e667436eb50ff6c5..d7d1d4b31043279753888b9c1e299ace
  
      public TrackedChunk getChunk(final ChunkPos pos) {
 -        return this.byChunk.get(CoordinateUtils.getChunkKey(pos));
-+        return this.byChunk.get(pos.chunkKey); // Leaf - Cache chunk key
++        return this.byChunk.get(pos.longKey); // Leaf - Cache chunk key
      }
  
      public TrackedChunk getChunk(final BlockPos pos) {
@@ -26,12 +26,12 @@ index 1b8193587814225c2ef2c5d9e667436eb50ff6c5..d7d1d4b31043279753888b9c1e299ace
  
      public ReferenceList<ServerPlayer> getPlayers(final ChunkPos pos, final NearbyMapType type) {
 -        return this.directByChunk[type.ordinal()].get(CoordinateUtils.getChunkKey(pos));
-+        return this.directByChunk[type.ordinal()].get(pos.chunkKey); // Leaf - Cache chunk key
++        return this.directByChunk[type.ordinal()].get(pos.longKey); // Leaf - Cache chunk key
      }
  
      public ReferenceList<ServerPlayer> getPlayersByChunk(final int chunkX, final int chunkZ, final NearbyMapType type) {
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
-index b5817aa8f537593f6d9fc6b612c82ccccb250ac7..a43b8b9549b308c5143344b633aacda0e538510f 100644
+index b5817aa8f537593f6d9fc6b612c82ccccb250ac7..be820c6093dd2ae7642b9bee11edf65e3a8d7242 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
 @@ -506,7 +506,7 @@ public final class ChunkHolderManager {
@@ -39,7 +39,7 @@ index b5817aa8f537593f6d9fc6b612c82ccccb250ac7..a43b8b9549b308c5143344b633aacda0
      public <T> boolean addTicketAtLevel(final TicketType<T> type, final ChunkPos chunkPos, final int level,
                                          final T identifier) {
 -        return this.addTicketAtLevel(type, CoordinateUtils.getChunkKey(chunkPos), level, identifier);
-+        return this.addTicketAtLevel(type, chunkPos.chunkKey, level, identifier); // Leaf - Cache chunk key
++        return this.addTicketAtLevel(type, chunkPos.longKey, level, identifier); // Leaf - Cache chunk key
      }
  
      public <T> boolean addTicketAtLevel(final TicketType<T> type, final int chunkX, final int chunkZ, final int level,
@@ -48,7 +48,7 @@ index b5817aa8f537593f6d9fc6b612c82ccccb250ac7..a43b8b9549b308c5143344b633aacda0
  
      public <T> boolean removeTicketAtLevel(final TicketType<T> type, final ChunkPos chunkPos, final int level, final T identifier) {
 -        return this.removeTicketAtLevel(type, CoordinateUtils.getChunkKey(chunkPos), level, identifier);
-+        return this.removeTicketAtLevel(type, chunkPos.chunkKey, level, identifier); // Leaf - Cache chunk key
++        return this.removeTicketAtLevel(type, chunkPos.longKey, level, identifier); // Leaf - Cache chunk key
      }
  
      public <T> boolean removeTicketAtLevel(final TicketType<T> type, final int chunkX, final int chunkZ, final int level, final T identifier) {
@@ -57,7 +57,7 @@ index b5817aa8f537593f6d9fc6b612c82ccccb250ac7..a43b8b9549b308c5143344b633aacda0
  
          public static <T> TicketOperation<T, T> addOp(final ChunkPos chunk, final TicketType<T> type, final int ticketLevel, final T identifier) {
 -            return addOp(CoordinateUtils.getChunkKey(chunk), type, ticketLevel, identifier);
-+            return addOp(chunk.chunkKey, type, ticketLevel, identifier); // Leaf - Cache chunk key
++            return addOp(chunk.longKey, type, ticketLevel, identifier); // Leaf - Cache chunk key
          }
  
          public static <T> TicketOperation<T, T> addOp(final int chunkX, final int chunkZ, final TicketType<T> type, final int ticketLevel, final T identifier) {
@@ -66,12 +66,12 @@ index b5817aa8f537593f6d9fc6b612c82ccccb250ac7..a43b8b9549b308c5143344b633aacda0
  
          public static <T> TicketOperation<T, T> removeOp(final ChunkPos chunk, final TicketType<T> type, final int ticketLevel, final T identifier) {
 -            return removeOp(CoordinateUtils.getChunkKey(chunk), type, ticketLevel, identifier);
-+            return removeOp(chunk.chunkKey, type, ticketLevel, identifier); // Leaf - Cache chunk key
++            return removeOp(chunk.longKey, type, ticketLevel, identifier); // Leaf - Cache chunk key
          }
  
          public static <T> TicketOperation<T, T> removeOp(final int chunkX, final int chunkZ, final TicketType<T> type, final int ticketLevel, final T identifier) {
 diff --git a/ca/spottedleaf/moonrise/patches/starlight/light/StarLightInterface.java b/ca/spottedleaf/moonrise/patches/starlight/light/StarLightInterface.java
-index 571db5f9bf94745a8afe2cd313e593fb15db5e37..108db549eeb4a33c9a9c0c19833766139f7625b4 100644
+index 571db5f9bf94745a8afe2cd313e593fb15db5e37..1487b7d8be435b3fbad2aabd05796965b4775a87 100644
 --- a/ca/spottedleaf/moonrise/patches/starlight/light/StarLightInterface.java
 +++ b/ca/spottedleaf/moonrise/patches/starlight/light/StarLightInterface.java
 @@ -818,7 +818,7 @@ public final class StarLightInterface {
@@ -79,12 +79,12 @@ index 571db5f9bf94745a8afe2cd313e593fb15db5e37..108db549eeb4a33c9a9c0c1983376613
  
          public ServerChunkTasks queueChunkLightTask(final ChunkPos pos, final BooleanSupplier lightTask, final Priority priority) {
 -            final ServerChunkTasks ret = this.chunkTasks.compute(CoordinateUtils.getChunkKey(pos), (final long keyInMap, ServerChunkTasks valueInMap) -> {
-+            final ServerChunkTasks ret = this.chunkTasks.compute(pos.chunkKey, (final long keyInMap, ServerChunkTasks valueInMap) -> { // Leaf - Cache chunk key
++            final ServerChunkTasks ret = this.chunkTasks.compute(pos.longKey, (final long keyInMap, ServerChunkTasks valueInMap) -> { // Leaf - Cache chunk key
                  if (valueInMap == null) {
                      valueInMap = new ServerChunkTasks(
                              keyInMap, ServerLightQueue.this.lightInterface, ServerLightQueue.this, priority
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 9f3fe9ffdbd2973754898233cca60b7335d671c9..b588386ade7a23750dcf5f64b383760404359af2 100644
+index 9f3fe9ffdbd2973754898233cca60b7335d671c9..dd1827931e7a2f771444867ad556444de5001060 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -508,7 +508,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -92,7 +92,7 @@ index 9f3fe9ffdbd2973754898233cca60b7335d671c9..b588386ade7a23750dcf5f64b3837604
      public final void moonrise$markChunkForPlayerTicking(final LevelChunk chunk) {
          final ChunkPos pos = chunk.getPos();
 -        if (!this.playerTickingRequests.containsKey(ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkKey(pos))) {
-+        if (!this.playerTickingRequests.containsKey(pos.chunkKey)) { // Leaf - Cache chunk key
++        if (!this.playerTickingRequests.containsKey(pos.longKey)) { // Leaf - Cache chunk key
              return;
          }
  
@@ -101,41 +101,43 @@ index 9f3fe9ffdbd2973754898233cca60b7335d671c9..b588386ade7a23750dcf5f64b3837604
      public boolean isNaturalSpawningAllowed(ChunkPos chunkPos) {
          // Paper start - rewrite chunk system
 -        final ca.spottedleaf.moonrise.patches.chunk_system.scheduling.NewChunkHolder chunkHolder = this.moonrise$getChunkTaskScheduler().chunkHolderManager.getChunkHolder(ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkKey(chunkPos));
-+        final ca.spottedleaf.moonrise.patches.chunk_system.scheduling.NewChunkHolder chunkHolder = this.moonrise$getChunkTaskScheduler().chunkHolderManager.getChunkHolder(chunkPos.chunkKey); // Leaf - Cache chunk key
++        final ca.spottedleaf.moonrise.patches.chunk_system.scheduling.NewChunkHolder chunkHolder = this.moonrise$getChunkTaskScheduler().chunkHolderManager.getChunkHolder(chunkPos.longKey); // Leaf - Cache chunk key
          return chunkHolder != null && chunkHolder.isEntityTickingReady();
          // Paper end - rewrite chunk system
      }
 diff --git a/net/minecraft/world/level/ChunkPos.java b/net/minecraft/world/level/ChunkPos.java
-index 6e2b2d258e47dcca30a5ad9f4f492598f2bc21fb..9b6db05fa2e8e667453e9b3c703ae1cd519e30d5 100644
+index 6e2b2d258e47dcca30a5ad9f4f492598f2bc21fb..f9af074e833a6dab96414750314a27b35ec07bfc 100644
 --- a/net/minecraft/world/level/ChunkPos.java
 +++ b/net/minecraft/world/level/ChunkPos.java
-@@ -47,6 +47,7 @@ public class ChunkPos {
-     public final int x;
-     public final int z;
-     public final long longKey; // Paper
-+    public final long chunkKey; // Leaf - Cache chunk key
-     private static final int HASH_A = 1664525;
-     private static final int HASH_C = 1013904223;
-     private static final int HASH_Z_XOR = -559038737;
-@@ -55,18 +56,21 @@ public class ChunkPos {
+@@ -54,19 +54,19 @@ public class ChunkPos {
+     public ChunkPos(int x, int y) {
          this.x = x;
          this.z = y;
-         this.longKey = asLong(this.x, this.z); // Paper
-+        this.chunkKey = ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkKey(this.x, this.z); // Leaf - Cache chunk key
+-        this.longKey = asLong(this.x, this.z); // Paper
++        this.longKey = asLong(this.x, this.z); // Paper // Leaf - Cache chunk key - diff on change
      }
  
      public ChunkPos(BlockPos pos) {
          this.x = SectionPos.blockToSectionCoord(pos.getX());
          this.z = SectionPos.blockToSectionCoord(pos.getZ());
-         this.longKey = asLong(this.x, this.z); // Paper
-+        this.chunkKey = ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkKey(this.x, this.z); // Leaf - Cache chunk key
+-        this.longKey = asLong(this.x, this.z); // Paper
++        this.longKey = asLong(this.x, this.z); // Paper // Leaf - Cache chunk key - diff on change
      }
  
      public ChunkPos(long packedPos) {
          this.x = (int)packedPos;
          this.z = (int)(packedPos >> 32);
-         this.longKey = asLong(this.x, this.z); // Paper
-+        this.chunkKey = ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkKey(this.x, this.z); // Leaf - Cache chunk key
+-        this.longKey = asLong(this.x, this.z); // Paper
++        this.longKey = asLong(this.x, this.z); // Paper // Leaf - Cache chunk key - diff on change
      }
  
      public static ChunkPos minFromRegion(int chunkX, int chunkZ) {
+@@ -82,7 +82,7 @@ public class ChunkPos {
+     }
+ 
+     public static long asLong(int x, int z) {
+-        return x & 4294967295L | (z & 4294967295L) << 32;
++        return x & 4294967295L | (z & 4294967295L) << 32; // Leaf - Cache chunk key - diff on change
+     }
+ 
+     public static long asLong(BlockPos pos) {

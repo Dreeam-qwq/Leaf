@@ -559,7 +559,7 @@ index 94ca0407303c4493ab4928b12ec6ecc75aaca549..f2d87c12dd19210ce7e2147fada5c101
 +    // Purpur end - OfflinePlayer API
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 5ad91693178b5645c98804ab04a56e85a28eb426..60389075b86a7c030e59fbc4c493a4f31012a66e 100644
+index c5e63626217ed730a2289a5f8e2074c9abfb7899..550336d86872e3a27ac61a994d68f249b20f08e3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -428,6 +428,20 @@ public final class CraftServer implements Server {
@@ -668,7 +668,7 @@ index 5ad91693178b5645c98804ab04a56e85a28eb426..60389075b86a7c030e59fbc4c493a4f3
      @Override
      public List<Recipe> getRecipesFor(ItemStack result) {
          Preconditions.checkArgument(result != null, "ItemStack cannot be null");
-@@ -3069,6 +3140,18 @@ public final class CraftServer implements Server {
+@@ -3059,6 +3130,18 @@ public final class CraftServer implements Server {
          }
          // Gale end - Gale configuration - API
  
@@ -687,7 +687,7 @@ index 5ad91693178b5645c98804ab04a56e85a28eb426..60389075b86a7c030e59fbc4c493a4f3
          @Override
          public void restart() {
              org.spigotmc.RestartCommand.restart();
-@@ -3361,4 +3444,18 @@ public final class CraftServer implements Server {
+@@ -3351,4 +3434,18 @@ public final class CraftServer implements Server {
          return MinecraftServer.lastTickOversleepTime;
      }
      // Gale end - YAPFA - last tick time - API
@@ -762,7 +762,7 @@ index 284b58ece65d9cf6411a79abb748f1dfa52edc92..ba5797e9e518d7a1054bad0c7a1fb10b
      public Collection<GeneratedStructure> getStructures(int x, int z) {
          return this.getStructures(x, z, struct -> true);
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index d0becb56a9911ef4cc55ae8d7c47832f442ad52f..bdce5f9a589fedf8c7a59da9cde56056413dd723 100644
+index 70d093f71cca569d9da3ae82e738f8f3069f405e..7120ff469b0a0b638a4051b92f00f97da75edae0 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -176,6 +176,13 @@ public class Main {
@@ -1362,7 +1362,7 @@ index c1b7f1281fbd41e765d2c1881763ca25b20e924d..53c620e717d39ef16f44c9697ac4809a
 +    // Purpur end - Configurable chance for wolves to spawn rabid
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index d7a52220e9525502163f5ee6afbadf2baaae6190..1b7fdbecf9c28732d5196236980e87fa737a0769 100644
+index fd4c1d67c134caf818f10bfd54831863c485f6a9..0131eaade61bc30a094a3166e8cd58cd7cfd7921 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -602,6 +602,15 @@ public class CraftEventFactory {

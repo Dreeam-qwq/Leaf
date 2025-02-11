@@ -27,7 +27,7 @@ index 4c003acccdd2dd17918b15316001e52e7670123e..780f3a48152fef6a06dc67bf7fbd1965
          HandlerList handlers = event.getHandlers();
          RegisteredListener[] listeners = handlers.getRegisteredListeners();
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 399cf37a3e823524aea48c288d270820696ba666..78904ae17d5f1b12da4825c251d8331376de78d6 100644
+index 00ac7495b034163a848a8e0219a27beeed783831..be38bcad1002e80f81218518d50935e8b6361c65 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -321,6 +321,8 @@ public final class CraftServer implements Server {
@@ -48,7 +48,7 @@ index 399cf37a3e823524aea48c288d270820696ba666..78904ae17d5f1b12da4825c251d83313
              @Override
              public CraftPlayer apply(ServerPlayer player) {
                  return player.getBukkitEntity();
-@@ -3458,4 +3460,11 @@ public final class CraftServer implements Server {
+@@ -3448,4 +3450,11 @@ public final class CraftServer implements Server {
          return getServer().lagging;
      }
      // Purpur end - Lagging threshold
@@ -61,7 +61,7 @@ index 399cf37a3e823524aea48c288d270820696ba666..78904ae17d5f1b12da4825c251d83313
 +    // Leaves end - replay mod api
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index dca2761fe4765c6e95b5db0d0cb5c818eb8697b4..3235ec3415407d1f4fa420d398364fd62f4fd135 100644
+index 0d46585c0128cea7265870de5fe260681c65d7c3..5c99cdd9e88c9a9a350393b755037b5c7433377a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 @@ -117,6 +117,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
