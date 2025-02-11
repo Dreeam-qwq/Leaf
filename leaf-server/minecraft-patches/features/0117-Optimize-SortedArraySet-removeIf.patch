@@ -1,27 +1,28 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Taiyou06 <kaandindar21@gmail.com>
 Date: Sat, 8 Feb 2025 16:59:51 +0100
-Subject: [PATCH] Optimize SortedArraySet
+Subject: [PATCH] Optimize SortedArraySet removeIf
 
 
 diff --git a/net/minecraft/util/SortedArraySet.java b/net/minecraft/util/SortedArraySet.java
-index 339b19e88567be382e550ed54477fabd58d51faa..ab4ae860e6b9a0ead06e26b69d12ef2f1607102c 100644
+index 339b19e88567be382e550ed54477fabd58d51faa..67a8e2d5954ad3fd6c4f947c720648ffc96c1039 100644
 --- a/net/minecraft/util/SortedArraySet.java
 +++ b/net/minecraft/util/SortedArraySet.java
-@@ -14,39 +14,31 @@ public class SortedArraySet<T> extends AbstractSet<T> implements ca.spottedleaf.
-     T[] contents;
+@@ -15,40 +15,37 @@ public class SortedArraySet<T> extends AbstractSet<T> implements ca.spottedleaf.
      int size;
  
--    // Paper start - rewrite chunk system
-+    // Paper start - rewrite chunk system - Leaf - Optimize SortedArraySet
+     // Paper start - rewrite chunk system
++    // Leaf start - Optimize SortedArraySet removeIf
      @Override
      public final boolean removeIf(final java.util.function.Predicate<? super T> filter) {
 -        // prev. impl used an iterator, which could be n^2 and creates garbage
 -        int i = 0;
 -        final int len = this.size;
--        final T[] backingArray = this.contents;
 +        final int oldSize = this.size;
 +        if (oldSize == 0) return false;
++
+         final T[] backingArray = this.contents;
++        int writePos = 0;
  
 -        for (;;) {
 -            if (i >= len) {
@@ -30,39 +31,40 @@ index 339b19e88567be382e550ed54477fabd58d51faa..ab4ae860e6b9a0ead06e26b69d12ef2f
 -            if (!filter.test(backingArray[i])) {
 -                ++i;
 -                continue;
-+        final T[] backingArray = this.contents;
-+        int writePos = 0;
-+
-+        // Leaf - Single pass through the array
++        // Single pass through the array
 +        for (int readPos = 0; readPos < oldSize; readPos++) {
 +            final T element = backingArray[readPos];
 +            if (!filter.test(element)) {
 +                if (writePos != readPos) {
 +                    backingArray[writePos] = element;
 +                }
++
 +                writePos++;
              }
 -            break;
          }
  
 -        // we only want to write back to backingArray if we really need to
--
++        if (writePos == oldSize) return false;
+ 
 -        int lastIndex = i; // this is where new elements are shifted to
--
++        // Clear leftovers and update size
++        Arrays.fill(backingArray, writePos, oldSize, null);
+ 
 -        for (; i < len; ++i) {
 -            final T curr = backingArray[i];
 -            if (!filter.test(curr)) { // if test throws we're screwed
 -                backingArray[lastIndex++] = curr;
 -            }
 -        }
-+        if (writePos == oldSize) return false;
++        this.size = writePos;
  
 -        // cleanup end
 -        Arrays.fill(backingArray, lastIndex, len, null);
 -        this.size = lastIndex;
-+        // Leaf - Clear leftovers and update size
-+        Arrays.fill(backingArray, writePos, oldSize, null);
-+        this.size = writePos;
          return true;
      }
++    // Leaf end - Optimize SortedArraySet removeIf
  
+     @Override
+     public final T moonrise$replace(final T object) {

@@ -3,16 +3,18 @@ From: Taiyou06 <kaandindar21@gmail.com>
 Date: Sat, 8 Feb 2025 22:36:31 +0100
 Subject: [PATCH] Optimize baby villager sensor
 
+TODO: check this, and whether need to inline findAll, isVillagerBaby, and merge a single loop
 
 diff --git a/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java b/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
-index 24d1928445b5571e040a2b12d5c82e77a880d9bd..35771058a84521724797d80ca3469d23febaf37f 100644
+index 24d1928445b5571e040a2b12d5c82e77a880d9bd..90316be1fe532e4306b917252e9f8b99763eac21 100644
 --- a/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
-@@ -22,7 +22,18 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
+@@ -22,7 +22,20 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
      }
  
      private List<LivingEntity> getNearestVillagerBabies(LivingEntity livingEntity) {
 -        return ImmutableList.copyOf(this.getVisibleEntities(livingEntity).findAll(this::isVillagerBaby));
++        // Leaf start - Optimize baby villager sensor
 +        NearestVisibleLivingEntities visibleEntities = this.getVisibleEntities(livingEntity);
 +        ImmutableList.Builder<LivingEntity> babies = ImmutableList.builder();
 +
@@ -25,6 +27,7 @@ index 24d1928445b5571e040a2b12d5c82e77a880d9bd..35771058a84521724797d80ca3469d23
 +        }
 +
 +        return babies.build();
++        // Leaf end - Optimize baby villager sensor
      }
  
      private boolean isVillagerBaby(LivingEntity livingEntity) {
