@@ -5,7 +5,7 @@ Subject: [PATCH] Cache and optimize fluidOnEyes
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index d9861d2abc3f37e47b2127eb032a8a83fcaeba3e..4e493c47eca9605c4c173b21ecd3701d5c144eeb 100644
+index 2e63139dbf08c368c274aedb4d696e596517563d..198182a7c54691e0e61f9b2948704abab15d6a74 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -261,7 +261,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
@@ -17,7 +17,7 @@ index d9861d2abc3f37e47b2127eb032a8a83fcaeba3e..4e493c47eca9605c4c173b21ecd3701d
      public int invulnerableTime;
      protected boolean firstTick = true;
      protected final SynchedEntityData entityData;
-@@ -1993,9 +1993,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -2002,9 +2002,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          }
      }
  
@@ -30,7 +30,7 @@ index d9861d2abc3f37e47b2127eb032a8a83fcaeba3e..4e493c47eca9605c4c173b21ecd3701d
          double eyeY = this.getEyeY();
          if (!(
              this.getVehicle() instanceof AbstractBoat abstractBoat
-@@ -2088,7 +2091,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -2097,7 +2100,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
  
      public boolean isEyeInFluid(TagKey<Fluid> fluidTag) {
