@@ -4,11 +4,24 @@ Date: Sat, 8 Feb 2025 22:36:31 +0100
 Subject: [PATCH] Optimize baby villager sensor
 
 
+diff --git a/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java b/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java
+index 1c010e5b75506945e5281021a2ddad424044d28f..2b973a3ba7d65330fa4690e71e5321c28457ec61 100644
+--- a/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java
++++ b/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java
+@@ -42,7 +42,7 @@ public class NearestVisibleLivingEntities {
+     }
+ 
+     public Iterable<LivingEntity> findAll(Predicate<LivingEntity> predicate) {
+-        return Iterables.filter(this.nearbyEntities, target -> predicate.test(target) && this.lineOfSightTest.test(target));
++        return Iterables.filter(this.nearbyEntities, target -> predicate.test(target) && this.lineOfSightTest.test(target)); // Leaf - Optimize baby villager sensor - diff on change
+     }
+ 
+     public Stream<LivingEntity> find(Predicate<LivingEntity> predicate) {
 diff --git a/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java b/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
-index 24d1928445b5571e040a2b12d5c82e77a880d9bd..214bc059b6e0d1723f81703b71873c8abfa9ba92 100644
+index 24d1928445b5571e040a2b12d5c82e77a880d9bd..4b2964aeb4e21fe41f42c2902db63ce28322063a 100644
 --- a/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
-@@ -22,7 +22,21 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
+@@ -22,11 +22,25 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
      }
  
      private List<LivingEntity> getNearestVillagerBabies(LivingEntity livingEntity) {
@@ -31,3 +44,8 @@ index 24d1928445b5571e040a2b12d5c82e77a880d9bd..214bc059b6e0d1723f81703b71873c8a
      }
  
      private boolean isVillagerBaby(LivingEntity livingEntity) {
+-        return livingEntity.getType() == EntityType.VILLAGER && livingEntity.isBaby();
++        return livingEntity.getType() == EntityType.VILLAGER && livingEntity.isBaby(); // Leaf - Optimize baby villager sensor - diff on change
+     }
+ 
+     private NearestVisibleLivingEntities getVisibleEntities(LivingEntity livingEntity) {
