@@ -24,16 +24,6 @@ public class AsyncPathfinding extends ConfigModules {
         asyncPathfindingMaxThreads = config.getInt(getBasePath() + ".max-threads", asyncPathfindingMaxThreads);
         asyncPathfindingKeepalive = config.getInt(getBasePath() + ".keepalive", asyncPathfindingKeepalive);
         asyncPathfindingQueueSize = config.getInt(getBasePath() + ".queue-size", asyncPathfindingQueueSize);
-        asyncPathfindingRejectPolicy = PathfindTaskRejectPolicy.fromString(config.getString(getBasePath() + ".reject-policy", availableProcessors >= 12 ? PathfindTaskRejectPolicy.FLUSH_ALL.toString() : PathfindTaskRejectPolicy.CALLER_RUNS.toString(), config.pickStringRegionBased(
-                """
-                The policy to use when the queue is full and a new task is submitted.
-                FLUSH_ALL: All pending tasks will be run on server thread.
-                CALLER_RUNS: Newly submitted task will be run on server thread.""",
-                """
-                当队列满时, 新提交的任务将使用以下策略处理.
-                FLUSH_ALL: 所有等待中的任务都将在主线程上运行.
-                CALLER_RUNS: 新提交的任务将在主线程上运行."""
-        )));
 
         if (asyncPathfindingMaxThreads < 0)
             asyncPathfindingMaxThreads = Math.max(availableProcessors + asyncPathfindingMaxThreads, 1);
@@ -45,6 +35,17 @@ public class AsyncPathfinding extends ConfigModules {
             LeafConfig.LOGGER.info("Using {} threads for Async Pathfinding", asyncPathfindingMaxThreads);
 
         if (asyncPathfindingQueueSize <= 0)
-            asyncPathfindingQueueSize = asyncPathfindingMaxThreads * 128;
+            asyncPathfindingQueueSize = asyncPathfindingMaxThreads * 256;
+
+        asyncPathfindingRejectPolicy = PathfindTaskRejectPolicy.fromString(config.getString(getBasePath() + ".reject-policy", availableProcessors >= 12 && asyncPathfindingQueueSize < 512 ? PathfindTaskRejectPolicy.FLUSH_ALL.toString() : PathfindTaskRejectPolicy.CALLER_RUNS.toString(), config.pickStringRegionBased(
+            """
+            The policy to use when the queue is full and a new task is submitted.
+            FLUSH_ALL: All pending tasks will be run on server thread.
+            CALLER_RUNS: Newly submitted task will be run on server thread.""",
+            """
+            当队列满时, 新提交的任务将使用以下策略处理.
+            FLUSH_ALL: 所有等待中的任务都将在主线程上运行.
+            CALLER_RUNS: 新提交的任务将在主线程上运行."""
+        )));
     }
 }
