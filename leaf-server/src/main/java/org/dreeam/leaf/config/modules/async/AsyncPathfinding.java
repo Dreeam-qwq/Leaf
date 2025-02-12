@@ -19,31 +19,33 @@ public class AsyncPathfinding extends ConfigModules {
 
     @Override
     public void onLoaded() {
+        final int availableProcessors = Runtime.getRuntime().availableProcessors();
         enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
         asyncPathfindingMaxThreads = config.getInt(getBasePath() + ".max-threads", asyncPathfindingMaxThreads);
         asyncPathfindingKeepalive = config.getInt(getBasePath() + ".keepalive", asyncPathfindingKeepalive);
         asyncPathfindingQueueSize = config.getInt(getBasePath() + ".queue-size", asyncPathfindingQueueSize);
-        asyncPathfindingRejectPolicy = PathfindTaskRejectPolicy.fromString(config.getString(getBasePath() + ".reject-policy", asyncPathfindingRejectPolicy.toString(), config.pickStringRegionBased(
-                """
-                The policy to use when the queue is full and a new task is submitted.
-                FLUSH_ALL: All pending tasks will be run on server thread.
-                CALLER_RUNS: Newly submitted task will be run on server thread.""",
-                """
-                当队列满时, 新提交的任务将使用以下策略处理.
-                FLUSH_ALL: 所有等待中的任务都将在主线程上运行.
-                CALLER_RUNS: 新提交的任务将在主线程上运行."""
-        )));
 
         if (asyncPathfindingMaxThreads < 0)
-            asyncPathfindingMaxThreads = Math.max(Runtime.getRuntime().availableProcessors() + asyncPathfindingMaxThreads, 1);
+            asyncPathfindingMaxThreads = Math.max(availableProcessors + asyncPathfindingMaxThreads, 1);
         else if (asyncPathfindingMaxThreads == 0)
-            asyncPathfindingMaxThreads = Math.max(Runtime.getRuntime().availableProcessors() / 4, 1);
+            asyncPathfindingMaxThreads = Math.max(availableProcessors / 4, 1);
         if (!enabled)
             asyncPathfindingMaxThreads = 0;
         else
             LeafConfig.LOGGER.info("Using {} threads for Async Pathfinding", asyncPathfindingMaxThreads);
 
         if (asyncPathfindingQueueSize <= 0)
-            asyncPathfindingQueueSize = asyncPathfindingMaxThreads * Math.max(asyncPathfindingMaxThreads, 4);
+            asyncPathfindingQueueSize = asyncPathfindingMaxThreads * 256;
+
+        asyncPathfindingRejectPolicy = PathfindTaskRejectPolicy.fromString(config.getString(getBasePath() + ".reject-policy", availableProcessors >= 12 && asyncPathfindingQueueSize < 512 ? PathfindTaskRejectPolicy.FLUSH_ALL.toString() : PathfindTaskRejectPolicy.CALLER_RUNS.toString(), config.pickStringRegionBased(
+            """
+            The policy to use when the queue is full and a new task is submitted.
+            FLUSH_ALL: All pending tasks will be run on server thread.
+            CALLER_RUNS: Newly submitted task will be run on server thread.""",
+            """
+            当队列满时, 新提交的任务将使用以下策略处理.
+            FLUSH_ALL: 所有等待中的任务都将在主线程上运行.
+            CALLER_RUNS: 新提交的任务将在主线程上运行."""
+        )));
     }
 }

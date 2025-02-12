@@ -27,7 +27,7 @@ index 4c003acccdd2dd17918b15316001e52e7670123e..780f3a48152fef6a06dc67bf7fbd1965
          HandlerList handlers = event.getHandlers();
          RegisteredListener[] listeners = handlers.getRegisteredListeners();
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 00ac7495b034163a848a8e0219a27beeed783831..be38bcad1002e80f81218518d50935e8b6361c65 100644
+index 53dbd3022fc4ab4786b2b9d8de27b84bfee81935..acd4369d6b8766bce201f35105a90bfe3ae99bb1 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -321,6 +321,8 @@ public final class CraftServer implements Server {
@@ -48,7 +48,7 @@ index 00ac7495b034163a848a8e0219a27beeed783831..be38bcad1002e80f81218518d50935e8
              @Override
              public CraftPlayer apply(ServerPlayer player) {
                  return player.getBukkitEntity();
-@@ -3448,4 +3450,11 @@ public final class CraftServer implements Server {
+@@ -3449,4 +3451,11 @@ public final class CraftServer implements Server {
          return getServer().lagging;
      }
      // Purpur end - Lagging threshold

@@ -48,6 +48,6 @@ public class MultithreadedTracker extends ConfigModules {
             LeafConfig.LOGGER.info("Using {} threads for Async Entity Tracker", asyncEntityTrackerMaxThreads);
 
         if (asyncEntityTrackerQueueSize <= 0)
-            asyncEntityTrackerQueueSize = asyncEntityTrackerMaxThreads * Math.max(asyncEntityTrackerMaxThreads, 4);
+            asyncEntityTrackerQueueSize = asyncEntityTrackerMaxThreads * 384;
     }
 }

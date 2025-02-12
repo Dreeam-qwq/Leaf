@@ -559,7 +559,7 @@ index 94ca0407303c4493ab4928b12ec6ecc75aaca549..f2d87c12dd19210ce7e2147fada5c101
 +    // Purpur end - OfflinePlayer API
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index c5e63626217ed730a2289a5f8e2074c9abfb7899..550336d86872e3a27ac61a994d68f249b20f08e3 100644
+index 6f94aed7e136bd13dddaca1e2a214e55cf87403b..bdefa58dac3236e26ca40f92c1c64f8cffa01582 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -428,6 +428,20 @@ public final class CraftServer implements Server {
@@ -599,15 +599,15 @@ index c5e63626217ed730a2289a5f8e2074c9abfb7899..550336d86872e3a27ac61a994d68f249
          }
  
          Plugin[] pluginClone = pluginManager.getPlugins().clone(); // Paper
-@@ -1121,6 +1137,7 @@ public final class CraftServer implements Server {
-         org.spigotmc.SpigotConfig.registerCommands(); // Spigot
+@@ -1122,6 +1138,7 @@ public final class CraftServer implements Server {
          io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
+         org.galemc.gale.command.GaleCommands.registerCommands(this.console); // Gale - Gale commands - register commands
          this.spark.registerCommandBeforePlugins(this); // Paper - spark
 +        org.purpurmc.purpur.PurpurConfig.registerCommands(); // Purpur - Purpur config files
          this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
          this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
  
-@@ -1652,6 +1669,60 @@ public final class CraftServer implements Server {
+@@ -1653,6 +1670,60 @@ public final class CraftServer implements Server {
          return true;
      }
  
@@ -668,7 +668,7 @@ index c5e63626217ed730a2289a5f8e2074c9abfb7899..550336d86872e3a27ac61a994d68f249
      @Override
      public List<Recipe> getRecipesFor(ItemStack result) {
          Preconditions.checkArgument(result != null, "ItemStack cannot be null");
-@@ -3059,6 +3130,18 @@ public final class CraftServer implements Server {
+@@ -3060,6 +3131,18 @@ public final class CraftServer implements Server {
          }
          // Gale end - Gale configuration - API
  
@@ -687,7 +687,7 @@ index c5e63626217ed730a2289a5f8e2074c9abfb7899..550336d86872e3a27ac61a994d68f249
          @Override
          public void restart() {
              org.spigotmc.RestartCommand.restart();
-@@ -3351,4 +3434,18 @@ public final class CraftServer implements Server {
+@@ -3352,4 +3435,18 @@ public final class CraftServer implements Server {
          return MinecraftServer.lastTickOversleepTime;
      }
      // Gale end - YAPFA - last tick time - API
