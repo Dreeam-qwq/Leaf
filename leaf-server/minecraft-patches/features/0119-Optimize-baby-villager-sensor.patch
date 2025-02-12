@@ -3,13 +3,12 @@ From: Taiyou06 <kaandindar21@gmail.com>
 Date: Sat, 8 Feb 2025 22:36:31 +0100
 Subject: [PATCH] Optimize baby villager sensor
 
-TODO: check this, and whether need to inline findAll, isVillagerBaby, and merge a single loop
 
 diff --git a/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java b/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
-index 24d1928445b5571e040a2b12d5c82e77a880d9bd..90316be1fe532e4306b917252e9f8b99763eac21 100644
+index 24d1928445b5571e040a2b12d5c82e77a880d9bd..214bc059b6e0d1723f81703b71873c8abfa9ba92 100644
 --- a/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/VillagerBabiesSensor.java
-@@ -22,7 +22,20 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
+@@ -22,7 +22,21 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
      }
  
      private List<LivingEntity> getNearestVillagerBabies(LivingEntity livingEntity) {
@@ -18,12 +17,13 @@ index 24d1928445b5571e040a2b12d5c82e77a880d9bd..90316be1fe532e4306b917252e9f8b99
 +        NearestVisibleLivingEntities visibleEntities = this.getVisibleEntities(livingEntity);
 +        ImmutableList.Builder<LivingEntity> babies = ImmutableList.builder();
 +
-+        // Get filtered iterable using existing logic
-+        Iterable<LivingEntity> filtered = visibleEntities.findAll(this::isVillagerBaby);
-+
-+        // Manually iterate using enhanced for-loop
-+        for (LivingEntity entity : filtered) {
-+            babies.add(entity);
++        // Inline and use single loop - copy from NearestVisibleLivingEntities#findAll and isVillagerBaby
++        for (LivingEntity target : visibleEntities.nearbyEntities) {
++            if (target.getType() == EntityType.VILLAGER
++                && target.isBaby()
++                && visibleEntities.lineOfSightTest.test(target)) {
++                babies.add(target);
++            }
 +        }
 +
 +        return babies.build();
