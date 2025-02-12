@@ -19,11 +19,12 @@ public class AsyncPathfinding extends ConfigModules {
 
     @Override
     public void onLoaded() {
+        final int availableProcessors = Runtime.getRuntime().availableProcessors();
         enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
         asyncPathfindingMaxThreads = config.getInt(getBasePath() + ".max-threads", asyncPathfindingMaxThreads);
         asyncPathfindingKeepalive = config.getInt(getBasePath() + ".keepalive", asyncPathfindingKeepalive);
         asyncPathfindingQueueSize = config.getInt(getBasePath() + ".queue-size", asyncPathfindingQueueSize);
-        asyncPathfindingRejectPolicy = PathfindTaskRejectPolicy.fromString(config.getString(getBasePath() + ".reject-policy", asyncPathfindingRejectPolicy.toString(), config.pickStringRegionBased(
+        asyncPathfindingRejectPolicy = PathfindTaskRejectPolicy.fromString(config.getString(getBasePath() + ".reject-policy", availableProcessors >= 12 ? PathfindTaskRejectPolicy.FLUSH_ALL.toString() : PathfindTaskRejectPolicy.CALLER_RUNS.toString(), config.pickStringRegionBased(
                 """
                 The policy to use when the queue is full and a new task is submitted.
                 FLUSH_ALL: All pending tasks will be run on server thread.
@@ -35,15 +36,15 @@ public class AsyncPathfinding extends ConfigModules {
         )));
 
         if (asyncPathfindingMaxThreads < 0)
-            asyncPathfindingMaxThreads = Math.max(Runtime.getRuntime().availableProcessors() + asyncPathfindingMaxThreads, 1);
+            asyncPathfindingMaxThreads = Math.max(availableProcessors + asyncPathfindingMaxThreads, 1);
         else if (asyncPathfindingMaxThreads == 0)
-            asyncPathfindingMaxThreads = Math.max(Runtime.getRuntime().availableProcessors() / 4, 1);
+            asyncPathfindingMaxThreads = Math.max(availableProcessors / 4, 1);
         if (!enabled)
             asyncPathfindingMaxThreads = 0;
         else
             LeafConfig.LOGGER.info("Using {} threads for Async Pathfinding", asyncPathfindingMaxThreads);
 
         if (asyncPathfindingQueueSize <= 0)
-            asyncPathfindingQueueSize = asyncPathfindingMaxThreads * Math.max(asyncPathfindingMaxThreads, 4);
+            asyncPathfindingQueueSize = asyncPathfindingMaxThreads * 128;
     }
 }
