@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Wed, 12 Feb 2025 22:58:17 +0100
+Subject: [PATCH] Optimize getEntities
+
+
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
+index b6af8da084c83ee38bb3ecea6a98feb0c1c74d2a..4017324836a84907556a8635fa60f760d02b2629 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
+@@ -502,27 +502,49 @@ public final class ChunkEntitySlices {
+             final int minSection = this.slices.minSection;
+             final int maxSection = this.slices.maxSection;
+ 
++            // Precompute clamped section indices
+             final int min = Mth.clamp(Mth.floor(box.minY - 2.0) >> 4, minSection, maxSection);
+             final int max = Mth.clamp(Mth.floor(box.maxY + 2.0) >> 4, minSection, maxSection);
++            final int startIdx = min - minSection;
++            final int endIdx = max - minSection;
+ 
+             final BasicEntityList<Entity>[] entitiesBySection = this.entitiesBySection;
+ 
+-            for (int section = min; section <= max; ++section) {
+-                final BasicEntityList<Entity> list = entitiesBySection[section - minSection];
+-
++            // Cache box coordinates to avoid repeated method calls
++            final double boxMinX = box.minX;
++            final double boxMinY = box.minY;
++            final double boxMinZ = box.minZ;
++            final double boxMaxX = box.maxX;
++            final double boxMaxY = box.maxY;
++            final double boxMaxZ = box.maxZ;
++
++            // Iterate using precomputed indices
++            for (int idx = startIdx; idx <= endIdx; ++idx) {
++                final BasicEntityList<Entity> list = entitiesBySection[idx];
+                 if (list == null) {
+                     continue;
+                 }
+ 
+                 final Entity[] storage = list.storage;
++                final int size = list.size();
+ 
+-                for (int i = 0, len = Math.min(storage.length, list.size()); i < len; ++i) {
++                for (int i = 0; i < size; ++i) {
+                     final Entity entity = storage[i];
+ 
+-                    if (entity == null || entity == except || !entity.getBoundingBox().intersects(box)) {
++                    // Skip excluded entity (only check if 'except' is non-null)
++                    if (except != null && entity == except) {
++                        continue;
++                    }
++
++                    // Inlined AABB intersection check (avoids method call)
++                    final AABB entityBox = entity.getBoundingBox();
++                    if (entityBox.maxX < boxMinX || entityBox.minX > boxMaxX ||
++                        entityBox.maxY < boxMinY || entityBox.minY > boxMaxY ||
++                        entityBox.maxZ < boxMinZ || entityBox.minZ > boxMaxZ) {
+                         continue;
+                     }
+ 
++                    // Test predicate last (most expensive check)
+                     if (predicate != null && !predicate.test(entity)) {
+                         continue;
+                     }
