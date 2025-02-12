@@ -23,6 +23,19 @@ for the case of some NPC plugins which using real entity type, e.g. Citizens.
 But it is still recommending to use those packet based, virtual entity
 based NPC plugins, e.g. ZNPC Plus, Adyeshach, Fancy NPC, etc.
 
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+index dd2509996bfd08e8c3f9f2be042229eac6d7692d..a35e9fae8f8da0c42f0616c4f78dc396492673aa 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+@@ -342,7 +342,7 @@ public final class RegionizedPlayerChunkLoader {
+         private boolean canGenerateChunks = true;
+ 
+         private final ArrayDeque<ChunkHolderManager.TicketOperation<?, ?>> delayedTicketOps = new ArrayDeque<>();
+-        private final LongOpenHashSet sentChunks = new LongOpenHashSet();
++        private final LongOpenHashSet sentChunks = org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled && !org.dreeam.leaf.config.modules.async.MultithreadedTracker.compatModeEnabled ? new org.dreeam.leaf.util.map.ConcurrentLongHashSet() : new LongOpenHashSet(); // Leaf - Multithreaded tracker
+ 
+         private static final byte CHUNK_TICKET_STAGE_NONE           = 0;
+         private static final byte CHUNK_TICKET_STAGE_LOADING        = 1;
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
 index 5d9d233e3a568aa6297ed9c703fa450f98158602..8986c059e7aadb58ae8d9ab7b848de10f9faa6b2 100644
 --- a/net/minecraft/server/level/ChunkMap.java

@@ -7,6 +7,7 @@ Original license: GPL v3
 Original project: https://github.com/pufferfish-gg/Pufferfish
 
 Co-authored-by: booky10 <boooky10@gmail.com>
+Co-authored-by: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
 
 This patch aims to reduce the main-thread impact of mob spawning by
 offloading as much work as possible to other threads. It is possible for
@@ -22,9 +23,18 @@ and, in my opinion, worth the low risk of minor mob-spawning-related
 inconsistencies.
 
 diff --git a/src/main/java/ca/spottedleaf/moonrise/common/list/IteratorSafeOrderedReferenceSet.java b/src/main/java/ca/spottedleaf/moonrise/common/list/IteratorSafeOrderedReferenceSet.java
-index c21e00812f1aaa1279834a0562d360d6b89e146c..877d2095a066854939f260ca4b0b8c7b5abb620f 100644
+index c21e00812f1aaa1279834a0562d360d6b89e146c..4ae478c04ef44c91408a7f3f0405291f91794873 100644
 --- a/src/main/java/ca/spottedleaf/moonrise/common/list/IteratorSafeOrderedReferenceSet.java
 +++ b/src/main/java/ca/spottedleaf/moonrise/common/list/IteratorSafeOrderedReferenceSet.java
+@@ -10,7 +10,7 @@ public final class IteratorSafeOrderedReferenceSet<E> {
+     public static final int ITERATOR_FLAG_SEE_ADDITIONS = 1 << 0;
+ 
+     private final Reference2IntLinkedOpenHashMap<E> indexMap;
+-    private int firstInvalidIndex = -1;
++    private volatile int firstInvalidIndex = -1; // Leaf - Async mob spawning - volatile
+ 
+     /* list impl */
+     private E[] listElements;
 @@ -18,7 +18,7 @@ public final class IteratorSafeOrderedReferenceSet<E> {
  
      private final double maxFragFactor;
