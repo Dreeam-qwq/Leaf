@@ -235,7 +235,7 @@ index b046103ea0634ecaf2facf20f447a5db0fa0115e..c736620414353388d122650af2ffec03
  
      public void broadcastAndSend(Entity entity, Packet<?> packet) {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index dd1827931e7a2f771444867ad556444de5001060..33c34ce4f9f55cb7190ca37de6d9c77038bc2bab 100644
+index dd1827931e7a2f771444867ad556444de5001060..a7113c957af6c87b14466dd1ce1f0b2673529ddf 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -29,6 +29,7 @@ import java.util.Set;
@@ -258,11 +258,12 @@ index dd1827931e7a2f771444867ad556444de5001060..33c34ce4f9f55cb7190ca37de6d9c770
  
      public LevelChunk getChunkIfLoaded(int x, int z) {
          return this.chunkSource.getChunkAtIfLoadedImmediately(x, z); // Paper - Use getChunkIfLoadedImmediately
-@@ -1614,6 +1620,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1614,6 +1620,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
      public void removePlayerImmediately(ServerPlayer player, Entity.RemovalReason reason) {
          player.remove(reason, null); // CraftBukkit - add Bukkit remove cause
-+        this.playerCleanupListeners.forEach(l -> l.accept(player));
++        List<Consumer<ServerPlayer>> listeners = this.playerCleanupListeners;
++        for (int i = 0, len = listeners.size(); i < len; ++i) {listeners.get(i).accept(player);}
      }
  
      // CraftBukkit start
