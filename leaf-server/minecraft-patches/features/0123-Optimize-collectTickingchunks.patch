@@ -5,64 +5,43 @@ Subject: [PATCH] Optimize collectTickingchunks
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index dd956431bb882daa70267685f2283d0c358336be..e2a2aef273d7e5bef025a4acc99f4b427e089194 100644
+index dd956431bb882daa70267685f2283d0c358336be..aa229df5e8ed8b6cf8f424aae6183f625fc98de2 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -1,5 +1,7 @@
- package net.minecraft.server.level;
+@@ -570,20 +570,31 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+         final ca.spottedleaf.moonrise.common.list.ReferenceList<net.minecraft.server.level.ServerChunkCache.ChunkAndHolder> tickingChunks =
+             ((ca.spottedleaf.moonrise.patches.chunk_tick_iteration.ChunkTickServerLevel)this.level).moonrise$getPlayerTickingChunks();
  
-+import ca.spottedleaf.moonrise.common.list.ReferenceList;
-+import ca.spottedleaf.moonrise.patches.chunk_tick_iteration.ChunkTickServerLevel;
- import com.google.common.annotations.VisibleForTesting;
- import com.mojang.datafixers.DataFixer;
- import com.mojang.logging.LogUtils;
-@@ -566,27 +568,38 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
-     }
- 
-     private void collectTickingChunks(List<LevelChunk> output) {
--        // Paper start - chunk tick iteration optimisation
--        final ca.spottedleaf.moonrise.common.list.ReferenceList<net.minecraft.server.level.ServerChunkCache.ChunkAndHolder> tickingChunks =
--            ((ca.spottedleaf.moonrise.patches.chunk_tick_iteration.ChunkTickServerLevel)this.level).moonrise$getPlayerTickingChunks();
--
 -        final ServerChunkCache.ChunkAndHolder[] raw = tickingChunks.getRawDataUnchecked();
-+        final ReferenceList<ChunkAndHolder> tickingChunks = ((ChunkTickServerLevel)this.level).moonrise$getPlayerTickingChunks();
 +        // Avoid repeated method calls by getting size once
          final int size = tickingChunks.size();
--
+ 
 +        if (size == 0) {
 +            return;
 +        }
++
 +        // Pre-size output list to avoid resizing
-+        if (output instanceof ArrayList) {
-+            ((ArrayList<LevelChunk>) output).ensureCapacity(Math.min(size, 16384)); //TODO: this could be configurable to smoothen out the array expansion
++        if (output instanceof ArrayList chunks) {
++            chunks.ensureCapacity(Math.min(size, 16384)); // TODO: this could be configurable to smoothen out the array expansion
 +        }
++
 +        // Get raw array access
 +        final ServerChunkCache.ChunkAndHolder[] raw = tickingChunks.getRawDataUnchecked();
 +        // Cache frequently accessed objects
          final ChunkMap chunkMap = this.chunkMap;
--
+ 
          for (int i = 0; i < size; ++i) {
              final ServerChunkCache.ChunkAndHolder chunkAndHolder = raw[i];
--            final LevelChunk levelChunk = chunkAndHolder.chunk();
-+            if (chunkAndHolder == null) {
-+                continue;
-+            }
+             final LevelChunk levelChunk = chunkAndHolder.chunk();
  
 -            if (!this.isChunkNearPlayer(chunkMap, levelChunk.getPos(), levelChunk)) {
-+            final LevelChunk levelChunk = chunkAndHolder.chunk();
-+            if (levelChunk == null) {
-                 continue;
-             }
- 
--            output.add(levelChunk);
+-                continue;
 +            // Check if chunk is near a player using cached computation
 +            if (this.isChunkNearPlayer(chunkMap, levelChunk.getPos(), levelChunk)) {
 +                output.add(levelChunk);
-+            }
+             }
+-
+-            output.add(levelChunk);
          }
--        // Paper end - chunk tick iteration optimisation
+         // Paper end - chunk tick iteration optimisation
      }
-+        // Paper end - chunk tick iteration optimisation
- 
-     private void tickChunks(long timeInhabited, List<LevelChunk> chunks) { // Gale - Purpur - remove vanilla profiler
-         // Gale start - MultiPaper - skip unnecessary mob spawning computations
