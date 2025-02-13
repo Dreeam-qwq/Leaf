@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Thu, 13 Feb 2025 01:25:40 +0100
+Subject: [PATCH] Remove iterators from inventory
+
+
+diff --git a/net/minecraft/world/entity/player/Inventory.java b/net/minecraft/world/entity/player/Inventory.java
+index 839cbb67d3d38960d9114a4db5bab911b66a573c..25b904549b4cd43181e5443493f7165ecc84b826 100644
+--- a/net/minecraft/world/entity/player/Inventory.java
++++ b/net/minecraft/world/entity/player/Inventory.java
+@@ -568,38 +568,41 @@ public class Inventory implements Container, Nameable {
+     }
+ 
+     public boolean contains(ItemStack stack) {
+-        for (List<ItemStack> list : this.compartments) {
+-            for (ItemStack itemStack : list) {
+-                if (!itemStack.isEmpty() && ItemStack.isSameItemSameComponents(itemStack, stack)) {
++        for (int i = 0; i < this.compartments.size(); i++) {
++            List<ItemStack> list = this.compartments.get(i);
++            for (int j = 0; j < list.size(); j++) {
++                ItemStack itemstack1 = list.get(j);
++                if (!itemstack1.isEmpty() && ItemStack.isSameItemSameComponents(itemstack1, stack)) {
+                     return true;
+                 }
+             }
+         }
+-
+         return false;
+     }
+ 
+     public boolean contains(TagKey<Item> tag) {
+-        for (List<ItemStack> list : this.compartments) {
+-            for (ItemStack itemStack : list) {
+-                if (!itemStack.isEmpty() && itemStack.is(tag)) {
++        for (int i = 0; i < this.compartments.size(); i++) {
++            List<ItemStack> list = this.compartments.get(i);
++            for (int j = 0; j < list.size(); j++) {
++                ItemStack itemstack = list.get(j);
++                if (!itemstack.isEmpty() && itemstack.is(tag)) {
+                     return true;
+                 }
+             }
+         }
+-
+         return false;
+     }
+ 
+     public boolean contains(Predicate<ItemStack> predicate) {
+-        for (List<ItemStack> list : this.compartments) {
+-            for (ItemStack itemStack : list) {
+-                if (predicate.test(itemStack)) {
++        for (int i = 0; i < this.compartments.size(); i++) {
++            List<ItemStack> list = this.compartments.get(i);
++            for (int j = 0; j < list.size(); j++) {
++                ItemStack itemstack = list.get(j);
++                if (predicate.test(itemstack)) {
+                     return true;
+                 }
+             }
+         }
+-
+         return false;
+     }
+ 
