@@ -1,0 +1,101 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Mon, 10 Feb 2025 22:50:47 +0100
+Subject: [PATCH] Optimize chunkUnloadQueue
+
+
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java b/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java
+index 7eafc5b7cba23d8dec92ecc1050afe3fd8c9e309..7381ad20edd7e1f6503450d86263315caa40ebe5 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java
+@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
+ import it.unimi.dsi.fastutil.longs.LongIterator;
+ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+ import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.concurrent.atomic.AtomicLong;
+@@ -30,23 +31,71 @@ public final class ChunkUnloadQueue {
+     public static record SectionToUnload(int sectionX, int sectionZ, long order, int count) {}
+ 
+     public List<SectionToUnload> retrieveForAllRegions() {
+-        final List<SectionToUnload> ret = new ArrayList<>();
++        final int size = this.unloadSections.size();
++        if (size <= 1) {
++            final ArrayList<SectionToUnload> ret = new ArrayList<>(size);
++            if (size == 1) {
++                ConcurrentLong2ReferenceChainedHashTable.TableEntry<UnloadSection> entry = this.unloadSections.iterator().next();
++                final long key = entry.getKey();
++                final UnloadSection section = entry.getValue();
++                ret.add(new SectionToUnload(
++                    (int)key,          // x is lower 32 bits
++                    (int)(key >>> 32), // z is upper 32 bits
++                    section.order,
++                    section.chunks.size()
++                ));
++            }
++            return ret;
++        }
+ 
+-        for (final Iterator<ConcurrentLong2ReferenceChainedHashTable.TableEntry<UnloadSection>> iterator = this.unloadSections.entryIterator(); iterator.hasNext();) {
+-            final ConcurrentLong2ReferenceChainedHashTable.TableEntry<UnloadSection> entry = iterator.next();
++        // Pre-allocate result array and sort by order directly
++        SectionToUnload[] sections = new SectionToUnload[size];
++        int idx = 0;
++        long minOrder = Long.MAX_VALUE;
++        long maxOrder = Long.MIN_VALUE;
++
++        // Single iteration to create SectionToUnload objects and find order range
++        for (ConcurrentLong2ReferenceChainedHashTable.TableEntry<UnloadSection> entry : this.unloadSections) {
+             final long key = entry.getKey();
+             final UnloadSection section = entry.getValue();
+-            final int sectionX = CoordinateUtils.getChunkX(key);
+-            final int sectionZ = CoordinateUtils.getChunkZ(key);
+-
+-            ret.add(new SectionToUnload(sectionX, sectionZ, section.order, section.chunks.size()));
++            sections[idx++] = new SectionToUnload(
++                (int)key,          // x is lower 32 bits
++                (int)(key >>> 32), // z is upper 32 bits
++                section.order,
++                section.chunks.size()
++            );
++            if (section.order < minOrder) minOrder = section.order;
++            if (section.order > maxOrder) maxOrder = section.order;
+         }
+ 
+-        ret.sort((final SectionToUnload s1, final SectionToUnload s2) -> {
+-            return Long.compare(s1.order, s2.order);
+-        });
++        // Use counting sort for dense sequential orders
++        long range = maxOrder - minOrder + 1;
++        if (range <= size * 2) { // Only use counting sort if range is reasonable
++            SectionToUnload[] sorted = new SectionToUnload[size];
++            int[] count = new int[(int)range];
+ 
+-        return ret;
++            // Count orders
++            for (int i = 0; i < idx; i++) {
++                count[(int)(sections[i].order() - minOrder)]++;
++            }
++
++            // Calculate positions
++            for (int i = 1; i < range; i++) {
++                count[i] += count[i-1];
++            }
++
++            // Build sorted array
++            for (int i = idx - 1; i >= 0; i--) {
++                int pos = --count[(int)(sections[i].order() - minOrder)];
++                sorted[pos] = sections[i];
++            }
++
++            return Arrays.asList(sorted).subList(0, idx);
++        }
++
++        // Fallback to Arrays.sort for sparse orders
++        Arrays.sort(sections, 0, idx, (a, b) -> Long.compare(a.order(), b.order()));
++        return Arrays.asList(sections).subList(0, idx);
+     }
+ 
+     public UnloadSection getSectionUnsynchronized(final int sectionX, final int sectionZ) {
