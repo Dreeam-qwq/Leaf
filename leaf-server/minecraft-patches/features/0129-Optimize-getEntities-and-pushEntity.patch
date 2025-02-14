@@ -1,0 +1,266 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 14 Feb 2025 22:01:57 +0100
+Subject: [PATCH] Optimize getEntities and pushEntity
+
+
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java
+index 7554c109c35397bc1a43dd80e87764fd78645bbf..a373cad17ca68c6061748e8edaece8b6db0ca654 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java
+@@ -566,33 +566,37 @@ public abstract class EntityLookup implements LevelEntityGetter<Entity> {
+         final int maxChunkX = (Mth.floor(box.maxX) + 2) >> 4;
+         final int maxChunkZ = (Mth.floor(box.maxZ) + 2) >> 4;
+ 
++        // Precompute region bounds using bitwise shifts
+         final int minRegionX = minChunkX >> REGION_SHIFT;
+         final int minRegionZ = minChunkZ >> REGION_SHIFT;
+         final int maxRegionX = maxChunkX >> REGION_SHIFT;
+         final int maxRegionZ = maxChunkZ >> REGION_SHIFT;
+ 
+-        for (int currRegionZ = minRegionZ; currRegionZ <= maxRegionZ; ++currRegionZ) {
+-            final int minZ = currRegionZ == minRegionZ ? minChunkZ & REGION_MASK : 0;
+-            final int maxZ = currRegionZ == maxRegionZ ? maxChunkZ & REGION_MASK : REGION_MASK;
++        // Iterate over regions more efficiently
++        for (int currRegionZ = minRegionZ; currRegionZ <= maxRegionZ; currRegionZ++) {
++            final int regionZ = currRegionZ << REGION_SHIFT;
++            final int minZ = Math.max(minChunkZ, regionZ);
++            final int maxZ = Math.min(maxChunkZ, regionZ + REGION_MASK);
+ 
+-            for (int currRegionX = minRegionX; currRegionX <= maxRegionX; ++currRegionX) {
++            for (int currRegionX = minRegionX; currRegionX <= maxRegionX; currRegionX++) {
+                 final ChunkSlicesRegion region = this.getRegion(currRegionX, currRegionZ);
+-
+-                if (region == null) {
+-                    continue;
+-                }
+-
+-                final int minX = currRegionX == minRegionX ? minChunkX & REGION_MASK : 0;
+-                final int maxX = currRegionX == maxRegionX ? maxChunkX & REGION_MASK : REGION_MASK;
+-
+-                for (int currZ = minZ; currZ <= maxZ; ++currZ) {
+-                    for (int currX = minX; currX <= maxX; ++currX) {
+-                        final ChunkEntitySlices chunk = region.get(currX | (currZ << REGION_SHIFT));
+-                        if (chunk == null || !chunk.status.isOrAfter(FullChunkStatus.FULL)) {
+-                            continue;
+-                        }
+-
+-                        chunk.getEntities(except, box, into, predicate);
++                if (region == null) continue;
++
++                final int regionX = currRegionX << REGION_SHIFT;
++                final int minX = Math.max(minChunkX, regionX);
++                final int maxX = Math.min(maxChunkX, regionX + REGION_MASK);
++
++                // Iterate within the current region
++                for (int chunkZ = minZ; chunkZ <= maxZ; chunkZ++) {
++                    for (int chunkX = minX; chunkX <= maxX; chunkX++) {
++                        final int relIndex = (chunkX - regionX) | ((chunkZ - regionZ) << REGION_SHIFT);
++                        final ChunkEntitySlices chunk = region.get(relIndex);
++                        if (chunk == null || !chunk.status.isOrAfter(FullChunkStatus.FULL)) continue;
++
++                        // Directly check conditions without predicate if possible
++                        chunk.getEntities(except, box, into, e ->
++                            e != except && e.isPushable() && box.intersects(e.getBoundingBox())
++                        );
+                     }
+                 }
+             }
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index e73f7f44e5dbeb50a55669e843d1b7384785b5b2..1213fb99e3be1a1630bb40a1e03f1993fc0d308b 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -14,14 +14,8 @@ import com.mojang.serialization.Dynamic;
+ import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
+ import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+ import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+-import java.util.Collection;
+-import java.util.ConcurrentModificationException;
+-import java.util.EnumMap;
+-import java.util.Iterator;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Optional;
+-import java.util.Set;
++
++import java.util.*;
+ import java.util.Map.Entry;
+ import java.util.function.BiConsumer;
+ import java.util.function.Function;
+@@ -137,11 +131,8 @@ import net.minecraft.world.scores.Scoreboard;
+ import org.slf4j.Logger;
+ 
+ // CraftBukkit start
+-import java.util.ArrayList;
+-import java.util.HashSet;
+ import java.util.Set;
+-import java.util.LinkedList;
+-import java.util.UUID;
++
+ import net.minecraft.world.item.component.Consumable;
+ import org.bukkit.Location;
+ import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
+@@ -3728,97 +3719,91 @@ public abstract class LivingEntity extends Entity implements Attackable, net.caf
+     protected void pushEntities() {
+         if (!(this.level() instanceof ServerLevel serverLevel)) {
+             this.level().getEntities(EntityTypeTest.forClass(Player.class), this.getBoundingBox(), EntitySelector.pushableBy(this)).forEach(this::doPush);
+-        } else {
+-            // Paper start - don't run getEntities if we're not going to use its result
+-            if (!this.isPushable()) {
+-                return;
+-            }
++            return;
++        }
+ 
+-            net.minecraft.world.scores.Team team = this.getTeam();
+-            if (team != null && team.getCollisionRule() == net.minecraft.world.scores.Team.CollisionRule.NEVER) {
+-                return;
+-            }
++        // Early exit if entity isn't pushable
++        if (!this.isPushable()) {
++            return;
++        }
+ 
+-            int _int = serverLevel.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+-            if (_int <= 0 && this.level().paperConfig().collisions.maxEntityCollisions <= 0) {
+-                return;
+-            }
+-            // Paper end - don't run getEntities if we're not going to use its result
+-            // Leaf start - Only player pushable
+-            final AABB box = this.getBoundingBox();
+-            final Predicate<Entity> conditions = EntitySelector.pushable(this, this.level().paperConfig().collisions.fixClimbingBypassingCrammingRule);
+-
+-            List<Entity> entities = org.dreeam.leaf.config.modules.gameplay.OnlyPlayerPushable.enabled
+-                ? getNearbyPushablePlayers(this, box, conditions)
+-                : this.level().getEntities(this, box, conditions); // Paper - Climbing should not bypass cramming gamerule
+-            // Leaf end - Only player pushable
+-            if (!entities.isEmpty()) {
+-                // Paper - don't run getEntities if we're not going to use its result; moved up
+-                if (_int > 0 && entities.size() > _int - 1 && this.random.nextInt(4) == 0) {
+-                    int i = 0;
+-
+-                    for (Entity entity : entities) {
+-                        if (!entity.isPassenger()) {
+-                            i++;
+-                        }
+-                    }
++        net.minecraft.world.scores.Team team = this.getTeam();
++        if (team != null && team.getCollisionRule() == net.minecraft.world.scores.Team.CollisionRule.NEVER) {
++            return;
++        }
+ 
+-                    if (i > _int - 1) {
+-                        this.hurtServer(serverLevel, this.damageSources().cramming(), 6.0F);
+-                    }
+-                }
++        int crammingLimit = serverLevel.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
++        int maxCollisions = this.level().paperConfig().collisions.maxEntityCollisions;
++        if (crammingLimit <= 0 && maxCollisions <= 0) {
++            return;
++        }
+ 
+-                // Paper start - Cap entity collisions
+-                this.numCollisions = Math.max(0, this.numCollisions - this.level().paperConfig().collisions.maxEntityCollisions);
+-                for (Entity entity1 : entities) {
+-                    if (this.numCollisions >= this.level().paperConfig().collisions.maxEntityCollisions) {
+-                        break;
+-                    }
++        AABB box = this.getBoundingBox();
++        List<Entity> entities;
++
++        if (org.dreeam.leaf.config.modules.gameplay.OnlyPlayerPushable.enabled) {
++            entities = this.getNearbyPushablePlayers(box);
++        } else {
++            entities = this.level().getEntities(this, box, EntitySelector.pushable(this, this.level().paperConfig().collisions.fixClimbingBypassingCrammingRule));
++        }
+ 
+-                    entity1.numCollisions++;
+-                    this.numCollisions++;
+-                    // Paper end - Cap entity collisions
+-                    this.doPush(entity1);
++        if (!entities.isEmpty()) {
++            if (crammingLimit > 0 && entities.size() > crammingLimit - 1 && this.random.nextInt(4) == 0) {
++                int count = 0;
++                for (Entity entity : entities) {
++                    if (!entity.isPassenger()) {
++                        if (++count > crammingLimit - 1) {
++                            this.hurtServer(serverLevel, this.damageSources().cramming(), 6.0F);
++                            break;
++                        }
++                    }
+                 }
+             }
++
++            // Apply collision limits
++            this.numCollisions = Math.max(0, this.numCollisions - maxCollisions);
++            for (Entity entity : entities) {
++                if (this.numCollisions >= maxCollisions) break;
++                entity.numCollisions++;
++                this.numCollisions++;
++                this.doPush(entity);
++            }
+         }
+     }
+ 
+-    // Leaf start - Only player pushable
+-    public List<Entity> getNearbyPushablePlayers(Entity entity, AABB box, Predicate<Entity> conditions) {
+-        final Vec3 vec = entity.position;
+-        final net.minecraft.core.BlockPos.MutableBlockPos mutablePos = new net.minecraft.core.BlockPos.MutableBlockPos();
+-
+-        mutablePos.set(vec.x, vec.y, vec.z);
++    // Optimized method to retrieve nearby pushable players
++    private List<Entity> getNearbyPushablePlayers(AABB box) {
++        Vec3 pos = this.position();
++        ca.spottedleaf.moonrise.common.misc.NearbyPlayers nearbyPlayers = ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel) this.level()).moonrise$getNearbyPlayers();
++        if (nearbyPlayers == null) {
++            return Collections.emptyList();
++        }
+ 
+-        final ca.spottedleaf.moonrise.common.list.ReferenceList<ServerPlayer> players = ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel) this.level()).moonrise$getNearbyPlayers().getPlayers(
+-            mutablePos, ca.spottedleaf.moonrise.common.misc.NearbyPlayers.NearbyMapType.SPAWN_RANGE
++        ca.spottedleaf.moonrise.common.list.ReferenceList<ServerPlayer> players = nearbyPlayers.getPlayers(
++            BlockPos.containing(pos.x, pos.y, pos.z),
++            ca.spottedleaf.moonrise.common.misc.NearbyPlayers.NearbyMapType.SPAWN_RANGE
+         );
+ 
+-        if (players == null) {
+-            return new ArrayList<>();
++        if (players == null || players.size() == 0) {
++            return Collections.emptyList();
+         }
+ 
+-        List<Entity> ret = null;
++        ServerPlayer[] rawPlayers = players.getRawDataUnchecked();
++        int len = players.size();
++        List<Entity> result = new ArrayList<>(len); // Pre-allocate with expected size
+ 
+-        final ServerPlayer[] raw = players.getRawDataUnchecked();
+-        final int len = players.size();
+-
+-        java.util.Objects.checkFromIndexSize(0, len, raw.length);
+-
+-        for (int i = 0; i < len; ++i) {
+-            final ServerPlayer player = raw[i];
+-            if (player != entity && box.intersects(player.getBoundingBox()) && conditions.test(player)) {
+-                if (ret == null) {
+-                    ret = new ArrayList<>(len - i);
+-                    ret.add(player);
+-                } else {
+-                    ret.add(player);
+-                }
++        for (int i = 0; i < len; i++) {
++            ServerPlayer player = rawPlayers[i];
++            // Order: Cheapest checks first
++            if (player != this
++                && player.isPushable()
++                && !player.isPassengerOfSameVehicle(this)
++                && box.intersects(player.getBoundingBox())) {
++                result.add(player);
+             }
+         }
+ 
+-        return ret == null ? new ArrayList<>() : ret;
++        return result;
+     }
+     // Leaf end - Only player pushable
+ 
