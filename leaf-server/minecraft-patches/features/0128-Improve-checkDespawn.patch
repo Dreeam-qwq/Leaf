@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 14 Feb 2025 20:08:14 +0100
+Subject: [PATCH] Improve checkDespawn
+
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 01c30802a1d0127f2ed36efa7511c2ac6b2b5cfa..9a524a1c601f78fdfa15f8239191fd7336668c93 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -1569,6 +1569,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         this.containerMenu.broadcastChanges();
+     }
+ 
++    // Leaf start - Improve player isAlive checks
++    @Override
++    public boolean isAlive(){
++        return !this.isRemoved() && this.entityData.get(DATA_HEALTH_ID) > 0.0f && !this.dead;
++    }
++    // Leaf end - Improve player isAlive checks
++
+     // CraftBukkit start - moved bed result checks from below into separate method
+     private Either<Player.BedSleepingProblem, Unit> getBedResult(BlockPos at, Direction direction) {
+         if (this.isSleeping() || !this.isAlive()) {
