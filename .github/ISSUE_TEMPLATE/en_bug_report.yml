@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Before reporting an issue, make sure you are running the latest build of Leaf and checked for duplicate issues in [Issues](https://github.com/Winds-Studio/Leaf/issues) and the [Leaf docs](https://docs.leafmc.one/)!
+        Before reporting an issue, make sure you are running the latest build of Leaf and checked for duplicate issues in [Issues](https://github.com/Winds-Studio/Leaf/issues) and the [Leaf docs!](https://docs.leafmc.one/)
 
   - type: checkboxes
     attributes:
