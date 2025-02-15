@@ -1,0 +1,92 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sat, 15 Feb 2025 23:43:55 +0100
+Subject: [PATCH] SpatialPlayerIndex for isChunkNearPlayer
+
+
+diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
+index dd956431bb882daa70267685f2283d0c358336be..a29cdf9f7fed82c5e935a809c2ec3c55fdb9c1ac 100644
+--- a/net/minecraft/server/level/ServerChunkCache.java
++++ b/net/minecraft/server/level/ServerChunkCache.java
+@@ -48,6 +48,7 @@ import net.minecraft.world.level.levelgen.RandomState;
+ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+ import net.minecraft.world.level.storage.DimensionDataStorage;
+ import net.minecraft.world.level.storage.LevelStorageSource;
++import org.dreeam.leaf.util.tree.SpatialPlayerIndex;
+ import org.slf4j.Logger;
+ 
+ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moonrise.patches.chunk_system.world.ChunkSystemServerChunkCache { // Paper - rewrite chunk system
+@@ -68,6 +69,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+     private final ChunkAccess[] lastChunk = new ChunkAccess[4];
+     private final List<LevelChunk> tickingChunks = new ArrayList<>();
+     private final Set<ChunkHolder> chunkHoldersToBroadcast = new ReferenceOpenHashSet<>();
++    private final SpatialPlayerIndex playerIndex = new SpatialPlayerIndex();
+     @Nullable
+     @VisibleForDebug
+     private NaturalSpawner.SpawnState lastSpawnState;
+@@ -152,30 +154,17 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+     // Paper start - chunk tick iteration optimisations
+     private final net.minecraft.world.level.levelgen.BitRandomSource shuffleRandom = org.dreeam.leaf.config.modules.opt.FastRNG.enabled ? new org.dreeam.leaf.util.math.random.FasterRandomSource(0L) : new ca.spottedleaf.moonrise.common.util.SimpleThreadUnsafeRandom(0L); // Leaf - Faster random generator
+     private boolean isChunkNearPlayer(final ChunkMap chunkMap, final ChunkPos chunkPos, final LevelChunk levelChunk) {
+-        final ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData chunkData = ((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemChunkHolder)((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemLevelChunk)levelChunk).moonrise$getChunkAndHolder().holder())
+-            .moonrise$getRealChunkHolder().holderData;
++        final ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData chunkData =
++            ((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemChunkHolder)
++                ((ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemLevelChunk)levelChunk)
++                    .moonrise$getChunkAndHolder().holder()).moonrise$getRealChunkHolder().holderData;
++
+         final ca.spottedleaf.moonrise.common.misc.NearbyPlayers.TrackedChunk nearbyPlayers = chunkData.nearbyPlayers;
+         if (nearbyPlayers == null) {
+             return false;
+         }
+ 
+-        final ca.spottedleaf.moonrise.common.list.ReferenceList<ServerPlayer> players = nearbyPlayers.getPlayers(ca.spottedleaf.moonrise.common.misc.NearbyPlayers.NearbyMapType.SPAWN_RANGE);
+-
+-        if (players == null) {
+-            return false;
+-        }
+-
+-        final ServerPlayer[] raw = players.getRawDataUnchecked();
+-        final int len = players.size();
+-
+-        java.util.Objects.checkFromIndexSize(0, len, raw.length);
+-        for (int i = 0; i < len; ++i) {
+-            if (chunkMap.playerIsCloseEnoughForSpawning(raw[i], chunkPos, 16384.0D)) { // Spigot (reducedRange = false)
+-                return true;
+-            }
+-        }
+-
+-        return false;
++        return playerIndex.isChunkNearPlayer(chunkMap, chunkPos);
+     }
+     // Paper end - chunk tick iteration optimisations
+ 
+@@ -747,17 +736,28 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+         this.distanceManager.updateChunkForced(pos, add);
+     }
+ 
++    public void onPlayerMove(ServerPlayer player) {
++        playerIndex.updatePlayerPosition(player);
++    }
++
+     public void move(ServerPlayer player) {
+         if (!player.isRemoved()) {
+             this.chunkMap.move(player);
++            this.onPlayerMove(player);
+         }
+     }
+ 
+     public void removeEntity(Entity entity) {
++        if (entity instanceof ServerPlayer player) {
++            playerIndex.removePlayer(player);
++        }
+         this.chunkMap.removeEntity(entity);
+     }
+ 
+     public void addEntity(Entity entity) {
++        if (entity instanceof ServerPlayer player) {
++            playerIndex.addPlayer(player);
++        }
+         this.chunkMap.addEntity(entity);
+     }
+ 
