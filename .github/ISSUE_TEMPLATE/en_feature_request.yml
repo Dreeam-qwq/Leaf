@@ -10,6 +10,6 @@ body:
   - type: textarea
     attributes:
       label: What feature do you want to see added?
-      description: A clear and concise description of your feature request
+      description: A clear and concise description of your feature request.
     validations:
       required: true
