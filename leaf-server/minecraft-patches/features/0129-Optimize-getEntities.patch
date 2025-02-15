@@ -1,0 +1,259 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 14 Feb 2025 23:29:17 +0100
+Subject: [PATCH] Optimize getEntities
+
+
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
+index b6af8da084c83ee38bb3ecea6a98feb0c1c74d2a..cfd1826bc08d3e49111e3f71fb673485e29ab88b 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
+@@ -17,8 +17,6 @@ import net.minecraft.util.Mth;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntitySpawnReason;
+ import net.minecraft.world.entity.EntityType;
+-import net.minecraft.world.entity.boss.EnderDragonPart;
+-import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+ import net.minecraft.world.level.ChunkPos;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.chunk.storage.EntityStorage;
+@@ -28,6 +26,7 @@ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.function.Consumer;
+ import java.util.function.Predicate;
+ 
+ public final class ChunkEntitySlices {
+@@ -42,7 +41,7 @@ public final class ChunkEntitySlices {
+     private final EntityCollectionBySection hardCollidingEntities;
+     private final Reference2ObjectOpenHashMap<Class<? extends Entity>, EntityCollectionBySection> entitiesByClass;
+     private final Reference2ObjectOpenHashMap<EntityType<?>, EntityCollectionBySection> entitiesByType;
+-    private final EntityList entities = new EntityList();
++    public final EntityList entities = new EntityList();
+ 
+     public FullChunkStatus status;
+     public final ChunkData chunkData;
+@@ -79,6 +78,15 @@ public final class ChunkEntitySlices {
+         return EntityType.loadEntitiesRecursive(compoundTag.getList("Entities", 10), world, EntitySpawnReason.LOAD).collect(ImmutableList.toImmutableList());
+     }
+ 
++    // This method would need to be added to ChunkEntitySlices:
++    public void forEachEntity(Consumer<Entity> action) {
++         for (Entity entity : this.entities) {
++             if (entity != null) {
++                 action.accept(entity);
++             }
++         }
++    }
++
+     // Paper start - rewrite chunk system
+     public static void copyEntities(final CompoundTag from, final CompoundTag into) {
+         if (from == null) {
+@@ -465,6 +473,7 @@ public final class ChunkEntitySlices {
+             this.entitiesBySection = new BasicEntityList[sectionCount];
+         }
+ 
++
+         public void addEntity(final Entity entity, final int sectionIndex) {
+             BasicEntityList<Entity> list = this.entitiesBySection[sectionIndex];
+ 
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java
+index 7554c109c35397bc1a43dd80e87764fd78645bbf..7da4887a398ab909e15679ec1aa34fb867d1b06c 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java
+@@ -560,39 +560,168 @@ public abstract class EntityLookup implements LevelEntityGetter<Entity> {
+         return slices;
+     }
+ 
+-    public void getEntities(final Entity except, final AABB box, final List<Entity> into, final Predicate<? super Entity> predicate) {
+-        final int minChunkX = (Mth.floor(box.minX) - 2) >> 4;
+-        final int minChunkZ = (Mth.floor(box.minZ) - 2) >> 4;
+-        final int maxChunkX = (Mth.floor(box.maxX) + 2) >> 4;
+-        final int maxChunkZ = (Mth.floor(box.maxZ) + 2) >> 4;
++    public final class EntityPool {
++        private static final int INITIAL_SIZE = 1024;
++        private static final Entity[] POOL = new Entity[INITIAL_SIZE];
++        private static int size = 0;
++
++        public static void clear() {
++            // Clear references to help GC
++            for (int i = 0; i < size; i++) {
++                POOL[i] = null;
++            }
++            size = 0;
++        }
+ 
+-        final int minRegionX = minChunkX >> REGION_SHIFT;
+-        final int minRegionZ = minChunkZ >> REGION_SHIFT;
+-        final int maxRegionX = maxChunkX >> REGION_SHIFT;
+-        final int maxRegionZ = maxChunkZ >> REGION_SHIFT;
++        public static void add(Entity entity) {
++            if (size >= POOL.length) {
++                // Pool is full, double it
++                Entity[] newPool = new Entity[POOL.length * 2];
++                System.arraycopy(POOL, 0, newPool, 0, POOL.length);
++                newPool[size++] = entity;
++                System.arraycopy(newPool, 0, POOL, 0, newPool.length);
++            } else {
++                POOL[size++] = entity;
++            }
++        }
+ 
+-        for (int currRegionZ = minRegionZ; currRegionZ <= maxRegionZ; ++currRegionZ) {
+-            final int minZ = currRegionZ == minRegionZ ? minChunkZ & REGION_MASK : 0;
+-            final int maxZ = currRegionZ == maxRegionZ ? maxChunkZ & REGION_MASK : REGION_MASK;
++        public static void transferTo(List<Entity> target) {
++            // Bulk transfer to target list
++            if (target instanceof ArrayList) {
++                ArrayList<Entity> arrayList = (ArrayList<Entity>)target;
++                arrayList.ensureCapacity(arrayList.size() + size);
++            }
++            for (int i = 0; i < size; i++) {
++                target.add(POOL[i]);
++            }
++            clear();
++        }
++    }
+ 
+-            for (int currRegionX = minRegionX; currRegionX <= maxRegionX; ++currRegionX) {
+-                final ChunkSlicesRegion region = this.getRegion(currRegionX, currRegionZ);
++    public void getEntities(final Entity except, final AABB box, final List<Entity> into, final Predicate<? super Entity> predicate) {
++        // Pre-calculate bounds and combine bit operations
++        final int minBlockX = Mth.floor(box.minX) - 2;
++        final int maxBlockX = Mth.floor(box.maxX) + 2;
++        final int minBlockZ = Mth.floor(box.minZ) - 2;
++        final int maxBlockZ = Mth.floor(box.maxZ) + 2;
++
++        // Single-shift region calculations
++        final int minRegionX = minBlockX >> (4 + REGION_SHIFT);
++        final int maxRegionX = maxBlockX >> (4 + REGION_SHIFT);
++        final int minRegionZ = minBlockZ >> (4 + REGION_SHIFT);
++        final int maxRegionZ = maxBlockZ >> (4 + REGION_SHIFT);
++
++        // Pre-calculate chunk masks
++        final int minChunkX = minBlockX >> 4;
++        final int maxChunkX = maxBlockX >> 4;
++        final int minChunkZ = minBlockZ >> 4;
++        final int maxChunkZ = maxBlockZ >> 4;
++
++        // Pre-calculate Y bounds once
++        final int minSectionY = Mth.floor(box.minY - 2.0) >> 4;
++        final int maxSectionY = Mth.floor(box.maxY + 2.0) >> 4;
++
++        // Early exit for single region case
++        if (minRegionX == maxRegionX && minRegionZ == maxRegionZ) {
++            processRegionDirect(
++                this.getRegion(minRegionX, minRegionZ),
++                box, except, predicate, into,
++                minChunkX & REGION_MASK, maxChunkX & REGION_MASK,
++                minChunkZ & REGION_MASK, maxChunkZ & REGION_MASK,
++                minSectionY, maxSectionY
++            );
++            return;
++        }
+ 
+-                if (region == null) {
+-                    continue;
+-                }
++        // Pre-size target list
++        if (into instanceof ArrayList) {
++            int expectedEntities = (maxRegionX - minRegionX + 1) * (maxRegionZ - minRegionZ + 1) * 32;
++            ((ArrayList<Entity>)into).ensureCapacity(into.size() + Math.min(expectedEntities, 512));
++        }
+ 
+-                final int minX = currRegionX == minRegionX ? minChunkX & REGION_MASK : 0;
+-                final int maxX = currRegionX == maxRegionX ? maxChunkX & REGION_MASK : REGION_MASK;
++        // Main region processing loop
++        for (int rz = minRegionZ; rz <= maxRegionZ; ++rz) {
++            final int minZ = rz == minRegionZ ? minChunkZ & REGION_MASK : 0;
++            final int maxZ = rz == maxRegionZ ? maxChunkZ & REGION_MASK : REGION_MASK;
++
++            for (int rx = minRegionX; rx <= maxRegionX; ++rx) {
++                final ChunkSlicesRegion region = this.getRegion(rx, rz);
++                if (region == null) continue;
++
++                processRegionDirect(
++                    region, box, except, predicate, into,
++                    rx == minRegionX ? minChunkX & REGION_MASK : 0,
++                    rx == maxRegionX ? maxChunkX & REGION_MASK : REGION_MASK,
++                    minZ, maxZ,
++                    minSectionY, maxSectionY
++                );
++            }
++        }
++    }
+ 
+-                for (int currZ = minZ; currZ <= maxZ; ++currZ) {
+-                    for (int currX = minX; currX <= maxX; ++currX) {
+-                        final ChunkEntitySlices chunk = region.get(currX | (currZ << REGION_SHIFT));
+-                        if (chunk == null || !chunk.status.isOrAfter(FullChunkStatus.FULL)) {
+-                            continue;
+-                        }
++    private static void processRegionDirect(ChunkSlicesRegion region, AABB box, Entity except,
++                                            Predicate<? super Entity> predicate, List<Entity> into,
++                                            int minX, int maxX, int minZ, int maxZ,
++                                            int minSectionY, int maxSectionY) {
++        // Process chunks in aligned groups of 4 for better vectorization
++        int z = minZ;
++        final int zGroupLimit = maxZ - 3;
++        final ChunkEntitySlices[] regionSlices = region.slices;
++
++        // Aligned group processing
++        while (z <= zGroupLimit) {
++            final int baseIndex = z << REGION_SHIFT;
++            for (int x = minX; x <= maxX; ++x) {
++                // Process 4 sequential chunks at once
++                for (int offset = 0; offset < 4; offset++) {
++                    final ChunkEntitySlices chunk = regionSlices[baseIndex + (z + offset) + x];
++                    if (chunk != null && chunk.status.isOrAfter(FullChunkStatus.FULL)) {
++                        processChunkInlined(chunk, box, except, predicate, into, minSectionY, maxSectionY);
++                    }
++                }
++            }
++            z += 4;
++        }
+ 
+-                        chunk.getEntities(except, box, into, predicate);
++        // Handle remaining unaligned chunks
++        for (; z <= maxZ; ++z) {
++            final int zShift = z << REGION_SHIFT;
++            for (int x = minX; x <= maxX; ++x) {
++                final ChunkEntitySlices chunk = regionSlices[zShift + x];
++                if (chunk != null && chunk.status.isOrAfter(FullChunkStatus.FULL)) {
++                    processChunkInlined(chunk, box, except, predicate, into, minSectionY, maxSectionY);
++                }
++            }
++        }
++    }
++
++    private static void processChunkInlined(ChunkEntitySlices chunk, AABB box, Entity except,
++                                            Predicate<? super Entity> predicate, List<Entity> into,
++                                            int minSectionY, int maxSectionY) {
++        final Entity[] entities = chunk.entities.getRawData();
++        final int size = chunk.entities.size();
++
++        // Direct array iteration with inlined checks
++        if (predicate == null) {
++            for (int i = 0; i < size; ++i) {
++                final Entity entity = entities[i];
++                if (entity != except) {
++                    final AABB entityBox = entity.getBoundingBox();
++                    final int entityY = Mth.floor(entityBox.minY) >> 4;
++                    if (entityY >= minSectionY && entityY <= maxSectionY && entityBox.intersects(box)) {
++                        into.add(entity);
++                    }
++                }
++            }
++        } else {
++            for (int i = 0; i < size; ++i) {
++                final Entity entity = entities[i];
++                if (entity != except) {
++                    final AABB entityBox = entity.getBoundingBox();
++                    final int entityY = Mth.floor(entityBox.minY) >> 4;
++                    if (entityY >= minSectionY && entityY <= maxSectionY &&
++                        entityBox.intersects(box) && predicate.test(entity)) {
++                        into.add(entity);
+                     }
+                 }
+             }
