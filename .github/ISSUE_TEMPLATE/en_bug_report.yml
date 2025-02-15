@@ -54,7 +54,7 @@ body:
       label: Spark profiler link
       description: |
         Link of spark profiler, which including helpful information helps us to work with your issue,
-        see https://spark.lucko.me/docs/Using-the-viewer to learn how to use spark
+        see https://spark.lucko.me/docs/ to learn how to use spark
     validations:
       required: true
 
