@@ -26,21 +26,21 @@ body:
   - type: textarea
     attributes:
       label: What behaviour is observed?
-      description: Clear and concise description of behavior
+      description: A clear and concise description of what the behavior is.
     validations:
       required: true
 
   - type: textarea
     attributes:
       label: What is the expected behavior?
-      description: A clear and concise description of what you expected to see
+      description: A clear and concise description of what you expected to see.
     validations:
       required: true
 
   - type: textarea
     attributes:
       label: How to reproduce?
-      description: Steps to reproduce this behaviour
+      description: Steps to reproduce this behaviour.
       placeholder: |
         1. Enter server ...
         2. Execute command /example ...
@@ -54,11 +54,11 @@ body:
       label: Spark profiler link
       description: |
         Link of spark profiler, which including helpful information helps us to work with your issue,
-        see https://spark.lucko.me/docs/ to learn how to use spark
+        see https://spark.lucko.me/docs/ to learn how to use spark.
     validations:
       required: true
 
   - type: input
     attributes:
-      label: Error log link
-      description: If you are reporting a console error, upload any relevant errors or full log to either https://mclo.gs/ or https://pastes.dev/, save and the paste the link in this box
+      label: Error log (if applicable)
+      description: If you are reporting a console error, upload any relevant errors or full log to either https://mclo.gs/ or https://pastes.dev/, save and the paste the link in this box.
