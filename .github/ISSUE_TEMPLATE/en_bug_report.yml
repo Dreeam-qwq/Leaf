@@ -12,7 +12,7 @@ body:
     attributes:
       label: Checklist
       description: |
-        Before you scroll down, select boxes below
+        Before you scroll down, select boxes below.
       options:
         - label: I have searched the existing issues and the documentation
           required: true
