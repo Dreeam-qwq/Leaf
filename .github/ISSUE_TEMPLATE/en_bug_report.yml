@@ -1,6 +1,6 @@
 name: EN | Bug report
 description: Create a report to help us improve
-labels: ["bug"]
+labels: ["Bug"]
 
 body:
   - type: markdown
@@ -12,7 +12,7 @@ body:
     attributes:
       label: Checklist
       description: |
-        Before you scroll down, select boxes below.
+        Before you scroll down, select boxes below
       options:
         - label: I have searched the existing issues and the documentation
           required: true
@@ -26,25 +26,25 @@ body:
   - type: textarea
     attributes:
       label: What behaviour is observed?
-      description: A clear and concise description of what the behavior is.
+      description: Clear and concise description of behavior
     validations:
       required: true
 
   - type: textarea
     attributes:
-      label: Expected behaviour
-      description: A clear and concise description of what you expected to happen.
+      label: What is the expected behavior?
+      description: A clear and concise description of what you expected to see
     validations:
       required: true
 
   - type: textarea
     attributes:
-      label: To Reproduce
+      label: How to reproduce?
       description: Steps to reproduce this behaviour
       placeholder: |
-        1. Enter server '...'
-        2. execute command /example '...'
-        3. Server crashes '...'
+        1. Enter server ...
+        2. Execute command /example ...
+        3. Server crashes ...
         4. See error
     validations:
       required: true
@@ -54,11 +54,11 @@ body:
       label: Spark profiler link
       description: |
         Link of spark profiler, which including helpful information helps us to work with your issue,
-        see https://spark.lucko.me/docs/ to learn how to use spark.
+        see https://spark.lucko.me/docs/Using-the-viewer to learn how to use spark
     validations:
       required: true
 
   - type: input
     attributes:
-      label: Error log (if applicable)
-      description: If you are reporting a console error, upload any relevant errors or full log to either https://mclo.gs or https://gist.github.com, save and the paste the link in this box.
+      label: Error log link
+      description: If you are reporting a console error, upload any relevant errors or full log to either https://mclo.gs/ or https://pastes.dev/, save and the paste the link in this box
