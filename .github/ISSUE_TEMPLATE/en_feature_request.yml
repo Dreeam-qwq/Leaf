@@ -1,6 +1,6 @@
 name: EN | Feature request
 description: Suggest an idea to improve Leaf
-labels: ["Enhancement"]
+labels: ["enhancement"]
 
 body:
   - type: markdown
