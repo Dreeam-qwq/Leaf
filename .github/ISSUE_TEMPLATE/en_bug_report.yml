@@ -1,6 +1,6 @@
 name: EN | Bug report
 description: Create a report to help us improve
-labels: ["Bug"]
+labels: ["bug"]
 
 body:
   - type: markdown
