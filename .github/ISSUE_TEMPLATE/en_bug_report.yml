@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Before reporting an issue, make sure you are running the latest build of Leaf and checked for duplicate issues in [Issues](https://github.com/Winds-Studio/Leaf/issues)!
+        Before reporting an issue, make sure you are running the latest build of Leaf and checked for duplicate issues in [Issues](https://github.com/Winds-Studio/Leaf/issues)and the [Documentation](https://docs.leafmc.one/)!
 
   - type: checkboxes
     attributes:
@@ -14,7 +14,7 @@ body:
       description: |
         Before you scroll down, select boxes below.
       options:
-        - label: I have searched the existing issues
+        - label: I have searched the existing issues and the documentation
           required: true
         - label: I ticked all the boxes without actually reading them
           required: false
