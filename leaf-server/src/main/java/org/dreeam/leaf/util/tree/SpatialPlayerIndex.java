@@ -1,58 +1,22 @@
 package org.dreeam.leaf.util.tree;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 
 public class SpatialPlayerIndex {
     private static final int REGION_BITS = 3;
-    private static final double MAX_DISTANCE_SQ = 16384.0D; // Pre-computed square of 128
+    private static final double MAX_DISTANCE_SQ = 16384.0D;
 
-    // Using ObjectArrayList for better performance with small lists
-    private final Long2ObjectOpenHashMap<ObjectArrayList<ServerPlayer>> regions = new Long2ObjectOpenHashMap<>();
-    private final Long2ObjectOpenHashMap<PlayerPositionCache> playerPositions = new Long2ObjectOpenHashMap<>();
+    private final Long2ObjectOpenHashMap<RegionPlayerList> regions = new Long2ObjectOpenHashMap<>();
+    private final PlayerPositionArray playerPositions = new PlayerPositionArray();
+    private final ChunkRegionMap chunkToRegion = new ChunkRegionMap();
 
-    private static class PlayerPositionCache {
-        int chunkX;
-        int chunkZ;
-        long regionKey;
-        int blockX;
-        int blockZ;
-        double lastX;    // Last known exact coordinates
-        double lastZ;
-        static final double MOVEMENT_THRESHOLD = 4.0D;  // Only update if moved 4 blocks
-
-        PlayerPositionCache(int chunkX, int chunkZ, double exactX, double exactZ) {
-            this.lastX = exactX;
-            this.lastZ = exactZ;
-            this.update(chunkX, chunkZ, exactX, exactZ, false); // Force first update
-        }
-
-        boolean shouldUpdate(double newX, double newZ) {
-            double dx = newX - lastX;
-            double dz = newZ - lastZ;
-            return (dx * dx + dz * dz) >= (MOVEMENT_THRESHOLD * MOVEMENT_THRESHOLD);
-        }
-
-        void update(int newChunkX, int newChunkZ, double exactX, double exactZ, boolean force) {
-            if (force || chunkX != newChunkX || chunkZ != newChunkZ) {
-                chunkX = newChunkX;
-                chunkZ = newChunkZ;
-                blockX = newChunkX << 4;
-                blockZ = newChunkZ << 4;
-                regionKey = ((long)(chunkX >> REGION_BITS) & 0xFFFFFFFFL) | ((long)(chunkZ >> REGION_BITS) << 32);
-                lastX = exactX;
-                lastZ = exactZ;
-            }
-        }
-    }
-
-    private static ObjectArrayList<ServerPlayer> getOrCreateList(Long2ObjectOpenHashMap<ObjectArrayList<ServerPlayer>> map, long key) {
-        ObjectArrayList<ServerPlayer> list = map.get(key);
+    private static RegionPlayerList getOrCreateList(Long2ObjectOpenHashMap<RegionPlayerList> map, long key) {
+        RegionPlayerList list = map.get(key);
         if (list == null) {
-            list = new ObjectArrayList<>(2);
+            list = new RegionPlayerList();
             map.put(key, list);
         }
         return list;
@@ -77,7 +41,7 @@ public class SpatialPlayerIndex {
     public void removePlayer(ServerPlayer player) {
         PlayerPositionCache cache = playerPositions.remove(player.getId());
         if (cache != null) {
-            ObjectArrayList<ServerPlayer> players = regions.get(cache.regionKey);
+            RegionPlayerList players = regions.get(cache.regionKey);
             if (players != null) {
                 players.remove(player);
                 if (players.isEmpty()) {
@@ -107,7 +71,7 @@ public class SpatialPlayerIndex {
             cache.update(newChunkX, newChunkZ, x, z, false);
 
             if (oldKey != cache.regionKey) {
-                ObjectArrayList<ServerPlayer> oldList = regions.get(oldKey);
+                RegionPlayerList oldList = regions.get(oldKey);
                 if (oldList != null) {
                     oldList.remove(player);
                     if (oldList.isEmpty()) {
@@ -120,68 +84,76 @@ public class SpatialPlayerIndex {
     }
 
     public boolean isChunkNearPlayer(ChunkMap chunkMap, ChunkPos chunkPos) {
-        int regionX = chunkPos.x >> REGION_BITS;
-        int regionZ = chunkPos.z >> REGION_BITS;
+        long chunkKey = ((long)chunkPos.x & 0xFFFFFFFFL) | ((long)chunkPos.z << 32);
 
-        long[] regionKeys = new long[9];
-
-        long baseX = regionX - 1;
-        for (int i = 0; i < 9; i++) {
-            regionKeys[i] = ((baseX & 0xFFFFFFFFL) | ((long)(regionZ - 1 + (i / 3)) << 32));
-            if ((i + 1) % 3 == 0) baseX++;
+        // If we don't have this chunk mapped, compute its region and surrounding regions
+        if (!chunkToRegion.containsKey(chunkKey)) {
+            updateChunkToRegionMapping(chunkPos.x, chunkPos.z);
         }
 
-        long centerKey = regionKeys[4];
-        ObjectArrayList<ServerPlayer> centerPlayers = regions.get(centerKey);
-        if (centerPlayers != null && checkPlayersFast(chunkPos, centerPlayers)) {
+        long regionKey = chunkToRegion.get(chunkKey);
+        if (regionKey == -1L) {
+            return false;
+        }
+
+        RegionPlayerList players = regions.get(regionKey);
+        if (players != null && checkPlayersFast(chunkPos, players)) {
             return true;
         }
 
-        for (int i = 0; i < 9; i++) {
-            if (i == 4) continue;
-            ObjectArrayList<ServerPlayer> players = regions.get(regionKeys[i]);
-            if (players != null && checkPlayersFast(chunkPos, players)) {
-                return true;
+        // Check surrounding regions
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (dx == 0 && dz == 0) continue;
+
+                int nearbyRegionX = (chunkPos.x >> REGION_BITS) + dx;
+                int nearbyRegionZ = (chunkPos.z >> REGION_BITS) + dz;
+                long nearbyRegionKey = ((long)(nearbyRegionX) & 0xFFFFFFFFL) | ((long)(nearbyRegionZ) << 32);
+
+                players = regions.get(nearbyRegionKey);
+                if (players != null && checkPlayersFast(chunkPos, players)) {
+                    return true;
+                }
             }
         }
 
         return false;
     }
 
-    private boolean checkPlayersFast(ChunkPos chunkPos, ObjectArrayList<ServerPlayer> players) {
-        int size = players.size();
-        if (size == 0) return false; // Early return for empty lists
+    private boolean checkPlayersFast(ChunkPos chunkPos, RegionPlayerList players) {
+        if (players.isEmpty()) return false;
 
         // Pre-calculate block coordinates once
         int blockX = chunkPos.x << 4;
         int blockZ = chunkPos.z << 4;
-        blockX += 8; // Pre-add the 8 offset
+        blockX += 8;
         blockZ += 8;
 
-        Object[] raw = players.elements();
+        ServerPlayer[] rawPlayers = players.getPlayers();
+        int size = players.size();
 
         // Special case for small lists to avoid overhead
         if (size <= 2) {
-            if (checkPlayerDistanceFast((ServerPlayer)raw[0], blockX, blockZ)) return true;
-            return size == 2 && checkPlayerDistanceFast((ServerPlayer)raw[1], blockX, blockZ);
+            if (checkPlayerDistanceFast(rawPlayers[0], blockX, blockZ)) return true;
+            return size == 2 && checkPlayerDistanceFast(rawPlayers[1], blockX, blockZ);
         }
 
         // Main loop handling 4 at a time
         int i = 0;
-        int limit = size - 3; // Avoid recalculating each iteration
+        int limit = size - 3;
         while (i < limit) {
-            if (checkPlayerDistanceFast((ServerPlayer)raw[i], blockX, blockZ) ||
-                checkPlayerDistanceFast((ServerPlayer)raw[i + 1], blockX, blockZ) ||
-                checkPlayerDistanceFast((ServerPlayer)raw[i + 2], blockX, blockZ) ||
-                checkPlayerDistanceFast((ServerPlayer)raw[i + 3], blockX, blockZ)) {
+            if (checkPlayerDistanceFast(rawPlayers[i], blockX, blockZ) ||
+                checkPlayerDistanceFast(rawPlayers[i + 1], blockX, blockZ) ||
+                checkPlayerDistanceFast(rawPlayers[i + 2], blockX, blockZ) ||
+                checkPlayerDistanceFast(rawPlayers[i + 3], blockX, blockZ)) {
                 return true;
             }
             i += 4;
         }
 
-        // Handle remaining players (0-3 players)
+        // Handle remaining players
         while (i < size) {
-            if (checkPlayerDistanceFast((ServerPlayer)raw[i], blockX, blockZ)) {
+            if (checkPlayerDistanceFast(rawPlayers[i], blockX, blockZ)) {
                 return true;
             }
             i++;
@@ -196,7 +168,28 @@ public class SpatialPlayerIndex {
         return (dx * dx + dz * dz) < MAX_DISTANCE_SQ;
     }
 
-    public void forcePlayerUpdate(ServerPlayer player) { //TODO: add this as an option and enabled by default with the MOVEMENT_THRESHOLD in the config.
+    private void updateChunkToRegionMapping(int chunkX, int chunkZ) {
+        long chunkKey = ((long)chunkX & 0xFFFFFFFFL) | ((long)chunkZ << 32);
+        int regionX = chunkX >> REGION_BITS;
+        int regionZ = chunkZ >> REGION_BITS;
+        long regionKey = ((long)(regionX) & 0xFFFFFFFFL) | ((long)(regionZ) << 32);
+        chunkToRegion.put(chunkKey, regionKey);
+
+        // Add surrounding chunks in the same region
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                int nearbyChunkX = chunkX + dx;
+                int nearbyChunkZ = chunkZ + dz;
+                int nearbyRegionX = nearbyChunkX >> REGION_BITS;
+                int nearbyRegionZ = nearbyChunkZ >> REGION_BITS;
+                long nearbyChunkKey = ((long)nearbyChunkX & 0xFFFFFFFFL) | ((long)nearbyChunkZ << 32);
+                long nearbyRegionKey = ((long)(nearbyRegionX) & 0xFFFFFFFFL) | ((long)(nearbyRegionZ) << 32);
+                chunkToRegion.put(nearbyChunkKey, nearbyRegionKey);
+            }
+        }
+    }
+
+    public void forcePlayerUpdate(ServerPlayer player) {
         double x = player.getX();
         double z = player.getZ();
         int newChunkX = (int) x >> 4;
@@ -211,5 +204,6 @@ public class SpatialPlayerIndex {
     public void clear() {
         regions.clear();
         playerPositions.clear();
+        chunkToRegion.clear();
     }
 }
