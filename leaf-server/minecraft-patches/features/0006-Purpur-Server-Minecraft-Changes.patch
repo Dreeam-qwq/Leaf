@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Minecraft Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: e6a1ebd3f6e4cfe93f96dd82ecb3234f0482768a
+Commit: 22bd4186ca92f21a01714ba8e6b4823ccc576c81
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "net/minecraft/CrashReport.java.patch"
@@ -118,7 +118,7 @@ index c2b7164a1395842ab95428540782eeda4c7960b0..59c70c567051bc7dba0d308387352d1b
          boolean flag = this.source.acceptsSuccess() && !this.silent;
          boolean flag1 = allowLogging && this.source.shouldInformAdmins() && !this.silent;
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 60cfa713ffc778d0cd11dfb2ea1a52db806119b2..967c01f9e40c2c73f266de281425c918472cf66e 100644
+index fadc6c2494ac3aaa426d16d36adc688e1f39e27a..06df7711ca33d592d9a23ef0b2c3e73b468e2f57 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -213,8 +213,8 @@ public class Commands {
@@ -724,7 +724,7 @@ index f262a7c5ae4e7d56f16f5c0f4f145a2e428abbe4..614c7d9f673c926562acc8fa3b378862
      private JComponent buildOnboardingPanel() {
          String onboardingLink = "https://docs.papermc.io/paper/next-steps";
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 95d69c4b40e4ebe12d8033dbcc7ba195a0ccfb5a..bb38adebfcf2e3c52971a79d8363a45f067727a9 100644
+index e1f5e3cc57a8c2945b7925a31bde06f6c6525726..cb8556fcf50293341cb090616e1e25e04d2eb5d8 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -205,6 +205,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -896,7 +896,7 @@ index 95d69c4b40e4ebe12d8033dbcc7ba195a0ccfb5a..bb38adebfcf2e3c52971a79d8363a45f
          this.serverLevelData.setThundering(false, org.bukkit.event.weather.ThunderChangeEvent.Cause.SLEEP); // Paper - Add cause to Weather/ThunderChangeEvents
          // CraftBukkit start
          // If we stop due to everyone sleeping we should reset the weather duration to some other random value.
-@@ -2657,7 +2728,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2659,7 +2730,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              // Spigot start
              if (entity.getBukkitEntity() instanceof org.bukkit.inventory.InventoryHolder && (!(entity instanceof ServerPlayer) || entity.getRemovalReason() != Entity.RemovalReason.KILLED)) { // SPIGOT-6876: closeInventory clears death message
                  // Paper start - Fix merchant inventory not closing on entity removal
@@ -1279,7 +1279,7 @@ index ea34bb4913e7357f5b76a64443f7e744abdf7b5e..de115ee71fa240440b54c553e0d3ddaf
              try {
                  String channels = payload.toString(com.google.common.base.Charsets.UTF_8);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 657fbc5e5d81b44fefc2d9d6c6bfe47f179a7843..ca16bef85f94ffb87eb27c9ec1429cba77e7fbc1 100644
+index e3e758a608e16fc7b4ae795dfd2baecc8b0cb844..c0be2543ab55fda85302812a4773e551f64cf7d9 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -326,6 +326,20 @@ public class ServerGamePacketListenerImpl
@@ -1698,20 +1698,20 @@ index d3de87eaf0eb84af77165391c7b94085d425f21d..edaa6f66f33b6a9bfb4862ec5557080b
              }
          }
 diff --git a/net/minecraft/world/damagesource/DamageSource.java b/net/minecraft/world/damagesource/DamageSource.java
-index ac7352a2b264abf4db4b89f39a2c86f390776336..0a596e20393936d8fc9f03ba0891d0c223279247 100644
+index 0d9e5aab214df54a7a24bec45fcc8ad85f699710..0eb210a8c6f42a3a1ee61e946ccfec25cbc3a44b 100644
 --- a/net/minecraft/world/damagesource/DamageSource.java
 +++ b/net/minecraft/world/damagesource/DamageSource.java
-@@ -28,6 +28,8 @@ public class DamageSource {
-     private boolean sweep = false;
-     private boolean melting = false;
-     private boolean poison = false;
+@@ -30,6 +30,8 @@ public class DamageSource {
+     @Nullable
+     private org.bukkit.block.BlockState fromBlockSnapshot; // Captured block snapshot when the eventBlockDamager is not relevant (e.g. for bad respawn point explosions the block is already removed)
+     private boolean critical; // Supports arrows and sweeping damage
 +    private boolean scissors = false; // Purpur - Dont run with scissors!
 +    private boolean stonecutter = false; // Purpur - Stonecutter damage
-     @Nullable
-     private Entity customEventDamager = null; // This field is a helper for when causing entity damage is not set by vanilla // Paper - fix DamageSource API
  
-@@ -58,6 +60,27 @@ public class DamageSource {
-         return this.poison;
+     public DamageSource knownCause(final org.bukkit.event.entity.EntityDamageEvent.DamageCause cause) {
+         final DamageSource damageSource = this.copy();
+@@ -42,6 +44,27 @@ public class DamageSource {
+         return this.knownCause;
      }
  
 +    // Purpur start - Dont run with scissors!
@@ -1735,19 +1735,19 @@ index ac7352a2b264abf4db4b89f39a2c86f390776336..0a596e20393936d8fc9f03ba0891d0c2
 +    }
 +    // Purpur end - Stonecutter damage
 +
-     // Paper start - fix DamageSource API
      @Nullable
-     public Entity getCustomEventDamager() {
-@@ -118,6 +141,8 @@ public class DamageSource {
-         damageSource.sweep = this.isSweep();
-         damageSource.poison = this.isPoison();
-         damageSource.melting = this.isMelting();
+     public Entity eventEntityDamager() {
+         return this.eventEntityDamager;
+@@ -103,6 +126,8 @@ public class DamageSource {
+         damageSource.eventBlockDamager = this.eventBlockDamager;
+         damageSource.fromBlockSnapshot = this.fromBlockSnapshot;
+         damageSource.critical = this.critical;
 +        damageSource.scissors = this.isScissors(); // Purpur - Dont run with scissors!
 +        damageSource.stonecutter = this.isStonecutter(); // Purpur - Stonecutter damage
          return damageSource;
      }
      // CraftBukkit end
-@@ -184,12 +209,21 @@ public class DamageSource {
+@@ -169,12 +194,21 @@ public class DamageSource {
          } else {
              Component component = this.causingEntity == null ? this.directEntity.getDisplayName() : this.causingEntity.getDisplayName();
              ItemStack itemStack = this.causingEntity instanceof LivingEntity livingEntity1 ? livingEntity1.getMainHandItem() : ItemStack.EMPTY;
@@ -1771,28 +1771,30 @@ index ac7352a2b264abf4db4b89f39a2c86f390776336..0a596e20393936d8fc9f03ba0891d0c2
          return this.type().msgId();
      }
 diff --git a/net/minecraft/world/damagesource/DamageSources.java b/net/minecraft/world/damagesource/DamageSources.java
-index b1054b6b2bff568a8805fc0f610c431f3f349a04..a6660ba22847911c661bb7a608a96e1d059c4ae2 100644
+index cc206ecff2d95f0398ca424c178a336ad80cc396..0276f02e149f3ef5e0f9aec8b0a8a6cb3d638aae 100644
 --- a/net/minecraft/world/damagesource/DamageSources.java
 +++ b/net/minecraft/world/damagesource/DamageSources.java
-@@ -45,11 +45,15 @@ public class DamageSources {
-     // CraftBukkit start
-     private final DamageSource melting;
-     private final DamageSource poison;
+@@ -42,6 +42,8 @@ public class DamageSources {
+     private final DamageSource stalagmite;
+     private final DamageSource outsideBorder;
+     private final DamageSource genericKill;
 +    private final DamageSource scissors; // Purpur - Dont run with scissors!
 +    private final DamageSource stonecutter; // Purpur - Stonecutter damage
  
      public DamageSources(RegistryAccess registry) {
          this.damageTypes = registry.lookupOrThrow(Registries.DAMAGE_TYPE);
-         this.melting = this.source(DamageTypes.ON_FIRE).melting();
-         this.poison = this.source(DamageTypes.MAGIC).poison();
+@@ -70,6 +72,8 @@ public class DamageSources {
+         this.stalagmite = this.source(DamageTypes.STALAGMITE);
+         this.outsideBorder = this.source(DamageTypes.OUTSIDE_BORDER);
+         this.genericKill = this.source(DamageTypes.GENERIC_KILL);
 +        this.scissors = this.source(DamageTypes.MAGIC).scissors(); // Purpur - Dont run with scissors!
 +        this.stonecutter = this.source(DamageTypes.MAGIC).stonecutter(); // Purpur - Stonecutter damage
-         // CraftBukkit end
-         this.inFire = this.source(DamageTypes.IN_FIRE);
-         this.campfire = this.source(DamageTypes.CAMPFIRE);
-@@ -100,6 +104,17 @@ public class DamageSources {
      }
-     // CraftBukkit end
+ 
+     private DamageSource source(ResourceKey<DamageType> damageTypeKey) {
+@@ -176,6 +180,18 @@ public class DamageSources {
+         return this.stalagmite;
+     }
  
 +    // Purpur start - Dont run with scissors!
 +    public DamageSource scissors() {
@@ -1805,8 +1807,9 @@ index b1054b6b2bff568a8805fc0f610c431f3f349a04..a6660ba22847911c661bb7a608a96e1d
 +        return this.stonecutter;
 +    }
 +    // Purpur end - Stonecutter damage
-     public DamageSource inFire() {
-         return this.inFire;
++
+     public DamageSource fallingBlock(Entity entity) {
+         return this.source(DamageTypes.FALLING_BLOCK, entity);
      }
 diff --git a/net/minecraft/world/effect/HungerMobEffect.java b/net/minecraft/world/effect/HungerMobEffect.java
 index 0890694ae96b6cd60079c34066e7a6e288f038e8..6c0e6bd2a171edc57dec71af178764454de73313 100644
@@ -1822,7 +1825,7 @@ index 0890694ae96b6cd60079c34066e7a6e288f038e8..6c0e6bd2a171edc57dec71af17876445
  
          return true;
 diff --git a/net/minecraft/world/effect/PoisonMobEffect.java b/net/minecraft/world/effect/PoisonMobEffect.java
-index 522e11a98ccd9186e7b00f6d7e28516cf33b830c..a33402b06ce99767fa0a5d4bf6881077bd1bd107 100644
+index 75327fd96858fd508ea63a6983e5cbc655a8800f..73cfc61ac3f8e33e6b9f4fd08a292266c0adb535 100644
 --- a/net/minecraft/world/effect/PoisonMobEffect.java
 +++ b/net/minecraft/world/effect/PoisonMobEffect.java
 @@ -12,8 +12,8 @@ public class PoisonMobEffect extends MobEffect {
@@ -1830,9 +1833,9 @@ index 522e11a98ccd9186e7b00f6d7e28516cf33b830c..a33402b06ce99767fa0a5d4bf6881077
      @Override
      public boolean applyEffectTick(ServerLevel level, LivingEntity entity, int amplifier) {
 -        if (entity.getHealth() > 1.0F) {
--            entity.hurtServer(level, entity.damageSources().poison(), 1.0F); // CraftBukkit - DamageSource.MAGIC -> CraftEventFactory.POISON
+-            entity.hurtServer(level, entity.damageSources().magic().knownCause(org.bukkit.event.entity.EntityDamageEvent.DamageCause.POISON), 1.0F); // CraftBukkit
 +        if (entity.getHealth() > entity.level().purpurConfig.entityMinimalHealthPoison) { // Purpur
-+            entity.hurtServer(level, entity.damageSources().poison(), entity.level().purpurConfig.entityPoisonDegenerationAmount); // CraftBukkit - DamageSource.MAGIC -> CraftEventFactory.POISON // Purpur - Config MobEffect by world
++            entity.hurtServer(level, entity.damageSources().magic().knownCause(org.bukkit.event.entity.EntityDamageEvent.DamageCause.POISON), entity.level().purpurConfig.entityPoisonDegenerationAmount); // CraftBukkit // Purpur - Config MobEffect by world
          }
  
          return true;
@@ -1877,7 +1880,7 @@ index 1fc9e1ad541c46124183a401b2a7d99aea69cecf..881271f0bc77a8a8a7d31daad9a8188b
      }
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27ab94bb41f 100644
+index c2a2892d34497a616951f4689ab6126191d9f655..f83a90cba0229842389740199a8d7f12fe44b0d9 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -134,7 +134,7 @@ import net.minecraft.world.scores.Team;
@@ -1912,7 +1915,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
      private boolean hasGlowingTag;
      private final Set<String> tags = new io.papermc.paper.util.SizeLimitedSet<>(new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>(), MAX_ENTITY_TAG_COUNT); // Paper - fully limit tag size - replace set impl
      private final double[] pistonDeltas = new double[]{0.0, 0.0, 0.0};
-@@ -343,6 +344,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -344,6 +345,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      public long activatedTick = Integer.MIN_VALUE;
      public boolean isTemporarilyActive;
      public long activatedImmunityTick = Integer.MIN_VALUE;
@@ -1920,7 +1923,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
  
      public void inactiveTick() {
      }
-@@ -524,10 +526,39 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -525,10 +527,39 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
      // Paper end - optimise entity tracker
  
@@ -1960,7 +1963,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
          this.position = Vec3.ZERO;
          this.blockPosition = BlockPos.ZERO;
          this.chunkPosition = ChunkPos.ZERO;
-@@ -908,6 +939,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -909,6 +940,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
              && this.level.paperConfig().environment.netherCeilingVoidDamageHeight.test(v -> this.getY() >= v)
              && (!(this instanceof Player player) || !player.getAbilities().invulnerable))) {
              // Paper end - Configurable nether ceiling damage
@@ -1968,7 +1971,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
              this.onBelowWorld();
          }
      }
-@@ -1838,7 +1870,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -1839,7 +1871,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
  
      public boolean fireImmune() {
@@ -1977,7 +1980,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
      }
  
      public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
-@@ -1907,7 +1939,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -1908,7 +1940,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return this.isInWater() || flag;
      }
  
@@ -1986,7 +1989,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
          if (this.getVehicle() instanceof AbstractBoat abstractBoat && !abstractBoat.isUnderWater()) {
              this.wasTouchingWater = false;
          } else if (this.updateFluidHeightAndDoFluidPushing(FluidTags.WATER, 0.014)) {
-@@ -2543,6 +2575,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -2544,6 +2576,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                  compound.putBoolean("Paper.FreezeLock", true);
              }
              // Paper end
@@ -2000,7 +2003,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
              return compound;
          } catch (Throwable var9) {
              CrashReport crashReport = CrashReport.forThrowable(var9, "Saving entity NBT");
-@@ -2692,6 +2731,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -2693,6 +2732,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                  freezeLocked = compound.getBoolean("Paper.FreezeLock");
              }
              // Paper end
@@ -2014,7 +2017,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
          } catch (Throwable var17) {
              CrashReport crashReport = CrashReport.forThrowable(var17, "Loading entity NBT");
              CrashReportCategory crashReportCategory = crashReport.addCategory("Entity being loaded");
-@@ -2938,6 +2984,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -2939,6 +2985,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          if (this.isAlive() && this instanceof Leashable leashable) {
              if (leashable.getLeashHolder() == player) {
                  if (!this.level().isClientSide()) {
@@ -2022,7 +2025,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
                      // CraftBukkit start - fire PlayerUnleashEntityEvent
                      // Paper start - Expand EntityUnleashEvent
                      org.bukkit.event.player.PlayerUnleashEntityEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerUnleashEntityEvent(this, player, hand, !player.hasInfiniteMaterials());
-@@ -3144,6 +3191,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3145,6 +3192,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                  this.passengers = ImmutableList.copyOf(list);
              }
  
@@ -2036,7 +2039,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
              this.gameEvent(GameEvent.ENTITY_MOUNT, passenger);
          }
      }
-@@ -3185,6 +3239,14 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3186,6 +3240,14 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                  return false;
              }
              // CraftBukkit end
@@ -2051,7 +2054,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
              if (this.passengers.size() == 1 && this.passengers.get(0) == passenger) {
                  this.passengers = ImmutableList.of();
              } else {
-@@ -3263,15 +3325,18 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3264,15 +3326,18 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return Vec3.directionFromRotation(this.getRotationVector());
      }
  
@@ -2071,7 +2074,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
              }
          }
      }
-@@ -3473,7 +3538,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3474,7 +3539,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
  
      public int getMaxAirSupply() {
@@ -2080,7 +2083,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
      }
  
      public int getAirSupply() {
-@@ -3961,7 +4026,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3962,7 +4027,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      // CraftBukkit end
  
      public boolean canUsePortal(boolean allowPassengers) {
@@ -2089,7 +2092,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
      }
  
      public boolean canTeleport(Level fromLevel, Level toLevel) {
-@@ -4498,6 +4563,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -4499,6 +4564,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return Mth.lerp(partialTick, this.yRotO, this.yRot);
      }
  
@@ -2102,7 +2105,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
      // Paper start - optimise collisions
      public boolean updateFluidHeightAndDoFluidPushing(final TagKey<Fluid> fluid, final double flowScale) {
          if (this.touchingUnloadedChunk()) {
-@@ -4906,7 +4977,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -4907,7 +4978,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
  
      public float maxUpStep() {
@@ -2111,7 +2114,7 @@ index 0f3c00c0d6be858351f00a71e2586212ab0f3668..3be4556a14b61fad5690a4e664e9e27a
      }
  
      public void onExplosionHit(@Nullable Entity entity) {
-@@ -5104,4 +5175,44 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -5105,4 +5176,44 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return ((ServerLevel) this.level).isPositionEntityTicking(this.blockPosition());
      }
      // Paper end - Expose entity id counter
@@ -2298,7 +2301,7 @@ index efee812785240c1ab1fd47514cfb236a3548f9cf..b982d4b7bdf39fcaf5f22cc889467d7b
      protected ParticleOptions getInkParticle() {
          return ParticleTypes.GLOW_SQUID_INK;
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 8f144c36b9fe1f5380459ae869f5a61f629b0d39..8c56af2500f05b74e94c56faf75d186f0d383390 100644
+index bfd71ce095cb35cc7c71b3dae71b40fc7d42f360..7a07789f115cb4a8917097e0697e80184104817e 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -248,9 +248,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
@@ -2537,7 +2540,7 @@ index 8f144c36b9fe1f5380459ae869f5a61f629b0d39..8c56af2500f05b74e94c56faf75d186f
                  this.hurt(this.damageSources().flyIntoWall(), f);
              }
          }
-@@ -3505,8 +3572,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -3523,8 +3590,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
  
          this.pushEntities();
          // Paper start - Add EntityMoveEvent
@@ -2550,7 +2553,7 @@ index 8f144c36b9fe1f5380459ae869f5a61f629b0d39..8c56af2500f05b74e94c56faf75d186f
                  Location from = new Location(this.level().getWorld(), this.xo, this.yo, this.zo, this.yRotO, this.xRotO);
                  Location to = new Location(this.level().getWorld(), this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
                  io.papermc.paper.event.entity.EntityMoveEvent event = new io.papermc.paper.event.entity.EntityMoveEvent(this.getBukkitLivingEntity(), from, to.clone());
-@@ -3516,11 +3585,52 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -3534,11 +3603,52 @@ public abstract class LivingEntity extends Entity implements Attackable {
                      this.absMoveTo(event.getTo().getX(), event.getTo().getY(), event.getTo().getZ(), event.getTo().getYaw(), event.getTo().getPitch());
                  }
              }
@@ -2603,7 +2606,7 @@ index 8f144c36b9fe1f5380459ae869f5a61f629b0d39..8c56af2500f05b74e94c56faf75d186f
      }
  
      public boolean isSensitiveToWater() {
-@@ -3542,7 +3652,18 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -3560,7 +3670,18 @@ public abstract class LivingEntity extends Entity implements Attackable {
                  if (i1 % 2 == 0) {
                      List<EquipmentSlot> list = EquipmentSlot.VALUES.stream().filter(slot -> canGlideUsing(this.getItemBySlot(slot), slot)).toList();
                      EquipmentSlot equipmentSlot = Util.getRandom(list, this.random);
@@ -2623,7 +2626,7 @@ index 8f144c36b9fe1f5380459ae869f5a61f629b0d39..8c56af2500f05b74e94c56faf75d186f
                  }
  
                  this.gameEvent(GameEvent.ELYTRA_GLIDE);
-@@ -4425,6 +4546,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -4443,6 +4564,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
              : slot == equippable.slot() && this.canUseSlot(equippable.slot()) && equippable.canBeEquippedBy(this.getType());
      }
  
@@ -5680,7 +5683,7 @@ index e686c500e4b5f3e7b0e808af8b2e43ddbd163bef..c1760dda7b42471982e4ad78b6150b54
          this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
          this.goalSelector.addGoal(3, new TemptGoal(this, 1.1, stack -> stack.is(ItemTags.SHEEP_FOOD), false));
 diff --git a/net/minecraft/world/entity/animal/SnowGolem.java b/net/minecraft/world/entity/animal/SnowGolem.java
-index 8871964fd735178804b95182db1fd6bc1088f69d..1b9d4562b73ecdf783ecdaf4f4eff9037a4387e6 100644
+index 8a63b656b86b98f3756807498721d4daac5a38ef..eccf5f67bdacaf018e368843448754bc28a54b98 100644
 --- a/net/minecraft/world/entity/animal/SnowGolem.java
 +++ b/net/minecraft/world/entity/animal/SnowGolem.java
 @@ -44,17 +44,63 @@ import net.minecraft.world.phys.Vec3;
@@ -5772,7 +5775,7 @@ index 8871964fd735178804b95182db1fd6bc1088f69d..1b9d4562b73ecdf783ecdaf4f4eff903
  
      @Override
 @@ -95,10 +143,11 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
-                 this.hurtServer(serverLevel, this.damageSources().melting(), 1.0F); // CraftBukkit - DamageSources.ON_FIRE -> CraftEventFactory.MELTING
+                 this.hurtServer(serverLevel, this.damageSources().onFire().knownCause(org.bukkit.event.entity.EntityDamageEvent.DamageCause.MELTING), 1.0F); // CraftBukkit
              }
  
 -            if (!serverLevel.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
@@ -5990,7 +5993,7 @@ index fa5f7f7d54083f9ea2095dd44362069d00e0b9a5..41074e7847583583331ef8d685a9f9b8
          return "entity.minecraft.tropical_fish.predefined." + variantId;
      }
 diff --git a/net/minecraft/world/entity/animal/Turtle.java b/net/minecraft/world/entity/animal/Turtle.java
-index 354ec2b987882d8f40ef4ac5257183d2fda73bb8..3c877699914c906fca265c96770b1c29ed89a1e2 100644
+index 0e2d2dd3f2ef2783f3773a9a05c4f718991f7784..10477fea8fcd70bf0c1ba4b6e1113625be690e68 100644
 --- a/net/minecraft/world/entity/animal/Turtle.java
 +++ b/net/minecraft/world/entity/animal/Turtle.java
 @@ -84,6 +84,52 @@ public class Turtle extends Animal {
@@ -12605,7 +12608,7 @@ index ef2afb17a22a703470e13d12c989a685e72f0ab8..80a01b8c6dfb0f3bcc6872cdf38b48f7
                  blockPos = blockPos1;
                  break;
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index baab70c95fdcb230ecaef1174a8d5e298826462b..37cccba70cf4815b19fcf9f1526cdc25c2e81407 100644
+index e587f8125ab29b3f9c829cd225deb5b7a6b7affa..5b684ff1096ef56fc5d6ad16963bb19ec880ced4 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -201,11 +201,22 @@ public abstract class Player extends LivingEntity {
@@ -12694,13 +12697,13 @@ index baab70c95fdcb230ecaef1174a8d5e298826462b..37cccba70cf4815b19fcf9f1526cdc25
 @@ -1277,7 +1318,7 @@ public abstract class Player extends LivingEntity {
                          flag2 = flag2 && !this.level().paperConfig().entities.behavior.disablePlayerCrits; // Paper - Toggleable player crits
                          if (flag2) {
-                             damageSource = damageSource.critical(true); // Paper start - critical damage API
+                             damageSource = damageSource.critical(); // Paper - critical damage API
 -                            f *= 1.5F;
 +                            f *= this.level().purpurConfig.playerCriticalDamageMultiplier; // Purpur - Add config change multiplier critical damage value
                          }
  
                          float f2 = f + f1;
-@@ -1890,7 +1931,23 @@ public abstract class Player extends LivingEntity {
+@@ -1892,7 +1933,23 @@ public abstract class Player extends LivingEntity {
  
      @Override
      protected int getBaseExperienceReward(ServerLevel level) {
@@ -12725,7 +12728,7 @@ index baab70c95fdcb230ecaef1174a8d5e298826462b..37cccba70cf4815b19fcf9f1526cdc25
      }
  
      @Override
-@@ -1974,6 +2031,13 @@ public abstract class Player extends LivingEntity {
+@@ -1976,6 +2033,13 @@ public abstract class Player extends LivingEntity {
          return slot != EquipmentSlot.BODY;
      }
  
@@ -12740,7 +12743,7 @@ index baab70c95fdcb230ecaef1174a8d5e298826462b..37cccba70cf4815b19fcf9f1526cdc25
          if (this.isPassenger() || !this.onGround() || this.isInWater() || this.isInPowderSnow) {
              return false;
 diff --git a/net/minecraft/world/entity/projectile/AbstractArrow.java b/net/minecraft/world/entity/projectile/AbstractArrow.java
-index d206ac2b9cade292b0d69e9aeb0f81227ec0b49e..f9b538f4cd831aa5a22bb778c2bf3cd97a27f9dd 100644
+index aa301c849b020fac951f8afa7cd27401def16d3a..ecf25b60096f6a77a7bd6b6212d322adb3fe5e8a 100644
 --- a/net/minecraft/world/entity/projectile/AbstractArrow.java
 +++ b/net/minecraft/world/entity/projectile/AbstractArrow.java
 @@ -74,6 +74,7 @@ public abstract class AbstractArrow extends Projectile {
@@ -12882,7 +12885,7 @@ index c57bbdc13221d2ce349f3f1d894193f80ff1e24b..1d399532c67c213c95c06837b0c78553
      protected void onHit(HitResult result) {
          super.onHit(result);
 diff --git a/net/minecraft/world/entity/projectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
-index 128bf1555b996c454e753b1ed004cfeae4b0436f..1d240ebbf81154d361cc5449d0f43ea467bfb097 100644
+index 1345097a2a417f95c44143fd7e0d4cec38990121..d212f57c8c0b2086f567fd30237b110203d9e8cb 100644
 --- a/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
 @@ -133,9 +133,10 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
@@ -12901,8 +12904,8 @@ index 128bf1555b996c454e753b1ed004cfeae4b0436f..1d240ebbf81154d361cc5449d0f43ea4
                          if (serverPlayer1 != null) {
                              serverPlayer1.resetFallDistance();
                              serverPlayer1.resetCurrentImpulseContext();
--                            serverPlayer1.hurtServer(serverPlayer.serverLevel(), this.damageSources().enderPearl().customEventDamager(this), 5.0F); // CraftBukkit // Paper - fix DamageSource API
-+                            serverPlayer1.hurtServer(serverPlayer.serverLevel(), this.damageSources().enderPearl().customEventDamager(this), this.level().purpurConfig.enderPearlDamage); // CraftBukkit // Paper - fix DamageSource API // Purpur - Configurable Ender Pearl damage
+-                            serverPlayer1.hurtServer(serverPlayer.serverLevel(), this.damageSources().enderPearl().eventEntityDamager(this), 5.0F); // CraftBukkit // Paper - fix DamageSource API
++                            serverPlayer1.hurtServer(serverPlayer.serverLevel(), this.damageSources().enderPearl().eventEntityDamager(this), this.level().purpurConfig.enderPearlDamage); // CraftBukkit // Paper - fix DamageSource API // Purpur - Configurable Ender Pearl damage
                          }
  
                          this.playSound(serverLevel, vec3);
@@ -12920,7 +12923,7 @@ index 2c66f788759330fba412ccb2187945b6ca0cacb6..251e9a368800afab1a47bb9162077b2e
                  if (this.level() instanceof ServerLevel serverLevel && this.pickup == AbstractArrow.Pickup.ALLOWED) {
                      this.spawnAtLocation(serverLevel, this.getPickupItem(), 0.1F);
 diff --git a/net/minecraft/world/entity/projectile/WitherSkull.java b/net/minecraft/world/entity/projectile/WitherSkull.java
-index a83839fce264429e2a8fd3b19cd2d0a6d88585e0..9af37bd40649f602d700fc7b683c646ae9189eb9 100644
+index c4cdc7655a8e4931717e9fa788c5811879526e9e..a0b909c745ea60cae73def06f9d947345911c5e4 100644
 --- a/net/minecraft/world/entity/projectile/WitherSkull.java
 +++ b/net/minecraft/world/entity/projectile/WitherSkull.java
 @@ -92,7 +92,7 @@ public class WitherSkull extends AbstractHurtingProjectile {
@@ -14618,7 +14621,7 @@ index 4bee1ba137d078563cedfdd184a8b4603df17487..d3f5242fc66529bf3137da4d505a6cf5
                          double d2 = nearestPlayer.distanceToSqr(d, y, d1);
                          if (level.isLoadedAndInBounds(mutableBlockPos) && isRightDistanceToPlayerAndSpawnPoint(level, chunk, mutableBlockPos, d2)) { // Paper - don't load chunks for mob spawn
 diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index ea22342896a608036042b5f5800302eae29f6c40..f2ef7af916318d9b83395455b9f25b61401e3017 100644
+index 4d183fb445c43621c5ce95edc1af27b6a41f0acb..6030c4eefd77969a1a9251de76d4291dcb0a2092 100644
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
 @@ -317,7 +317,7 @@ public class ServerExplosion implements Explosion {
@@ -14649,7 +14652,7 @@ index ea22342896a608036042b5f5800302eae29f6c40..f2ef7af916318d9b83395455b9f25b61
 +        } else {
 +            Location location = new Location(this.level.getWorld(), this.center.x, this.center.y, this.center.z);
 +            org.bukkit.block.Block block = location.getBlock();
-+            org.bukkit.block.BlockState blockState = (this.damageSource.getDirectBlockState() != null) ? this.damageSource.getDirectBlockState() : block.getState();
++            org.bukkit.block.BlockState blockState = (this.damageSource.causingBlockSnapshot() != null) ? this.damageSource.causingBlockSnapshot() : block.getState();
 +            if(!new org.purpurmc.purpur.event.PreBlockExplodeEvent(location.getBlock(), this.blockInteraction == Explosion.BlockInteraction.DESTROY_WITH_DECAY ? 1.0F / this.radius : 1.0F, blockState, org.bukkit.craftbukkit.CraftExplosionResult.toBukkit(getBlockInteraction())).callEvent()) {
 +                this.wasCanceled = true;
 +                return;
@@ -14755,7 +14758,7 @@ index 045d85b1267e20ca66ef08eb981f167c64d8c780..e804ca8d6c9c9b8d9f982a970cc3eddd
              return true;
          } else {
 diff --git a/net/minecraft/world/level/block/BedBlock.java b/net/minecraft/world/level/block/BedBlock.java
-index c23c255cefe7c5be618bbe97a99ae3215d8e48c0..60c68936cd80e0137a1c92d6d1687321855c040f 100644
+index 8c21e8aa4922691fa66cd22d631646c554251bdd..999abf6a27682eed16273c9a73dc9479fc3008c0 100644
 --- a/net/minecraft/world/level/block/BedBlock.java
 +++ b/net/minecraft/world/level/block/BedBlock.java
 @@ -100,7 +100,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock
@@ -14771,8 +14774,8 @@ index c23c255cefe7c5be618bbe97a99ae3215d8e48c0..60c68936cd80e0137a1c92d6d1687321
          }
  
          Vec3 center = pos.getCenter();
--        level.explode(null, level.damageSources().badRespawnPointExplosion(center, blockState), null, center, 5.0F, true, Level.ExplosionInteraction.BLOCK); // CraftBukkit - add state
-+        if (level.purpurConfig.bedExplode) level.explode(null, level.damageSources().badRespawnPointExplosion(center, blockState), null, center, (float) level.purpurConfig.bedExplosionPower, level.purpurConfig.bedExplosionFire, level.purpurConfig.bedExplosionEffect); // CraftBukkit - add state // Purpur - Implement bed explosion options
+-        level.explode(null, level.damageSources().badRespawnPointExplosion(center).causingBlockSnapshot(blockState), null, center, 5.0F, true, Level.ExplosionInteraction.BLOCK); // CraftBukkit - add state
++        if (level.purpurConfig.bedExplode) level.explode(null, level.damageSources().badRespawnPointExplosion(center).causingBlockSnapshot(blockState), null, center, (float) level.purpurConfig.bedExplosionPower, level.purpurConfig.bedExplosionFire, level.purpurConfig.bedExplosionEffect); // CraftBukkit - add state // Purpur - Implement bed explosion options
          return InteractionResult.SUCCESS_SERVER;
       }
      // CraftBukkit end
@@ -14955,7 +14958,7 @@ index bc52568bfa56635300266424488e524d77d95e09..8f2eebc60d655d5a2c233e2b931cdca2
 +    // Purpur end - Ability for hoe to replant crops
  }
 diff --git a/net/minecraft/world/level/block/CactusBlock.java b/net/minecraft/world/level/block/CactusBlock.java
-index 913779c68b178dbbfac3b1dcee0c6342028e5570..dfc55eec85f35534dfa36c007d3b3d015ec809a3 100644
+index 8c3aca2430eac2a31d1e0b1137e3324ec5b29a20..079b4c95cf81119ca99daeb159aefca389afed74 100644
 --- a/net/minecraft/world/level/block/CactusBlock.java
 +++ b/net/minecraft/world/level/block/CactusBlock.java
 @@ -21,7 +21,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
@@ -15024,7 +15027,7 @@ index f15b56cbfb6540ea26c6a0abdd701b7d7f1a974e..cf6cf43fc3b234cecccf5c7c0cd4571d
              }
  
 diff --git a/net/minecraft/world/level/block/CampfireBlock.java b/net/minecraft/world/level/block/CampfireBlock.java
-index ce0267f3651dcdc59a1b1ecffe14560a8107353d..d735b6e3ade144a4645345fb7b0f2013fa9002e5 100644
+index 0bf42a5fdf2c606062b9be4443a9a22346159ecb..9dc0c206e325d2818923e56c97d83b24e1161c26 100644
 --- a/net/minecraft/world/level/block/CampfireBlock.java
 +++ b/net/minecraft/world/level/block/CampfireBlock.java
 @@ -141,7 +141,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
@@ -15119,7 +15122,7 @@ index 4f98ae8bd4bfb681883132eddb57cbc5703d7d9e..c84e1c124b733fb918de17340f7e0f57
      }
  }
 diff --git a/net/minecraft/world/level/block/ChestBlock.java b/net/minecraft/world/level/block/ChestBlock.java
-index 9ed50f09147984ba8864edabb89669e2f4fc7bea..af4abe255da35e9b7ecfd29914d5e54e26f0c3cd 100644
+index 4d2a5888695b99fb150e23b7d8c4b4d4a455b8c6..db4b26262e3ee1064f2930377b56f13298c47203 100644
 --- a/net/minecraft/world/level/block/ChestBlock.java
 +++ b/net/minecraft/world/level/block/ChestBlock.java
 @@ -357,6 +357,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements
@@ -15592,7 +15595,7 @@ index 19d1906e9d4e92ff49a833bca03a7308ee8059e3..47a7ce88bf4d26408545dcc061aa7633
          }
      }
 diff --git a/net/minecraft/world/level/block/MagmaBlock.java b/net/minecraft/world/level/block/MagmaBlock.java
-index 6245b268d1361973a9dee2b80454779b7d0922f0..3345a151bdb5262be6ce117947f9975b7fdcfdf0 100644
+index db83c3630064a6875b477021a1f78bdf59c4ddc3..bbf8447cf986015f8a2e55f39d7b4f0dd9abcb23 100644
 --- a/net/minecraft/world/level/block/MagmaBlock.java
 +++ b/net/minecraft/world/level/block/MagmaBlock.java
 @@ -28,7 +28,7 @@ public class MagmaBlock extends Block {
@@ -15601,7 +15604,7 @@ index 6245b268d1361973a9dee2b80454779b7d0922f0..3345a151bdb5262be6ce117947f9975b
      public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
 -        if (!entity.isSteppingCarefully() && entity instanceof LivingEntity) {
 +        if ((!entity.isSteppingCarefully() || level.purpurConfig.magmaBlockDamageWhenSneaking) && entity instanceof LivingEntity) { // Purpur - Configurable damage settings for magma blocks
-             entity.hurt(level.damageSources().hotFloor().directBlock(level, pos), 1.0F); // CraftBukkit
+             entity.hurt(level.damageSources().hotFloor().eventBlockDamager(level, pos), 1.0F); // CraftBukkit
          }
  
 diff --git a/net/minecraft/world/level/block/NetherPortalBlock.java b/net/minecraft/world/level/block/NetherPortalBlock.java
@@ -15714,7 +15717,7 @@ index 9ca4ae8cdf9d88b8b6a6ed5d4c0b306bd0539ffe..42c696aa307516642029646305a4f71a
          }
  
 diff --git a/net/minecraft/world/level/block/PointedDripstoneBlock.java b/net/minecraft/world/level/block/PointedDripstoneBlock.java
-index 8580d44daeb0dacd96714537c2abafd9700cd16b..b70735764bd81c3570845c45aa79782b9867c30b 100644
+index 6a3548ee9f7d31e1fb02a47f4d8b9c1ed0bc2bc6..aa1fd38f26459944f0a08d88e68b989cb54728ed 100644
 --- a/net/minecraft/world/level/block/PointedDripstoneBlock.java
 +++ b/net/minecraft/world/level/block/PointedDripstoneBlock.java
 @@ -197,20 +197,20 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
@@ -15768,15 +15771,15 @@ index f33b53257a231dccf16740f1e78a3cdfa6e70726..4b3d00b085ea5d345b418815c9869f5f
          } else {
              int x = pos.getX();
 diff --git a/net/minecraft/world/level/block/RespawnAnchorBlock.java b/net/minecraft/world/level/block/RespawnAnchorBlock.java
-index e6e93814b6d22eb0ef4122c04ddce30c12c28d3f..e49fba46b006cb4b7568403d2d15777e253b0aab 100644
+index f90d1b0a9e4b80a42f450ff49a46765da19ce562..0631e6f0c242a1fc1dfa606a4d60686c31c7eb13 100644
 --- a/net/minecraft/world/level/block/RespawnAnchorBlock.java
 +++ b/net/minecraft/world/level/block/RespawnAnchorBlock.java
 @@ -159,7 +159,7 @@ public class RespawnAnchorBlock extends Block {
          };
          Vec3 center = pos2.getCenter();
          level.explode(
--            null, level.damageSources().badRespawnPointExplosion(center, blockState), explosionDamageCalculator, center, 5.0F, true, Level.ExplosionInteraction.BLOCK // CraftBukkit - add state
-+            null, level.damageSources().badRespawnPointExplosion(center, blockState), explosionDamageCalculator, center, (float) level.purpurConfig.respawnAnchorExplosionPower, level.purpurConfig.respawnAnchorExplosionFire, level.purpurConfig.respawnAnchorExplosionEffect // CraftBukkit - add state // Purpur - Implement respawn anchor explosion options
+-            null, level.damageSources().badRespawnPointExplosion(center).causingBlockSnapshot(blockState), explosionDamageCalculator, center, 5.0F, true, Level.ExplosionInteraction.BLOCK // CraftBukkit - add state
++            null, level.damageSources().badRespawnPointExplosion(center).causingBlockSnapshot(blockState), explosionDamageCalculator, center, (float) level.purpurConfig.respawnAnchorExplosionPower, level.purpurConfig.respawnAnchorExplosionFire, level.purpurConfig.respawnAnchorExplosionEffect // CraftBukkit - add state // Purpur - Implement respawn anchor explosion options
          );
      }
  
@@ -15941,7 +15944,7 @@ index 88e7320a48b08f052ae1cac914ebbcb905baf693..a20bf795d56a8b8aa1536eed887b5795
                                  if (!blockState.is(Blocks.KELP)
                                      && !blockState.is(Blocks.KELP_PLANT)
 diff --git a/net/minecraft/world/level/block/StonecutterBlock.java b/net/minecraft/world/level/block/StonecutterBlock.java
-index 04706b35549d7d9c1684a106ab6bff6de8199bc9..3e1780bf622dde39ca2717e30ec5d79fa0fa872e 100644
+index 04706b35549d7d9c1684a106ab6bff6de8199bc9..9dc7c3d0d6f8bcbc670fe10e594fa9c5495cffab 100644
 --- a/net/minecraft/world/level/block/StonecutterBlock.java
 +++ b/net/minecraft/world/level/block/StonecutterBlock.java
 @@ -93,4 +93,14 @@ public class StonecutterBlock extends Block {
@@ -15953,7 +15956,7 @@ index 04706b35549d7d9c1684a106ab6bff6de8199bc9..3e1780bf622dde39ca2717e30ec5d79f
 +    @Override
 +    public void stepOn(Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.Entity entity) {
 +        if (level.purpurConfig.stonecutterDamage > 0.0F && entity instanceof net.minecraft.world.entity.LivingEntity) {
-+            entity.hurtServer((net.minecraft.server.level.ServerLevel) level, entity.damageSources().stonecutter().directBlock(level, pos), level.purpurConfig.stonecutterDamage);
++            entity.hurtServer((net.minecraft.server.level.ServerLevel) level, entity.damageSources().stonecutter().eventBlockDamager(level, pos), level.purpurConfig.stonecutterDamage);
 +        }
 +        super.stepOn(level, pos, state, entity);
 +    }
@@ -16351,7 +16354,7 @@ index 77618757c0e678532dbab814aceed83f7f1cd892..3fd0f42618e5c2c683335d1d3e0bb74c
 +    // Purpur end - Persistent BlockEntity Lore and DisplayName
  }
 diff --git a/net/minecraft/world/level/block/entity/ConduitBlockEntity.java b/net/minecraft/world/level/block/entity/ConduitBlockEntity.java
-index 269994df977801c67b8c576bde2478624b2631a1..b1689c67458f77f19c86d5d1d23f30e10a27d7a8 100644
+index 9d80625fc95e4968cf80492dc7ecf1fd27e585b8..00b2d069c6eb26742f0fd74ac1103e428873248a 100644
 --- a/net/minecraft/world/level/block/entity/ConduitBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/ConduitBlockEntity.java
 @@ -155,7 +155,7 @@ public class ConduitBlockEntity extends BlockEntity {
@@ -16396,8 +16399,8 @@ index 269994df977801c67b8c576bde2478624b2631a1..b1689c67458f77f19c86d5d1d23f30e1
          }
  
          if (damageTarget && blockEntity.destroyTarget != null) { // CraftBukkit
--            if (blockEntity.destroyTarget.hurtServer((net.minecraft.server.level.ServerLevel) level, level.damageSources().magic().directBlock(level, pos), 4.0F)) // CraftBukkit
-+            if (blockEntity.destroyTarget.hurtServer((net.minecraft.server.level.ServerLevel) level, level.damageSources().magic().directBlock(level, pos), level.purpurConfig.conduitDamageAmount)) // CraftBukkit // Purpur - Conduit behavior configuration
+-            if (blockEntity.destroyTarget.hurtServer((net.minecraft.server.level.ServerLevel) level, level.damageSources().magic().eventBlockDamager(level, pos), 4.0F)) // CraftBukkit
++            if (blockEntity.destroyTarget.hurtServer((net.minecraft.server.level.ServerLevel) level, level.damageSources().magic().eventBlockDamager(level, pos), level.purpurConfig.conduitDamageAmount)) // CraftBukkit // Purpur - Conduit behavior configuration
              level.playSound(
                  null,
                  blockEntity.destroyTarget.getX(),
@@ -16720,7 +16723,7 @@ index 710f4570bb45a25f20cf914c640539cfa9c9d31b..19ee66cc966cbd124d8c59bc55586237
      private static final double SAFE_TRAVEL_MAX_VERTICAL_DELTA = 1.0;
      private final Direction.Axis axis;
 diff --git a/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java b/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
-index f5a131e870a4f1ad06ebfb1f360720cf19656fb5..3a8c5a252ea5986b2366fa774ea1754494af1d59 100644
+index 3c1c89aade5ff092b880ba1bf1de83f54d3d62cc..681dec447486138088fe5f705ef4fadab531139f 100644
 --- a/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
 +++ b/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
 @@ -68,6 +68,7 @@ public class MapItemSavedData extends SavedData {

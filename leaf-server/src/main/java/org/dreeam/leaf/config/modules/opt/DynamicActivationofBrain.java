@@ -9,6 +9,7 @@ import org.dreeam.leaf.config.LeafConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class DynamicActivationofBrain extends ConfigModules {
 
@@ -69,12 +70,12 @@ public class DynamicActivationofBrain extends ConfigModules {
         for (String name : blackedEntities) {
             // Be compatible with both `minecraft:example` and `example` syntax
             // If unknown, show user config value in the logger instead of parsed result
-            String typeId = name.toLowerCase().startsWith(DEFAULT_PREFIX) ? name : DEFAULT_PREFIX + name;
+            String lowerName = name.toLowerCase(Locale.ROOT);
+            String typeId = lowerName.startsWith(DEFAULT_PREFIX) ? lowerName : DEFAULT_PREFIX + lowerName;
 
             EntityType.byString(typeId).ifPresentOrElse(entityType ->
                     entityType.dabEnabled = false,
                 () -> LeafConfig.LOGGER.warn("Skip unknown entity {}, in {}", name, getBasePath() + ".blacklisted-entities")
-
             );
         }
     }

@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur API Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: e6a1ebd3f6e4cfe93f96dd82ecb3234f0482768a
+Commit: 22bd4186ca92f21a01714ba8e6b4823ccc576c81
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "co/aikar/timings/TimedEventExecutor.java.patch"
@@ -579,10 +579,10 @@ index 84b5626a0ccd4fd1976f28eeb2ae99acdb62afa8..13346dfe2a6d848cf63cbba95d8dea8d
 +    // Purpur end - Debug Marker API
  }
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index 8784842d14bbbe7dbde181e86782a0955be66924..3af8eb8064aeafa3606fed23e7ca2bc74c194726 100644
+index 015d852d5a0c01042a2153a6916d408660356c59..886b0eac9f3047c54cc788f05507893e31f7ad6d 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -4253,6 +4253,86 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -4278,6 +4278,86 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
      @Nullable
      public DragonBattle getEnderDragonBattle();
  
@@ -802,7 +802,7 @@ index 7b379fb21e800a766ad022705a12dff6d42279ab..10a8d64ad2da0be2c14f34c3e7d1957c
      // Paper start
      /**
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index ddf7829eee5e3f0ded9319a5a0a7b2e2486320a4..49d3ca54a761e08cfe1bc770cb879223bf0e21e8 100644
+index 1dac39dec5ad636799984574caeb328818a3c5c9..be56f0f42d4ec23397f9974e158b49fcc7ed44f3 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
 @@ -1196,4 +1196,59 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
@@ -1008,7 +1008,7 @@ index bc84b892cae5fe7019a3ad481e9da79956efa1fe..48eb5b00c460cccde29d327cef1d63fc
 +    // Purpur end
  }
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index a6356997a51a441ca65414dd7e3579c1c0f885d4..ca8abdebf8e9d23e982883a7283fdedf12a36170 100644
+index 8c2cc023bf76c0ba2be06f7c792e0a5ca9aa92ce..c8d13654e2e572272c6307abd2b4d590f4e1507d 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
 @@ -3912,4 +3912,123 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
@@ -1321,11 +1321,11 @@ index f1f97a85ec713c05c882d7588f4a3e4a017f4795..813f6cd253322538bdf96eb323dd23a7
 +    // Purpur end
  }
 diff --git a/src/main/java/org/bukkit/inventory/ItemStack.java b/src/main/java/org/bukkit/inventory/ItemStack.java
-index 55457c7539c08e861263333ae40cbfe9d25814f4..9b3c3d6563c94aec225a332db5d5653887ac5f4b 100644
+index c84cddac865ac5ae51618609714793099d126529..1eb468784fd323fe824ebcde6a3e35b5f00a9118 100644
 --- a/src/main/java/org/bukkit/inventory/ItemStack.java
 +++ b/src/main/java/org/bukkit/inventory/ItemStack.java
-@@ -21,6 +21,13 @@ import org.bukkit.inventory.meta.ItemMeta;
- import org.bukkit.material.MaterialData;
+@@ -21,6 +21,13 @@ import org.bukkit.material.MaterialData;
+ import org.bukkit.persistence.PersistentDataContainer;
  import org.jetbrains.annotations.NotNull;
  import org.jetbrains.annotations.Nullable;
 +// Purpur start - ItemStack convenience methods
@@ -1338,7 +1338,7 @@ index 55457c7539c08e861263333ae40cbfe9d25814f4..9b3c3d6563c94aec225a332db5d56538
  
  /**
   * Represents a stack of items.
-@@ -1329,4 +1336,482 @@ public class ItemStack implements Cloneable, ConfigurationSerializable, Translat
+@@ -1345,4 +1352,482 @@ public class ItemStack implements Cloneable, ConfigurationSerializable, Translat
          return this.craftDelegate.matchesWithoutData(item, excludeTypes, ignoreCount);
      }
      // Paper end - data component API

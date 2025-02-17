@@ -76,7 +76,7 @@ index a8c6549f772208cd543607224fef2c2389b14f24..709631db548a16a969a373e26ebbcd69
      public boolean equals(Object other) {
          return this == other
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 4c9c41b3d0f8752e6dc60c513a951b79945a4549..7d88bcb727b53217f10472d73726a96f54ebc31d 100644
+index f70a843be612903136ae603c4d4c0bad06f4628a..f4f978073fca1be8fe18bc13f64385d4c0cd4b3d 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -159,7 +159,7 @@ import org.bukkit.event.entity.EntityTeleportEvent;
@@ -133,9 +133,9 @@ index 4c9c41b3d0f8752e6dc60c513a951b79945a4549..7d88bcb727b53217f10472d73726a96f
 +        if (!isArmorStandUpdateNoTick && !this.equipmentChanged) return null;
 +        // Leaf end - Lithium - equipment tracking
          Map<EquipmentSlot, ItemStack> map = null;
- 
-         for (EquipmentSlot equipmentSlot : EquipmentSlot.VALUES) {
-@@ -4698,6 +4708,81 @@ public abstract class LivingEntity extends Entity implements Attackable {
+         // Paper start - EntityEquipmentChangedEvent
+         record EquipmentChangeImpl(org.bukkit.inventory.ItemStack oldItem, org.bukkit.inventory.ItemStack newItem) implements io.papermc.paper.event.entity.EntityEquipmentChangedEvent.EquipmentChange {
+@@ -4716,6 +4726,81 @@ public abstract class LivingEntity extends Entity implements Attackable {
          return this.lastHurtByPlayerTime;
      }
  

@@ -1,13 +1,12 @@
 name: EN | Feature request
-description: Suggest an idea for Leaf
+description: Suggest an idea to improve Leaf
 labels: ["enhancement"]
 
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this feature request for Leaf! Fill out the following form to your best ability to help us understand your feature request and greatly improve the change of it getting added.
-
+        Thank you for taking the time to fill out this feature request for Leaf! Please fill out the following form to help us make sure your feature request will actually improve Leaf!
   - type: textarea
     attributes:
       label: What feature do you want to see added?
