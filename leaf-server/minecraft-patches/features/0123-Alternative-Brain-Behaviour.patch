@@ -5,57 +5,47 @@ Subject: [PATCH] Alternative Brain Behaviour
 
 
 diff --git a/net/minecraft/world/entity/ai/Brain.java b/net/minecraft/world/entity/ai/Brain.java
-index e27284f9897923f67985e3d60c3438bd00cc4a51..7a0a8bd6fb07f86834db14c5d2c8a86659136918 100644
+index e27284f9897923f67985e3d60c3438bd00cc4a51..8d102741c01ca22dfa1ec8fe9f2d1c47d9958450 100644
 --- a/net/minecraft/world/entity/ai/Brain.java
 +++ b/net/minecraft/world/entity/ai/Brain.java
-@@ -16,11 +16,8 @@ import com.mojang.serialization.MapCodec;
- import com.mojang.serialization.MapLike;
- import com.mojang.serialization.RecordBuilder;
- import it.unimi.dsi.fastutil.objects.ObjectArrayList;
--import java.util.Collection;
--import java.util.List;
--import java.util.Map;
--import java.util.Optional;
--import java.util.Set;
-+
-+import java.util.*;
- import java.util.Map.Entry;
- import java.util.function.Supplier;
- import java.util.stream.Stream;
-@@ -268,22 +265,46 @@ public class Brain<E extends LivingEntity> {
+@@ -268,23 +268,53 @@ public class Brain<E extends LivingEntity> {
          return this.activeActivities;
      }
  
++    // Leaf start - Alternative Brain Behaviour
 +    private ObjectArrayList<BehaviorControl<? super E>> runningBehaviorsCache;
 +    private long lastRunningBehaviorCheck = -1;
 +    private static final int CACHE_UPDATE_INTERVAL = 5;
++    // Leaf end - Alternative Brain Behaviour
 +
      @Deprecated
      @VisibleForDebug
      public List<BehaviorControl<? super E>> getRunningBehaviors() {
 -        List<BehaviorControl<? super E>> list = new ObjectArrayList<>();
++        // Leaf start - Alternative Brain Behaviour
 +        long currentTick = getCurrentTick();
- 
--        for (Map<Activity, Set<BehaviorControl<? super E>>> map : this.availableBehaviorsByPriority.values()) {
--            for (Set<BehaviorControl<? super E>> set : map.values()) {
--                for (BehaviorControl<? super E> behaviorControl : set) {
--                    if (behaviorControl.getStatus() == Behavior.Status.RUNNING) {
--                        list.add(behaviorControl);
++
 +        // Use cached result if within update interval
 +        if (runningBehaviorsCache != null && (currentTick - lastRunningBehaviorCheck) < CACHE_UPDATE_INTERVAL) {
 +            return runningBehaviorsCache;
 +        }
++
 +        // Initialize or reuse cache list
 +        if (runningBehaviorsCache == null) {
 +            runningBehaviorsCache = new ObjectArrayList<>(32);
 +        } else {
 +            runningBehaviorsCache.clear();
 +        }
++
 +        for (Map<Activity, Set<BehaviorControl<? super E>>> activityMap : availableBehaviorsByPriority.values()) {
 +            for (Set<BehaviorControl<? super E>> behaviors : activityMap.values()) {
-+                if (behaviors.isEmpty()) {
-+                    continue;
-+                }
++                if (behaviors.isEmpty()) continue;
+ 
+-        for (Map<Activity, Set<BehaviorControl<? super E>>> map : this.availableBehaviorsByPriority.values()) {
+-            for (Set<BehaviorControl<? super E>> set : map.values()) {
+-                for (BehaviorControl<? super E> behaviorControl : set) {
+-                    if (behaviorControl.getStatus() == Behavior.Status.RUNNING) {
+-                        list.add(behaviorControl);
 +                for (BehaviorControl<? super E> behavior : behaviors) {
 +                    if (behavior.getStatus() == Behavior.Status.RUNNING) {
 +                        runningBehaviorsCache.add(behavior);
@@ -66,6 +56,7 @@ index e27284f9897923f67985e3d60c3438bd00cc4a51..7a0a8bd6fb07f86834db14c5d2c8a866
  
 -        return list;
 +        lastRunningBehaviorCheck = currentTick;
++
 +        return runningBehaviorsCache;
 +    }
 +
@@ -74,5 +65,7 @@ index e27284f9897923f67985e3d60c3438bd00cc4a51..7a0a8bd6fb07f86834db14c5d2c8a866
 +        // This should be implemented to return the current game tick
 +        return System.nanoTime() / 50_000_000; // Approximate tick time of 50ms
      }
++    // Leaf end - Alternative Brain Behaviour
  
      public void useDefaultActivity() {
+         this.setActiveActivity(this.defaultActivity);
