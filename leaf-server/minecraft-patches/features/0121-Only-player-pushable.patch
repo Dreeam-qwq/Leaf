@@ -3,6 +3,7 @@ From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 Date: Wed, 27 Nov 2024 23:13:12 -0500
 Subject: [PATCH] Only player pushable
 
+Useful for extreme cases like massive entities collide together in a small area
 
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
 index f4f978073fca1be8fe18bc13f64385d4c0cd4b3d..deb31fa0e0c9c8ccb21c5ae7e86bb1c5406e2177 100644

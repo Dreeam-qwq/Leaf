@@ -3,6 +3,9 @@ From: Taiyou06 <kaandindar21@gmail.com>
 Date: Sat, 8 Feb 2025 22:36:31 +0100
 Subject: [PATCH] Optimize baby villager sensor
 
+In the test, this can give ~16.58% improvement (~2316ms -> ~1932ms),
+under 2048 villagers situation.
+And ~42.93% improvement (~764ms -> ~436ms), under 512 villagers situation.
 
 diff --git a/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java b/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java
 index 1c010e5b75506945e5281021a2ddad424044d28f..2b973a3ba7d65330fa4690e71e5321c28457ec61 100644
