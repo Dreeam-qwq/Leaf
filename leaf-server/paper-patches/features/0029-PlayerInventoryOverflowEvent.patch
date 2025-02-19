@@ -5,7 +5,7 @@ Subject: [PATCH] PlayerInventoryOverflowEvent
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
-index 8b4f8a475faafe3b8a479160888145c4aa603a27..ab435cd4dc054cdb77c378e7b2d7c75fc181ba77 100644
+index 8b4f8a475faafe3b8a479160888145c4aa603a27..6abbc9c3a917c1ca00fd684633da464e116276b3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
 @@ -340,6 +340,15 @@ public class CraftInventory implements Inventory {
@@ -14,8 +14,8 @@ index 8b4f8a475faafe3b8a479160888145c4aa603a27..ab435cd4dc054cdb77c378e7b2d7c75f
          }
 +
 +        // Leaf start - PlayerInventoryOverflowEvent
-+        if (org.dreeam.event.player.PlayerInventoryOverflowEvent.isEnabled() && !leftover.isEmpty() && this.getHolder() instanceof org.bukkit.craftbukkit.entity.CraftPlayer craftPlayer) {
-+            new org.dreeam.event.player.PlayerInventoryOverflowEvent(craftPlayer, leftover).callEvent();
++        if (org.dreeam.leaf.event.player.PlayerInventoryOverflowEvent.isEnabled() && !leftover.isEmpty() && this.getHolder() instanceof org.bukkit.craftbukkit.entity.CraftPlayer craftPlayer) {
++            new org.dreeam.leaf.event.player.PlayerInventoryOverflowEvent(craftPlayer, leftover).callEvent();
 +
 +            leftover = new HashMap<>();
 +        }
