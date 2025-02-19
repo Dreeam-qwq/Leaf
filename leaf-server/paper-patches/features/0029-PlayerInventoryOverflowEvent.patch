@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Wed, 19 Feb 2025 00:36:20 -0500
+Subject: [PATCH] PlayerInventoryOverflowEvent
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
+index 8b4f8a475faafe3b8a479160888145c4aa603a27..c05547c0b239f66b7c43f07e691f9ef32d183464 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
+@@ -340,6 +340,15 @@ public class CraftInventory implements Inventory {
+                 }
+             }
+         }
++
++        // Leaf start - PlayerInventoryOverflowEvent
++        if (org.dreeam.event.player.PlayerInventoryOverflowEvent.isEnabled() && !leftover.isEmpty() && this.getHolder() instanceof org.bukkit.craftbukkit.entity.CraftPlayer craftPlayer) {
++            new org.dreeam.event.player.PlayerInventoryOverflowEvent(craftPlayer, leftover).callEvent();
++
++            leftover.clear();
++        }
++        // Leaf end - PlayerInventoryOverflowEvent
++
+         return leftover;
+     }
+ 
