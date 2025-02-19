@@ -6,10 +6,10 @@ Subject: [PATCH] PlayerInventoryOverflowEvent
 
 diff --git a/src/main/java/org/dreeam/event/player/PlayerInventoryOverflowEvent.java b/src/main/java/org/dreeam/event/player/PlayerInventoryOverflowEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..fcb8dc0abf4b3d8cdb88813c7ebe5352ec657a02
+index 0000000000000000000000000000000000000000..96dc6a56281339e0fcc7d7e532e46b0e7106c398
 --- /dev/null
 +++ b/src/main/java/org/dreeam/event/player/PlayerInventoryOverflowEvent.java
-@@ -0,0 +1,63 @@
+@@ -0,0 +1,81 @@
 +package org.dreeam.event.player;
 +
 +import org.bukkit.entity.Player;
@@ -35,6 +35,8 @@ index 0000000000000000000000000000000000000000..fcb8dc0abf4b3d8cdb88813c7ebe5352
 +public class PlayerInventoryOverflowEvent extends PlayerEvent {
 +
 +    private static final HandlerList HANDLER_LIST = new HandlerList();
++
++    private static boolean enabled = false;
 +
 +    private final Inventory inventory;
 +    private final Map<Integer, ItemStack> overflowItemStacks;
@@ -62,6 +64,22 @@ index 0000000000000000000000000000000000000000..fcb8dc0abf4b3d8cdb88813c7ebe5352
 +     */
 +    public Map<Integer, ItemStack> getOverflowItemStacks() {
 +        return this.overflowItemStacks;
++    }
++
++    /**
++     * Enables the PlayerInventoryOverflowEvent
++     */
++    public static void enable() {
++        enabled = true;
++    }
++
++    /**
++     * Gets the status of PlayerInventoryOverflowEvent
++     *
++     * @return The status of PlayerInventoryOverflowEvent.
++     */
++    public static boolean isEnabled() {
++        return enabled;
 +    }
 +
 +    @Override

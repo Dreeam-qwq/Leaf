@@ -5,7 +5,7 @@ Subject: [PATCH] PlayerInventoryOverflowEvent
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
-index 8b4f8a475faafe3b8a479160888145c4aa603a27..c05547c0b239f66b7c43f07e691f9ef32d183464 100644
+index 8b4f8a475faafe3b8a479160888145c4aa603a27..ab435cd4dc054cdb77c378e7b2d7c75fc181ba77 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
 @@ -340,6 +340,15 @@ public class CraftInventory implements Inventory {
@@ -17,7 +17,7 @@ index 8b4f8a475faafe3b8a479160888145c4aa603a27..c05547c0b239f66b7c43f07e691f9ef3
 +        if (org.dreeam.event.player.PlayerInventoryOverflowEvent.isEnabled() && !leftover.isEmpty() && this.getHolder() instanceof org.bukkit.craftbukkit.entity.CraftPlayer craftPlayer) {
 +            new org.dreeam.event.player.PlayerInventoryOverflowEvent(craftPlayer, leftover).callEvent();
 +
-+            leftover.clear();
++            leftover = new HashMap<>();
 +        }
 +        // Leaf end - PlayerInventoryOverflowEvent
 +
