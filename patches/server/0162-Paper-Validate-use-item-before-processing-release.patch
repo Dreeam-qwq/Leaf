@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bjarne Koll <git@lynxplay.dev>
+Date: Sat, 1 Jan 2000 00:00:00 +0000
+Subject: [PATCH] Paper: Validate use item before processing release
+
+Backported from Paper 1.21.4
+
+Original license: GPLv3
+Original project: https://github.com/PaperMC/Paper
+
+diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index e0962547709d6951cc98da94f028bd4d5b7b25dd..a474503e8cfc344f84f83426df5aeb6dac748b79 100644
+--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -1918,7 +1918,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
+ 
+                 return;
+             case RELEASE_USE_ITEM:
+-                this.player.releaseUsingItem();
++                if (this.player.getUseItem() == this.player.getItemInHand(this.player.getUsedItemHand())) this.player.releaseUsingItem(); // Paper - validate use item before processing release
+                 return;
+             case START_DESTROY_BLOCK:
+             case ABORT_DESTROY_BLOCK:
