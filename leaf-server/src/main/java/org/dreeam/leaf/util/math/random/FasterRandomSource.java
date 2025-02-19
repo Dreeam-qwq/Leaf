@@ -6,11 +6,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.BitRandomSource;
 import net.minecraft.world.level.levelgen.PositionalRandomFactory;
 import org.dreeam.leaf.config.modules.opt.FastRNG;
-
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
-
 
 public class FasterRandomSource implements BitRandomSource {
 
@@ -20,8 +18,12 @@ public class FasterRandomSource implements BitRandomSource {
     private static final long INCREMENT = 11L;
     private static final RandomGeneratorFactory<RandomGenerator> RANDOM_GENERATOR_FACTORY = RandomGeneratorFactory.of(FastRNG.randomGenerator);
     private static final boolean isSplittableGenerator = RANDOM_GENERATOR_FACTORY.isSplittable();
+
+    // The state for the linear congruential generator.
     private long seed;
+    // Delegate for other random operations.
     private RandomGenerator randomGenerator;
+
     public static final FasterRandomSource SHARED_INSTANCE = new FasterRandomSource(ThreadLocalRandom.current().nextLong());
 
     public FasterRandomSource(long seed) {
@@ -53,10 +55,18 @@ public class FasterRandomSource implements BitRandomSource {
         this.randomGenerator = RANDOM_GENERATOR_FACTORY.create(seed);
     }
 
+    /**
+     * Returns the next random bits using a linear congruential generator.
+     * Updates the state (seed) as per the formula:
+     *
+     * newSeed = (oldSeed * MULTIPLIER + INCREMENT) & SEED_MASK
+     *
+     * Then the top (INT_BITS - bits) bits are dropped.
+     */
     @Override
     public final int next(int bits) {
-        // >>> instead of Mojang's >> fixes MC-239059
-        return (int) ((seed * MULTIPLIER + INCREMENT & SEED_MASK) >>> INT_BITS - bits);
+        seed = (seed * MULTIPLIER + INCREMENT) & SEED_MASK;
+        return (int) (seed >>> (INT_BITS - bits));
     }
 
     public static class FasterRandomSourcePositionalRandomFactory implements PositionalRandomFactory {
@@ -68,15 +78,15 @@ public class FasterRandomSource implements BitRandomSource {
 
         @Override
         public RandomSource at(int x, int y, int z) {
-            long l = Mth.getSeed(x, y, z);
-            long m = l ^ this.seed;
-            return new FasterRandomSource(m);
+            long posSeed = Mth.getSeed(x, y, z);
+            long combined = posSeed ^ this.seed;
+            return new FasterRandomSource(combined);
         }
 
         @Override
-        public RandomSource fromHashOf(String seed) {
-            int i = seed.hashCode();
-            return new FasterRandomSource((long) i ^ this.seed);
+        public RandomSource fromHashOf(String seedStr) {
+            int hash = seedStr.hashCode();
+            return new FasterRandomSource(((long) hash) ^ this.seed);
         }
 
         @Override
