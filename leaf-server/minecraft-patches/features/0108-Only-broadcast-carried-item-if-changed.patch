@@ -1,17 +1,18 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Taiyou06 <kaandindar21@gmail.com>
 Date: Thu, 20 Feb 2025 20:58:30 +0100
-Subject: [PATCH] Inventory broadcastChanges optimization
+Subject: [PATCH] Only broadcast carried item if changed
 
 
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 6033f629ac457472ad10f8e346732a596aea52d9..ca37b42fa810cddc289162a453fc8ab99ddc023c 100644
+index 6033f629ac457472ad10f8e346732a596aea52d9..ba37e6b52ceb5f73e9c18cc555e768f43857e549 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
-@@ -225,23 +225,35 @@ public abstract class AbstractContainerMenu {
+@@ -225,24 +225,38 @@ public abstract class AbstractContainerMenu {
      }
  
      public void broadcastChanges() {
++        // Leaf start - Only broadcast carried item if changed
 +        // Avoid allocating supplier if no changes
 +        boolean hasChanges = false;
 +
@@ -41,7 +42,7 @@ index 6033f629ac457472ad10f8e346732a596aea52d9..ca37b42fa810cddc289162a453fc8ab9
          for (int i = 0; i < this.dataSlots.size(); i++) {
              DataSlot dataSlot = this.dataSlots.get(i);
 -            int i1 = dataSlot.get();
-+            int value = dataSlot.get();
++            int value = dataSlot.get(); // OBFHELPER
              if (dataSlot.checkAndClearUpdateFlag()) {
 -                this.updateDataSlotListeners(i, i1);
 +                this.updateDataSlotListeners(i, value);
@@ -50,5 +51,7 @@ index 6033f629ac457472ad10f8e346732a596aea52d9..ca37b42fa810cddc289162a453fc8ab9
 -            this.synchronizeDataSlotToRemote(i, i1);
 +            this.synchronizeDataSlotToRemote(i, value);
          }
++        // Leaf end - Only broadcast carried item if changed
      }
  
+     public void broadcastFullState() {
