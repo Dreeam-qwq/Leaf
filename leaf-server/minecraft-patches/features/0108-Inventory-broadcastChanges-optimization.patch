@@ -5,7 +5,7 @@ Subject: [PATCH] Inventory broadcastChanges optimization
 
 
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 6033f629ac457472ad10f8e346732a596aea52d9..6311887ef7ded559743bb36e204ff5aa3c7aeb6a 100644
+index 6033f629ac457472ad10f8e346732a596aea52d9..ca37b42fa810cddc289162a453fc8ab99ddc023c 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -225,23 +225,35 @@ public abstract class AbstractContainerMenu {
@@ -52,36 +52,3 @@ index 6033f629ac457472ad10f8e346732a596aea52d9..6311887ef7ded559743bb36e204ff5aa
          }
      }
  
-@@ -281,8 +293,9 @@ public abstract class AbstractContainerMenu {
- 
-     private void synchronizeSlotToRemote(int slotIndex, ItemStack stack, Supplier<ItemStack> supplier) {
-         if (!this.suppressRemoteUpdates) {
--            ItemStack itemStack = this.remoteSlots.get(slotIndex);
--            if (!ItemStack.matches(itemStack, stack)) {
-+            ItemStack cachedRemoteStack = this.remoteSlots.get(slotIndex);
-+            // Fast reference equality check first
-+            if (stack != cachedRemoteStack && !ItemStack.matches(cachedRemoteStack, stack)) {
-                 ItemStack itemStack1 = supplier.get();
-                 this.remoteSlots.set(slotIndex, itemStack1);
-                 if (this.synchronizer != null) {
-diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index fd7c1e800cbd4919a1a47f6c468c8776535bd028..0465330244ec506e0e0770d2f54e93267b530ab7 100644
---- a/net/minecraft/world/item/ItemStack.java
-+++ b/net/minecraft/world/item/ItemStack.java
-@@ -900,7 +900,15 @@ public final class ItemStack implements DataComponentHolder, net.caffeinemc.mods
-     }
- 
-     public static boolean matches(ItemStack stack, ItemStack other) {
--        return stack == other || stack.getCount() == other.getCount() && isSameItemSameComponents(stack, other);
-+        // Fast path - if same object reference
-+        if (stack == other) {
-+            return true;
-+        }
-+        // Check counts first since it's a cheaper comparison than component equality
-+        if (stack.getCount() != other.getCount()) {
-+            return false;
-+        }
-+        return isSameItemSameComponents(stack, other);
-     }
- 
-     @Deprecated
