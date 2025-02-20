@@ -118,10 +118,10 @@ index c2b7164a1395842ab95428540782eeda4c7960b0..59c70c567051bc7dba0d308387352d1b
          boolean flag = this.source.acceptsSuccess() && !this.silent;
          boolean flag1 = allowLogging && this.source.shouldInformAdmins() && !this.silent;
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index fadc6c2494ac3aaa426d16d36adc688e1f39e27a..06df7711ca33d592d9a23ef0b2c3e73b468e2f57 100644
+index 66839bc2ac5746e355713cb006f249f71230a361..ee7bdfd8f9da8d5989c9cc25f8cbcc94640361c5 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
-@@ -213,8 +213,8 @@ public class Commands {
+@@ -218,8 +218,8 @@ public class Commands {
              JfrCommand.register(this.dispatcher);
          }
  
@@ -132,7 +132,7 @@ index fadc6c2494ac3aaa426d16d36adc688e1f39e27a..06df7711ca33d592d9a23ef0b2c3e73b
              RaidCommand.register(this.dispatcher, context);
              DebugPathCommand.register(this.dispatcher);
              DebugMobSpawningCommand.register(this.dispatcher);
-@@ -242,6 +242,14 @@ public class Commands {
+@@ -247,6 +247,14 @@ public class Commands {
              StopCommand.register(this.dispatcher);
              TransferCommand.register(this.dispatcher);
              WhitelistCommand.register(this.dispatcher);
@@ -15396,7 +15396,7 @@ index f5533960708bdbaf2eacefbc7c7c3123b7d26502..17aa27885b4431bf7b98799e02d080b5
      public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
          return new EnderChestBlockEntity(pos, state);
 diff --git a/net/minecraft/world/level/block/FarmBlock.java b/net/minecraft/world/level/block/FarmBlock.java
-index 47c9b32c89e7e6f84a279c2f6098ada77dc58b6b..9a7ca836e54cc3f58001c85f0079747f4d4941ad 100644
+index 1fdede769b67cb5d2f9159c779f19e3639bb6ff5..2ff5457300d66378dbbea492deff0136629bc365 100644
 --- a/net/minecraft/world/level/block/FarmBlock.java
 +++ b/net/minecraft/world/level/block/FarmBlock.java
 @@ -112,9 +112,9 @@ public class FarmBlock extends Block {
@@ -15439,7 +15439,7 @@ index 47c9b32c89e7e6f84a279c2f6098ada77dc58b6b..9a7ca836e54cc3f58001c85f0079747f
                  if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(entity, pos, Blocks.DIRT.defaultBlockState())) {
                      return;
                  }
-@@ -174,7 +195,7 @@ public class FarmBlock extends Block {
+@@ -177,7 +198,7 @@ public class FarmBlock extends Block {
              }
          }
  

@@ -5,10 +5,10 @@ Subject: [PATCH] Configurable unknown command message
 
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 6b8757569e0f0d756612fc180fef13143c606eaf..07e690c623fe38ce099aa2f0002e7a7456120f3b 100644
+index fb18f69cb26132fc8c53b185454c6aadb8a5f7e5..eff6d524c8acfc62d1fcf6b5552754e794a22735 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
-@@ -383,31 +383,9 @@ public class Commands {
+@@ -404,31 +404,9 @@ public class Commands {
              // Paper start - Add UnknownCommandEvent
              final net.kyori.adventure.text.TextComponent.Builder builder = net.kyori.adventure.text.Component.text();
              // source.sendFailure(ComponentUtils.fromMessage(var7.getRawMessage()));
@@ -42,7 +42,7 @@ index 6b8757569e0f0d756612fc180fef13143c606eaf..07e690c623fe38ce099aa2f0002e7a74
              org.bukkit.Bukkit.getServer().getPluginManager().callEvent(event);
              if (event.message() != null) {
                  source.sendFailure(io.papermc.paper.adventure.PaperAdventure.asVanilla(event.message()), false);
-@@ -624,6 +602,86 @@ public class Commands {
+@@ -680,6 +658,86 @@ public class Commands {
          };
      }
  
