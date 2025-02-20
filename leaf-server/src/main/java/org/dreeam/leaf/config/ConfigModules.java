@@ -13,7 +13,8 @@ import java.util.Set;
 
 public abstract class ConfigModules extends LeafConfig {
 
-    private static final Set<ConfigModules> modules = new HashSet<>();
+    private static final Set<ConfigModules> MODULES = new HashSet<>();
+
     public LeafGlobalConfig config;
 
     public ConfigModules() {
@@ -26,7 +27,7 @@ public abstract class ConfigModules extends LeafConfig {
             ConfigModules module = (ConfigModules) clazz.getConstructor().newInstance();
             module.onLoaded();
 
-            modules.add(module);
+            MODULES.add(module);
             for (Field field : getAnnotatedStaticFields(clazz, Experimental.class)) {
                 if (!(field.get(null) instanceof Boolean enabled)) continue;
                 if (enabled) {
@@ -48,6 +49,10 @@ public abstract class ConfigModules extends LeafConfig {
             }
         }
         return fields;
+    }
+
+    public static void clearModules() {
+        MODULES.clear();
     }
 
     public abstract void onLoaded();

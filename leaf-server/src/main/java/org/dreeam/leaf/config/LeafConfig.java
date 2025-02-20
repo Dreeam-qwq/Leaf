@@ -1,6 +1,9 @@
 package org.dreeam.leaf.config;
 
 import io.papermc.paper.configuration.GlobalConfiguration;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.minecraft.Util;
 import org.dreeam.leaf.config.modules.misc.SentryDSN;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +34,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 
 /*
  *  Yoinked from: https://github.com/xGinko/AnarchyExploitFixes/ & https://github.com/LuminolMC/Luminol
@@ -46,24 +51,28 @@ public class LeafConfig {
 
     private static LeafGlobalConfig leafGlobalConfig;
 
+    //private static int preMajorVer;
+    private static int preMinorVer;
+    //private static int currMajorVer;
+    private static int currMinorVer;
+
     /* Load & Reload */
 
-    public static void reload() {
-        try {
-            long begin = System.nanoTime();
-            LOGGER.info("Reloading config...");
+    public static @NotNull CompletableFuture<Void> reloadAsync(CommandSender sender) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                long begin = System.nanoTime();
 
-            loadConfig(false);
+                ConfigModules.clearModules();
+                loadConfig(false);
 
-            LOGGER.info("Successfully reloaded config in {}ms.", (System.nanoTime() - begin) / 1_000_000);
-        } catch (Exception e) {
-            LOGGER.error("Failed to reload config.", e);
-        }
-    }
-
-    @Contract(" -> new")
-    public static @NotNull CompletableFuture<Void> reloadAsync() {
-        return new CompletableFuture<>();
+                final String success = String.format("Successfully reloaded config in %sms.", (System.nanoTime() - begin) / 1_000_000);
+                Command.broadcastCommandMessage(sender, Component.text(success, NamedTextColor.GREEN));
+            } catch (Exception e) {
+                Command.broadcastCommandMessage(sender, Component.text("Failed to reload config. See error in console!", NamedTextColor.RED));
+                LOGGER.error(e);
+            }
+        }, Util.ioPool());
     }
 
     public static void loadConfig() {
@@ -191,6 +200,17 @@ public class LeafConfig {
                     }
                 }
             }
+        }
+    }
+
+    // TODO
+    public static void loadConfigVersion(String preVer, String currVer) {
+        int currMinor;
+        int preMinor;
+
+        // First time user
+        if (preVer == null) {
+
         }
     }
 

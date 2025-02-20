@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Paper Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 22bd4186ca92f21a01714ba8e6b4823ccc576c81
+Commit: 196c1768e1cfa467b82acf260156892784c84578
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "Rebrand.patch"
@@ -143,7 +143,7 @@ index 6bdc683b5ade408ee27f1d6636b4d60c8c89cb7c..bc6d3898d8784e50a0e2264bbb5bde63
          ignored.add("goal_selector_1");
          ignored.add("goal_selector_2");
 diff --git a/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java b/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java
-index 41c95f00b4b2bea6d31f85e268c33d7f6184823e..1fe7458f9114a6b60ddc4dd90728aecb0b1e9e3f 100644
+index 41c95f00b4b2bea6d31f85e268c33d7f6184823e..421c522760d35167eabe216a706b1f42f45a17f4 100644
 --- a/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java
 +++ b/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java
 @@ -70,10 +70,10 @@ public class PaperPluginsCommand extends BukkitCommand {
@@ -159,7 +159,7 @@ index 41c95f00b4b2bea6d31f85e268c33d7f6184823e..1fe7458f9114a6b60ddc4dd90728aecb
          }
  
          boolean isFirst = true;
-@@ -100,21 +100,72 @@ public class PaperPluginsCommand extends BukkitCommand {
+@@ -100,15 +100,49 @@ public class PaperPluginsCommand extends BukkitCommand {
          return formattedSubLists;
      }
  
@@ -212,7 +212,8 @@ index 41c95f00b4b2bea6d31f85e268c33d7f6184823e..1fe7458f9114a6b60ddc4dd90728aecb
  
          builder.append(pluginName);
  
-         return builder.build();
+@@ -126,6 +160,23 @@ public class PaperPluginsCommand extends BukkitCommand {
+         return componentHeader.append(Component.text(":")).build();
      }
  
 +    // Purpur start - Improve output of plugins command
@@ -232,21 +233,19 @@ index 41c95f00b4b2bea6d31f85e268c33d7f6184823e..1fe7458f9114a6b60ddc4dd90728aecb
 +    }
 +    // Purpur end - Improve output of plugins command
 +
-     private static Component header(final String header, final int color, final int count, final boolean showSize) {
-         final TextComponent.Builder componentHeader = Component.text().color(TextColor.color(color))
-             .append(Component.text(header));
+     private static Component asPlainComponents(final String strings) {
+         final net.kyori.adventure.text.TextComponent.Builder builder = Component.text();
+         for (final String string : strings.split("\n")) {
 @@ -186,25 +237,25 @@ public class PaperPluginsCommand extends BukkitCommand {
          final int sizePaperPlugins = paperPlugins.size();
          final int sizeSpigotPlugins = spigotPlugins.size();
          final int sizePlugins = sizePaperPlugins + sizeSpigotPlugins;
 -        final boolean hasAllPluginTypes = (sizePaperPlugins > 0 && sizeSpigotPlugins > 0);
-+        final boolean hasAllPluginTypes = true || (sizePaperPlugins > 0 && sizeSpigotPlugins > 0); // Purpur - Improve output of plugins command
++        final boolean hasAllPluginTypes = true; // Purpur - Improve output of plugins command
  
--        final Component infoMessage = Component.text().append(INFO_ICON_SERVER_PLUGIN).append(Component.text("Server Plugins (%s):".formatted(sizePlugins), NamedTextColor.WHITE)).build();
-+        //final Component infoMessage = Component.text().append(INFO_ICON_SERVER_PLUGIN).append(Component.text("Server Plugins (%s):".formatted(sizePlugins), NamedTextColor.WHITE)).build(); // Purpur - Improve output of plugins command
+         final Component infoMessage = Component.text().append(INFO_ICON_SERVER_PLUGIN).append(Component.text("Server Plugins (%s):".formatted(sizePlugins), NamedTextColor.WHITE)).build();
  
--        sender.sendMessage(infoMessage);
-+        //sender.sendMessage(infoMessage); // Purpur - Improve output of plugins command
+         sender.sendMessage(infoMessage);
  
 -        if (!paperPlugins.isEmpty()) {
 +        //if (!paperPlugins.isEmpty()) { // Purpur - Improve output of plugins command
@@ -1140,7 +1139,7 @@ index 351f42842b780d053cd2e5bad9ae299449141b10..054d2c2b93c43faeeaf56f482eb7b943
 +    // Purpur end - Llama API
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 3260f20b667918dd7cd641d5d96688721fce2f9c..5ee96349f7d720e6cf36ced42c7197579730ccbd 100644
+index 218a27def751fb657cdeee102d9ec4b26025bb30..46c53ee7f0a157002e0bec603222299d72c7130a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -592,10 +592,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -1205,9 +1204,9 @@ index 3260f20b667918dd7cd641d5d96688721fce2f9c..5ee96349f7d720e6cf36ced42c719757
      private void validateSpeed(float value) {
          Preconditions.checkArgument(value <= 1f && value >= -1f, "Speed value (%s) need to be between -1f and 1f", value);
      }
-@@ -3583,4 +3612,75 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-         handle.containerMenu.broadcastChanges();
-         return new PaperPlayerGiveResult(leftovers.build(), drops.build());
+@@ -3599,4 +3628,75 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+         return forwardMovement == backwardMovement ? 0 : forwardMovement ? 1 : -1;
      }
 +
 +    // Purpur start - Purpur client support
@@ -1362,7 +1361,7 @@ index c1b7f1281fbd41e765d2c1881763ca25b20e924d..53c620e717d39ef16f44c9697ac4809a
 +    // Purpur end - Configurable chance for wolves to spawn rabid
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 57c3f8531bf85b53af3a4aad6e9e369d5cff0ce3..a9edb1818edb50e739d507d6dacc1409e70db8d5 100644
+index 57c3f8531bf85b53af3a4aad6e9e369d5cff0ce3..56afb317cef0e049aacdd36a1be5f9b7af4d0c77 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -602,6 +602,15 @@ public class CraftEventFactory {
@@ -1381,15 +1380,6 @@ index 57c3f8531bf85b53af3a4aad6e9e369d5cff0ce3..a9edb1818edb50e739d507d6dacc1409
          return event;
      }
  
-@@ -1135,7 +1144,7 @@ public class CraftEventFactory {
-             DamageCause cause;
-             if (source.knownCause() != null) {
-                 cause = source.knownCause();
--            } else if (source.is(DamageTypes.CACTUS) || source.is(DamageTypes.SWEET_BERRY_BUSH) || source.is(DamageTypes.STALAGMITE) || source.is(DamageTypes.FALLING_STALACTITE) || source.is(DamageTypes.FALLING_ANVIL)) {
-+            } else if (source.is(DamageTypes.CACTUS) || source.is(DamageTypes.SWEET_BERRY_BUSH) || source.is(DamageTypes.STALAGMITE) || source.is(DamageTypes.FALLING_STALACTITE) || source.is(DamageTypes.FALLING_ANVIL) || source.isStonecutter()) { // Purpur - Stonecutter damage
-                 cause = DamageCause.CONTACT;
-             } else if (source.is(DamageTypes.HOT_FLOOR)) {
-                 cause = DamageCause.HOT_FLOOR;
 @@ -1193,6 +1202,7 @@ public class CraftEventFactory {
          EntityDamageEvent event;
          if (damager != null) {
@@ -1995,7 +1985,7 @@ index d2a75850af9c6ad2aca66a5f994f1b587d73eac4..a056aa167887abef9e6d531a9edd2cda
          <TerminalConsole name="TerminalConsole">
              <PatternLayout>
 diff --git a/src/test/java/io/papermc/paper/permissions/MinecraftCommandPermissionsTest.java b/src/test/java/io/papermc/paper/permissions/MinecraftCommandPermissionsTest.java
-index 75ed5050f72c001d6eab117a2c0b352a413548bd..2764d4204d51a3615f27b8bfd7b6675294465155 100644
+index fe08e446e86d53cef6eecc33cd484e93adc42871..54fff448fded12cd6110583f0c255f2ca86388da 100644
 --- a/src/test/java/io/papermc/paper/permissions/MinecraftCommandPermissionsTest.java
 +++ b/src/test/java/io/papermc/paper/permissions/MinecraftCommandPermissionsTest.java
 @@ -46,6 +46,7 @@ public class MinecraftCommandPermissionsTest {

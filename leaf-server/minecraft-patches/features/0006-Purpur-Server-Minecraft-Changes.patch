@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Minecraft Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: 22bd4186ca92f21a01714ba8e6b4823ccc576c81
+Commit: 196c1768e1cfa467b82acf260156892784c84578
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "net/minecraft/CrashReport.java.patch"
@@ -1698,7 +1698,7 @@ index d3de87eaf0eb84af77165391c7b94085d425f21d..edaa6f66f33b6a9bfb4862ec5557080b
              }
          }
 diff --git a/net/minecraft/world/damagesource/DamageSource.java b/net/minecraft/world/damagesource/DamageSource.java
-index 0d9e5aab214df54a7a24bec45fcc8ad85f699710..0eb210a8c6f42a3a1ee61e946ccfec25cbc3a44b 100644
+index 0d9e5aab214df54a7a24bec45fcc8ad85f699710..bf9520bf4f314dacc66db9a7d30dbcc239db2c7d 100644
 --- a/net/minecraft/world/damagesource/DamageSource.java
 +++ b/net/minecraft/world/damagesource/DamageSource.java
 @@ -30,6 +30,8 @@ public class DamageSource {
@@ -1710,12 +1710,13 @@ index 0d9e5aab214df54a7a24bec45fcc8ad85f699710..0eb210a8c6f42a3a1ee61e946ccfec25
  
      public DamageSource knownCause(final org.bukkit.event.entity.EntityDamageEvent.DamageCause cause) {
          final DamageSource damageSource = this.copy();
-@@ -42,6 +44,27 @@ public class DamageSource {
+@@ -42,6 +44,30 @@ public class DamageSource {
          return this.knownCause;
      }
  
 +    // Purpur start - Dont run with scissors!
 +    public DamageSource scissors() {
++        this.knownCause(org.bukkit.event.entity.EntityDamageEvent.DamageCause.SUICIDE);
 +        this.scissors = true;
 +        return this;
 +    }
@@ -1724,8 +1725,10 @@ index 0d9e5aab214df54a7a24bec45fcc8ad85f699710..0eb210a8c6f42a3a1ee61e946ccfec25
 +        return this.scissors;
 +    }
 +    // Purpur end - Dont run with scissors!
++
 +    // Purpur start -  - Stonecutter damage
 +    public DamageSource stonecutter() {
++        this.knownCause(org.bukkit.event.entity.EntityDamageEvent.DamageCause.CONTACT);
 +        this.stonecutter = true;
 +        return this;
 +    }
@@ -1738,7 +1741,7 @@ index 0d9e5aab214df54a7a24bec45fcc8ad85f699710..0eb210a8c6f42a3a1ee61e946ccfec25
      @Nullable
      public Entity eventEntityDamager() {
          return this.eventEntityDamager;
-@@ -103,6 +126,8 @@ public class DamageSource {
+@@ -103,6 +129,8 @@ public class DamageSource {
          damageSource.eventBlockDamager = this.eventBlockDamager;
          damageSource.fromBlockSnapshot = this.fromBlockSnapshot;
          damageSource.critical = this.critical;
@@ -1747,7 +1750,7 @@ index 0d9e5aab214df54a7a24bec45fcc8ad85f699710..0eb210a8c6f42a3a1ee61e946ccfec25
          return damageSource;
      }
      // CraftBukkit end
-@@ -169,12 +194,21 @@ public class DamageSource {
+@@ -169,12 +197,21 @@ public class DamageSource {
          } else {
              Component component = this.causingEntity == null ? this.directEntity.getDisplayName() : this.causingEntity.getDisplayName();
              ItemStack itemStack = this.causingEntity instanceof LivingEntity livingEntity1 ? livingEntity1.getMainHandItem() : ItemStack.EMPTY;
@@ -1771,7 +1774,7 @@ index 0d9e5aab214df54a7a24bec45fcc8ad85f699710..0eb210a8c6f42a3a1ee61e946ccfec25
          return this.type().msgId();
      }
 diff --git a/net/minecraft/world/damagesource/DamageSources.java b/net/minecraft/world/damagesource/DamageSources.java
-index cc206ecff2d95f0398ca424c178a336ad80cc396..0276f02e149f3ef5e0f9aec8b0a8a6cb3d638aae 100644
+index cc206ecff2d95f0398ca424c178a336ad80cc396..40ab73fb626cbb8b9132b0fec939a66145272e2e 100644
 --- a/net/minecraft/world/damagesource/DamageSources.java
 +++ b/net/minecraft/world/damagesource/DamageSources.java
 @@ -42,6 +42,8 @@ public class DamageSources {
@@ -1792,8 +1795,8 @@ index cc206ecff2d95f0398ca424c178a336ad80cc396..0276f02e149f3ef5e0f9aec8b0a8a6cb
      }
  
      private DamageSource source(ResourceKey<DamageType> damageTypeKey) {
-@@ -176,6 +180,18 @@ public class DamageSources {
-         return this.stalagmite;
+@@ -84,6 +88,18 @@ public class DamageSources {
+         return new DamageSource(this.damageTypes.getOrThrow(damageTypeKey), causingEntity, directEntity);
      }
  
 +    // Purpur start - Dont run with scissors!
@@ -1808,8 +1811,8 @@ index cc206ecff2d95f0398ca424c178a336ad80cc396..0276f02e149f3ef5e0f9aec8b0a8a6cb
 +    }
 +    // Purpur end - Stonecutter damage
 +
-     public DamageSource fallingBlock(Entity entity) {
-         return this.source(DamageTypes.FALLING_BLOCK, entity);
+     public DamageSource inFire() {
+         return this.inFire;
      }
 diff --git a/net/minecraft/world/effect/HungerMobEffect.java b/net/minecraft/world/effect/HungerMobEffect.java
 index 0890694ae96b6cd60079c34066e7a6e288f038e8..6c0e6bd2a171edc57dec71af178764454de73313 100644
@@ -12608,7 +12611,7 @@ index ef2afb17a22a703470e13d12c989a685e72f0ab8..80a01b8c6dfb0f3bcc6872cdf38b48f7
                  blockPos = blockPos1;
                  break;
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index e587f8125ab29b3f9c829cd225deb5b7a6b7affa..5b684ff1096ef56fc5d6ad16963bb19ec880ced4 100644
+index e587f8125ab29b3f9c829cd225deb5b7a6b7affa..477455fdfcc591a89823e88983eb12dabb078d9b 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -201,11 +201,22 @@ public abstract class Player extends LivingEntity {
@@ -12699,7 +12702,7 @@ index e587f8125ab29b3f9c829cd225deb5b7a6b7affa..5b684ff1096ef56fc5d6ad16963bb19e
                          if (flag2) {
                              damageSource = damageSource.critical(); // Paper - critical damage API
 -                            f *= 1.5F;
-+                            f *= this.level().purpurConfig.playerCriticalDamageMultiplier; // Purpur - Add config change multiplier critical damage value
++                            f *= (float) this.level().purpurConfig.playerCriticalDamageMultiplier; // Purpur - Add config change multiplier critical damage value
                          }
  
                          float f2 = f + f1;
