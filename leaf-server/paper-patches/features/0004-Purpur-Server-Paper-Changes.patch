@@ -6,7 +6,7 @@ Subject: [PATCH] Purpur Server Paper Changes
 Original license: MIT
 Original project: https://github.com/PurpurMC/Purpur
 
-Commit: e6a1ebd3f6e4cfe93f96dd82ecb3234f0482768a
+Commit: 196c1768e1cfa467b82acf260156892784c84578
 
 Patches listed below are removed in this patch, They exists in Gale or Leaf:
 * "Rebrand.patch"
@@ -143,37 +143,38 @@ index 6bdc683b5ade408ee27f1d6636b4d60c8c89cb7c..bc6d3898d8784e50a0e2264bbb5bde63
          ignored.add("goal_selector_1");
          ignored.add("goal_selector_2");
 diff --git a/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java b/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java
-index f0fce4113fb07c64adbec029d177c236cbdcbae8..94dc9f97de086e3ab51d1b000eb116cf868a75db 100644
+index 41c95f00b4b2bea6d31f85e268c33d7f6184823e..421c522760d35167eabe216a706b1f42f45a17f4 100644
 --- a/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java
 +++ b/src/main/java/io/papermc/paper/command/PaperPluginsCommand.java
-@@ -78,10 +78,10 @@ public class PaperPluginsCommand extends BukkitCommand {
-         this.setAliases(Arrays.asList("pl"));
+@@ -70,10 +70,10 @@ public class PaperPluginsCommand extends BukkitCommand {
+         this.setAliases(List.of("pl"));
      }
  
--    private static <T> List<Component> formatProviders(TreeMap<String, PluginProvider<T>> plugins) {
-+    private static <T> List<Component> formatProviders(TreeMap<String, PluginProvider<T>> plugins, @NotNull CommandSender sender) { // Purpur - Improve output of plugins command
-         List<Component> components = new ArrayList<>(plugins.size());
-         for (PluginProvider<T> entry : plugins.values()) {
+-    private static <T> List<Component> formatProviders(final TreeMap<String, PluginProvider<T>> plugins) {
++    private static <T> List<Component> formatProviders(final TreeMap<String, PluginProvider<T>> plugins, CommandSender sender) { // Purpur - Improve output of plugins command
+         final List<Component> components = new ArrayList<>(plugins.size());
+         for (final PluginProvider<T> entry : plugins.values()) {
 -            components.add(formatProvider(entry));
 +            components.add(formatProvider(entry, sender)); // Purpur - Improve output of plugins command
          }
  
          boolean isFirst = true;
-@@ -109,7 +109,7 @@ public class PaperPluginsCommand extends BukkitCommand {
-         return formattedSublists;
+@@ -100,15 +100,49 @@ public class PaperPluginsCommand extends BukkitCommand {
+         return formattedSubLists;
      }
  
--    private static Component formatProvider(PluginProvider<?> provider) {
-+    private static Component formatProvider(PluginProvider<?> provider, @NotNull CommandSender sender) { // Purpur - Improve output of plugins command
-         TextComponent.Builder builder = Component.text();
-         if (provider instanceof SpigotPluginProvider spigotPluginProvider && CraftMagicNumbers.isLegacy(spigotPluginProvider.getMeta())) {
+-    private static Component formatProvider(final PluginProvider<?> provider) {
++    private static Component formatProvider(final PluginProvider<?> provider, CommandSender sender) { // Purpur - Improve output of plugins command
+         final TextComponent.Builder builder = Component.text();
+         if (provider instanceof final SpigotPluginProvider spigotPluginProvider && CraftMagicNumbers.isLegacy(spigotPluginProvider.getMeta())) {
              builder.append(LEGACY_PLUGIN_STAR);
-@@ -117,13 +117,65 @@ public class PaperPluginsCommand extends BukkitCommand {
+         }
  
-         String name = provider.getMeta().getName();
-         Component pluginName = Component.text(name, fromStatus(provider))
+         final String name = provider.getMeta().getName();
+-        final Component pluginName = Component.text(name, fromStatus(provider))
 -            .clickEvent(ClickEvent.runCommand("/version " + name));
 +        // Purpur start - Improve output of plugins command
++        Component pluginName = Component.text(name, fromStatus(provider))
 +            .clickEvent(ClickEvent.suggestCommand("/version " + name));
 +
 +        if (sender instanceof org.bukkit.entity.Player && sender.hasPermission("bukkit.command.version")) {
@@ -184,14 +185,14 @@ index f0fce4113fb07c64adbec029d177c236cbdcbae8..94dc9f97de086e3ab51d1b000eb116cf
 +
 +            if (description != null) {
 +                hover.append(Component.newline())
-+                        .append(Component.text("Description: ", NamedTextColor.WHITE))
-+                        .append(Component.text(description, NamedTextColor.GREEN));
++                    .append(Component.text("Description: ", NamedTextColor.WHITE))
++                    .append(Component.text(description, NamedTextColor.GREEN));
 +            }
 +
 +            if (provider.getMeta().getWebsite() != null) {
 +                hover.append(Component.newline())
-+                        .append(Component.text("Website: ", NamedTextColor.WHITE))
-+                        .append(Component.text(provider.getMeta().getWebsite(), NamedTextColor.GREEN));
++                    .append(Component.text("Website: ", NamedTextColor.WHITE))
++                    .append(Component.text(provider.getMeta().getWebsite(), NamedTextColor.GREEN));
 +            }
 +
 +            if (!provider.getMeta().getAuthors().isEmpty()) {
@@ -211,12 +212,12 @@ index f0fce4113fb07c64adbec029d177c236cbdcbae8..94dc9f97de086e3ab51d1b000eb116cf
  
          builder.append(pluginName);
  
-         return builder.build();
+@@ -126,6 +160,23 @@ public class PaperPluginsCommand extends BukkitCommand {
+         return componentHeader.append(Component.text(":")).build();
      }
  
 +    // Purpur start - Improve output of plugins command
-+    @NotNull
-+    private static TextComponent getAuthors(@NotNull final PluginMeta pluginMeta) {
++    private static TextComponent getAuthors(final PluginMeta pluginMeta) {
 +        TextComponent.Builder builder = Component.text();
 +        List<String> authors = pluginMeta.getAuthors();
 +
@@ -232,40 +233,38 @@ index f0fce4113fb07c64adbec029d177c236cbdcbae8..94dc9f97de086e3ab51d1b000eb116cf
 +    }
 +    // Purpur end - Improve output of plugins command
 +
-     private static Component asPlainComponents(String strings) {
-         net.kyori.adventure.text.TextComponent.Builder builder = Component.text();
-         for (String string : strings.split("\n")) {
-@@ -182,24 +234,24 @@ public class PaperPluginsCommand extends BukkitCommand {
-             }
-         }
+     private static Component asPlainComponents(final String strings) {
+         final net.kyori.adventure.text.TextComponent.Builder builder = Component.text();
+         for (final String string : strings.split("\n")) {
+@@ -186,25 +237,25 @@ public class PaperPluginsCommand extends BukkitCommand {
+         final int sizePaperPlugins = paperPlugins.size();
+         final int sizeSpigotPlugins = spigotPlugins.size();
+         final int sizePlugins = sizePaperPlugins + sizeSpigotPlugins;
+-        final boolean hasAllPluginTypes = (sizePaperPlugins > 0 && sizeSpigotPlugins > 0);
++        final boolean hasAllPluginTypes = true; // Purpur - Improve output of plugins command
  
--        Component infoMessage = Component.text("Server Plugins (%s):".formatted(paperPlugins.size() + spigotPlugins.size()), NamedTextColor.WHITE);
-+        //Component infoMessage = Component.text("Server Plugins (%s):".formatted(paperPlugins.size() + spigotPlugins.size()), NamedTextColor.WHITE); // Purpur - Improve output of plugins command
-             //.append(INFO_ICON_START.hoverEvent(SERVER_PLUGIN_INFO)); TODO: Add docs
+         final Component infoMessage = Component.text().append(INFO_ICON_SERVER_PLUGIN).append(Component.text("Server Plugins (%s):".formatted(sizePlugins), NamedTextColor.WHITE)).build();
  
--        sender.sendMessage(infoMessage);
-+        //sender.sendMessage(infoMessage); // Purpur - Improve output of plugins command
+         sender.sendMessage(infoMessage);
  
 -        if (!paperPlugins.isEmpty()) {
--            sender.sendMessage(PAPER_HEADER);
--        }
 +        //if (!paperPlugins.isEmpty()) { // Purpur - Improve output of plugins command
-+            sender.sendMessage(PAPER_HEADER.append(Component.text(" (%s):".formatted(paperPlugins.size())))); // Purpur - Improve output of plugins command
+             sender.sendMessage(header("Paper Plugins", 0x0288D1, sizePaperPlugins, hasAllPluginTypes));
+-        }
 +        //} // Purpur - Improve output of plugins command
  
--        for (Component component : formatProviders(paperPlugins)) {
+-        for (final Component component : formatProviders(paperPlugins)) {
 +        for (Component component : formatProviders(paperPlugins, sender)) { // Purpur - Improve output of plugins command
              sender.sendMessage(component);
          }
  
 -        if (!spigotPlugins.isEmpty()) {
--            sender.sendMessage(BUKKIT_HEADER);
--        }
 +        //if (!spigotPlugins.isEmpty()) { // Purpur - Improve output of plugins command
-+            sender.sendMessage(BUKKIT_HEADER.append(Component.text(" (%s):".formatted(spigotPlugins.size())))); // Purpur - Improve output of plugins command
+             sender.sendMessage(header("Bukkit Plugins", 0xED8106, sizeSpigotPlugins, hasAllPluginTypes));
+-        }
 +        //} // Purpur - Improve output of plugins command
-         
--        for (Component component : formatProviders(spigotPlugins)) {
+ 
+-        for (final Component component : formatProviders(spigotPlugins)) {
 +        for (Component component : formatProviders(spigotPlugins, sender)) { // Purpur - Improve output of plugins command
              sender.sendMessage(component);
          }
@@ -559,10 +558,10 @@ index 94ca0407303c4493ab4928b12ec6ecc75aaca549..f2d87c12dd19210ce7e2147fada5c101
 +    // Purpur end - OfflinePlayer API
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 6f94aed7e136bd13dddaca1e2a214e55cf87403b..bdefa58dac3236e26ca40f92c1c64f8cffa01582 100644
+index 0b085b3748a2700c3eb3bc158e5d42afae1efc1d..1816ec002c91d108529e9b1dcd7b5f0a7fbc52ef 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -428,6 +428,20 @@ public final class CraftServer implements Server {
+@@ -429,6 +429,20 @@ public final class CraftServer implements Server {
          this.paperPluginManager = new io.papermc.paper.plugin.manager.PaperPluginManagerImpl(this, this.commandMap, pluginManager);
          this.pluginManager.paperPluginManager = this.paperPluginManager;
           // Paper end
@@ -583,7 +582,7 @@ index 6f94aed7e136bd13dddaca1e2a214e55cf87403b..bdefa58dac3236e26ca40f92c1c64f8c
  
          CraftRegistry.setMinecraftRegistry(console.registryAccess());
  
-@@ -1089,6 +1103,7 @@ public final class CraftServer implements Server {
+@@ -1090,6 +1104,7 @@ public final class CraftServer implements Server {
          org.spigotmc.SpigotConfig.init((File) this.console.options.valueOf("spigot-settings")); // Spigot
          this.console.paperConfigurations.reloadConfigs(this.console);
          this.console.galeConfigurations.reloadConfigs(this.console); // Gale - Gale configuration
@@ -591,7 +590,7 @@ index 6f94aed7e136bd13dddaca1e2a214e55cf87403b..bdefa58dac3236e26ca40f92c1c64f8c
          for (ServerLevel world : this.console.getAllLevels()) {
              // world.serverLevelData.setDifficulty(config.difficulty); // Paper - per level difficulty
              world.setSpawnSettings(world.serverLevelData.getDifficulty() != Difficulty.PEACEFUL && config.spawnMonsters); // Paper - per level difficulty (from MinecraftServer#setDifficulty(ServerLevel, Difficulty, boolean))
-@@ -1104,6 +1119,7 @@ public final class CraftServer implements Server {
+@@ -1105,6 +1120,7 @@ public final class CraftServer implements Server {
                  }
              }
              world.spigotConfig.init(); // Spigot
@@ -599,7 +598,7 @@ index 6f94aed7e136bd13dddaca1e2a214e55cf87403b..bdefa58dac3236e26ca40f92c1c64f8c
          }
  
          Plugin[] pluginClone = pluginManager.getPlugins().clone(); // Paper
-@@ -1122,6 +1138,7 @@ public final class CraftServer implements Server {
+@@ -1123,6 +1139,7 @@ public final class CraftServer implements Server {
          io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
          org.galemc.gale.command.GaleCommands.registerCommands(this.console); // Gale - Gale commands - register commands
          this.spark.registerCommandBeforePlugins(this); // Paper - spark
@@ -607,7 +606,7 @@ index 6f94aed7e136bd13dddaca1e2a214e55cf87403b..bdefa58dac3236e26ca40f92c1c64f8c
          this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
          this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
  
-@@ -1653,6 +1670,60 @@ public final class CraftServer implements Server {
+@@ -1654,6 +1671,60 @@ public final class CraftServer implements Server {
          return true;
      }
  
@@ -668,7 +667,7 @@ index 6f94aed7e136bd13dddaca1e2a214e55cf87403b..bdefa58dac3236e26ca40f92c1c64f8c
      @Override
      public List<Recipe> getRecipesFor(ItemStack result) {
          Preconditions.checkArgument(result != null, "ItemStack cannot be null");
-@@ -3060,6 +3131,18 @@ public final class CraftServer implements Server {
+@@ -3066,6 +3137,18 @@ public final class CraftServer implements Server {
          }
          // Gale end - Gale configuration - API
  
@@ -687,7 +686,7 @@ index 6f94aed7e136bd13dddaca1e2a214e55cf87403b..bdefa58dac3236e26ca40f92c1c64f8c
          @Override
          public void restart() {
              org.spigotmc.RestartCommand.restart();
-@@ -3352,4 +3435,18 @@ public final class CraftServer implements Server {
+@@ -3358,4 +3441,18 @@ public final class CraftServer implements Server {
          return MinecraftServer.lastTickOversleepTime;
      }
      // Gale end - YAPFA - last tick time - API
@@ -707,10 +706,10 @@ index 6f94aed7e136bd13dddaca1e2a214e55cf87403b..bdefa58dac3236e26ca40f92c1c64f8c
 +    // Purpur end - Lagging threshold
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 284b58ece65d9cf6411a79abb748f1dfa52edc92..ba5797e9e518d7a1054bad0c7a1fb10b9eaf32bd 100644
+index 1439d282167dc8a2e66f4896849153b810112988..ca60f91ef012c94174a0803eb77699ba9ecff5e1 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -2373,6 +2373,50 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -2346,6 +2346,50 @@ public class CraftWorld extends CraftRegionAccessor implements World {
          return (this.getHandle().getDragonFight() == null) ? null : new CraftDragonBattle(this.getHandle().getDragonFight());
      }
  
@@ -931,7 +930,7 @@ index d657fd2c507a5b215aeab0a5f3e9c2ee892a27c8..3604d92c122b5c8be823098ce7b91e57
      // Paper start
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 659f0f9c7e45e5174f4736c4878a78d330b1d4ee..0d46585c0128cea7265870de5fe260681c65d7c3 100644
+index 1ee0ad266955e36b729ba31eb75aad9289acd8e4..8635cd772c5c2ae0ba326812ff2a1a179285a86f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 @@ -90,6 +90,25 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
@@ -1140,10 +1139,10 @@ index 351f42842b780d053cd2e5bad9ae299449141b10..054d2c2b93c43faeeaf56f482eb7b943
 +    // Purpur end - Llama API
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index baffa036078bfc38505f9008a54a5abff65704db..d84d716629d93e264bc40c565e9fedd1ce38722c 100644
+index 218a27def751fb657cdeee102d9ec4b26025bb30..46c53ee7f0a157002e0bec603222299d72c7130a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -591,10 +591,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -592,10 +592,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
  
      @Override
      public void setPlayerListName(String name) {
@@ -1160,7 +1159,7 @@ index baffa036078bfc38505f9008a54a5abff65704db..d84d716629d93e264bc40c565e9fedd1
          if (this.getHandle().connection == null) return; // Paper - Updates are possible before the player has fully joined
          for (ServerPlayer player : (List<ServerPlayer>) this.server.getHandle().players) {
              if (player.getBukkitEntity().canSee(this)) {
-@@ -1433,6 +1438,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1434,6 +1439,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          // Paper start - Teleport passenger API
          // Don't allow teleporting between worlds while keeping passengers
          if (ignorePassengers && entity.isVehicle() && location.getWorld() != this.getWorld()) {
@@ -1168,7 +1167,7 @@ index baffa036078bfc38505f9008a54a5abff65704db..d84d716629d93e264bc40c565e9fedd1
              return false;
          }
  
-@@ -1454,6 +1460,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1455,6 +1461,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
  
          if (entity.isVehicle() && !ignorePassengers) { // Paper - Teleport API
@@ -1176,7 +1175,7 @@ index baffa036078bfc38505f9008a54a5abff65704db..d84d716629d93e264bc40c565e9fedd1
              return false;
          }
  
-@@ -2752,6 +2759,28 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2753,6 +2760,28 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          return this.getHandle().getAbilities().walkingSpeed * 2f;
      }
  
@@ -1205,9 +1204,9 @@ index baffa036078bfc38505f9008a54a5abff65704db..d84d716629d93e264bc40c565e9fedd1
      private void validateSpeed(float value) {
          Preconditions.checkArgument(value <= 1f && value >= -1f, "Speed value (%s) need to be between -1f and 1f", value);
      }
-@@ -3581,4 +3610,75 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-         handle.containerMenu.broadcastChanges();
-         return new PaperPlayerGiveResult(leftovers.build(), drops.build());
+@@ -3599,4 +3628,75 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+         return forwardMovement == backwardMovement ? 0 : forwardMovement ? 1 : -1;
      }
 +
 +    // Purpur start - Purpur client support
@@ -1362,7 +1361,7 @@ index c1b7f1281fbd41e765d2c1881763ca25b20e924d..53c620e717d39ef16f44c9697ac4809a
 +    // Purpur end - Configurable chance for wolves to spawn rabid
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index fd4c1d67c134caf818f10bfd54831863c485f6a9..0131eaade61bc30a094a3166e8cd58cd7cfd7921 100644
+index 57c3f8531bf85b53af3a4aad6e9e369d5cff0ce3..56afb317cef0e049aacdd36a1be5f9b7af4d0c77 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -602,6 +602,15 @@ public class CraftEventFactory {
@@ -1381,16 +1380,7 @@ index fd4c1d67c134caf818f10bfd54831863c485f6a9..0131eaade61bc30a094a3166e8cd58cd
          return event;
      }
  
-@@ -1131,7 +1140,7 @@ public class CraftEventFactory {
-             return CraftEventFactory.callEntityDamageEvent(source.getDirectBlock(), source.getDirectBlockState(), entity, DamageCause.LAVA, bukkitDamageSource, modifiers, modifierFunctions, cancelled);
-         } else if (source.getDirectBlock() != null) {
-             DamageCause cause;
--            if (source.is(DamageTypes.CACTUS) || source.is(DamageTypes.SWEET_BERRY_BUSH) || source.is(DamageTypes.STALAGMITE) || source.is(DamageTypes.FALLING_STALACTITE) || source.is(DamageTypes.FALLING_ANVIL)) {
-+            if (source.is(DamageTypes.CACTUS) || source.is(DamageTypes.SWEET_BERRY_BUSH) || source.is(DamageTypes.STALAGMITE) || source.is(DamageTypes.FALLING_STALACTITE) || source.is(DamageTypes.FALLING_ANVIL) || source.isStonecutter()) { // Purpur - Stonecutter damage
-                 cause = DamageCause.CONTACT;
-             } else if (source.is(DamageTypes.HOT_FLOOR)) {
-                 cause = DamageCause.HOT_FLOOR;
-@@ -1191,6 +1200,7 @@ public class CraftEventFactory {
+@@ -1193,6 +1202,7 @@ public class CraftEventFactory {
          EntityDamageEvent event;
          if (damager != null) {
              event = new EntityDamageByEntityEvent(damager.getBukkitEntity(), damagee.getBukkitEntity(), cause, bukkitDamageSource, modifiers, modifierFunctions, critical);
@@ -1494,10 +1484,10 @@ index 792cb6adf0c7a6335cc5985fce8bed2e0f1149af..5734c5caffda79383ae30df20c3defb5
 +    // Purpur end - Anvil API
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
-index 3799973696eabbdc992bee4ff24175fc28ec8d7c..ae68b1d72be45503acc8c7a52b20d95d7b651f06 100644
+index a6668ae293737a78316724a94866ad7781af68a4..b389563f1efde27341ebf26276ca5c97e495a16a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
-@@ -666,4 +666,285 @@ public final class CraftItemStack extends ItemStack {
+@@ -693,4 +693,285 @@ public final class CraftItemStack extends ItemStack {
      }
  
      // Paper end - data component API
@@ -1995,7 +1985,7 @@ index d2a75850af9c6ad2aca66a5f994f1b587d73eac4..a056aa167887abef9e6d531a9edd2cda
          <TerminalConsole name="TerminalConsole">
              <PatternLayout>
 diff --git a/src/test/java/io/papermc/paper/permissions/MinecraftCommandPermissionsTest.java b/src/test/java/io/papermc/paper/permissions/MinecraftCommandPermissionsTest.java
-index 75ed5050f72c001d6eab117a2c0b352a413548bd..2764d4204d51a3615f27b8bfd7b6675294465155 100644
+index fe08e446e86d53cef6eecc33cd484e93adc42871..54fff448fded12cd6110583f0c255f2ca86388da 100644
 --- a/src/test/java/io/papermc/paper/permissions/MinecraftCommandPermissionsTest.java
 +++ b/src/test/java/io/papermc/paper/permissions/MinecraftCommandPermissionsTest.java
 @@ -46,6 +46,7 @@ public class MinecraftCommandPermissionsTest {

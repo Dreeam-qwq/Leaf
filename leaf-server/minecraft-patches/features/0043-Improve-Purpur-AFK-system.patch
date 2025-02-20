@@ -7,10 +7,10 @@ AFK command & command cooldown
 AFK title message
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 967c01f9e40c2c73f266de281425c918472cf66e..d8464f77c54f547161356b78e76429923937b4a7 100644
+index ee7bdfd8f9da8d5989c9cc25f8cbcc94640361c5..fb18f69cb26132fc8c53b185454c6aadb8a5f7e5 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
-@@ -242,6 +242,7 @@ public class Commands {
+@@ -247,6 +247,7 @@ public class Commands {
              StopCommand.register(this.dispatcher);
              TransferCommand.register(this.dispatcher);
              WhitelistCommand.register(this.dispatcher);
@@ -53,7 +53,7 @@ index dfb4524d80f642eff1b146dd2fbfa07f21d844c6..2c67693cc3781eb5aee10b4dfb9617cb
              } else {
                  getBukkitEntity().setPlayerListName(prefix + scoreboardName + suffix, true);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 5cd5234e9f2b8a17b6f9fdaa62e8fc0a9aa6331b..44f2182b5d78b0e51e8f5253fa9c89ea687b72df 100644
+index 1e834d51cc57255fd6075c25b05e2b3816bd501b..4af5f13eb9a0c76d037074fa0fd5c1b2061dc59b 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -2260,6 +2260,8 @@ public class ServerGamePacketListenerImpl
@@ -138,7 +138,7 @@ index 5cd5234e9f2b8a17b6f9fdaa62e8fc0a9aa6331b..44f2182b5d78b0e51e8f5253fa9c89ea
          this.cserver.getPluginManager().callEvent(event);
          command = event.getMessage().substring(1);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 29275d0fd6b3d320d5e444fb32aa4004f4370720..2d8c20ddd675173e9ea5734cfde6687ac042e01d 100644
+index 3d6efee3469302f37e60a9013f6a3adf970a580a..03f3e1de0c5df76a4d14c5dc62647ecfc2b17dce 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -668,6 +668,7 @@ public abstract class PlayerList {

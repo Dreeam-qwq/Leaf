@@ -34,19 +34,6 @@ index ec9db1c12426db80dbf02d704e6c7ec867d59f6f..0fdda6b24aee95170e54079e53125b4a
          return Math.max(0, ticksToBeFrog - this.age);
      }
  
-diff --git a/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java b/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
-index 4977262e78fe320d72158479c267842837344b67..4190940922af3a00845e6c656873ef8bca409f2c 100644
---- a/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
-+++ b/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
-@@ -67,7 +67,7 @@ public class TrialSpawnerData {
-     );
-     public final Set<UUID> detectedPlayers = new HashSet<>();
-     public final Set<UUID> currentMobs = new HashSet<>();
--    protected long cooldownEndsAt;
-+    public long cooldownEndsAt; // Leaves - protected -> public
-     protected long nextMobSpawnsAt;
-     protected int totalMobsSpawned;
-     public Optional<SpawnData> nextSpawnData;
 diff --git a/net/minecraft/world/level/storage/loot/LootPool.java b/net/minecraft/world/level/storage/loot/LootPool.java
 index 29ad43245a310756c4227acd7532e905f7f8b8ee..ad422817593449b8e914628b51d760e732e2d50c 100644
 --- a/net/minecraft/world/level/storage/loot/LootPool.java
@@ -61,7 +48,7 @@ index 29ad43245a310756c4227acd7532e905f7f8b8ee..ad422817593449b8e914628b51d760e7
      private final Predicate<LootContext> compositeCondition;
      private final List<LootItemFunction> functions;
 diff --git a/net/minecraft/world/level/storage/loot/LootTable.java b/net/minecraft/world/level/storage/loot/LootTable.java
-index f95d0f2da3d958519d28278079555c800aad02f8..bebffd07047e41c53b9e4f1ad5917680b8e8c796 100644
+index dd646b11ef0a40e7f782742e62ccccfa9bcfd235..c9820777342124524c046d910085b1bf89c12488 100644
 --- a/net/minecraft/world/level/storage/loot/LootTable.java
 +++ b/net/minecraft/world/level/storage/loot/LootTable.java
 @@ -45,7 +45,7 @@ public class LootTable {

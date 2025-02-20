@@ -9,10 +9,10 @@ Added some asynchronous structure locate methods in World,
 requires async-locator to be enabled in Leaf config, or else it will fall back to sync methods.
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index 3af8eb8064aeafa3606fed23e7ca2bc74c194726..2d314d7f75f320384c20c97f60c0c9611b890316 100644
+index 886b0eac9f3047c54cc788f05507893e31f7ad6d..f354527ada36431e95595ef60557e6b13360f75a 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -4047,6 +4047,60 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -4072,6 +4072,60 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
      @Nullable
      StructureSearchResult locateNearestStructure(@NotNull Location origin, @NotNull Structure structure, int radius, boolean findUnexplored);
  

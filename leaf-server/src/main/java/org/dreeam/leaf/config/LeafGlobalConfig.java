@@ -10,13 +10,18 @@ import java.util.Map;
 
 public class LeafGlobalConfig {
 
-    protected static ConfigFile configFile;
+    private static final String CURRENT_VERSION = "3.0";
     private static final String CURRENT_REGION = Locale.getDefault().getCountry().toUpperCase(Locale.ROOT); // It will be in uppercase by default, just make sure
-    protected static final boolean isCN = CURRENT_REGION.equals("CN");
+    private static final boolean isCN = CURRENT_REGION.equals("CN");
+
+    private static ConfigFile configFile;
 
     public LeafGlobalConfig(boolean init) throws Exception {
         configFile = ConfigFile.loadConfig(new File(LeafConfig.I_CONFIG_FOLDER, LeafConfig.I_GLOBAL_CONFIG_FILE));
-        configFile.set("config-version", 3.0);
+
+        LeafConfig.loadConfigVersion(getString("config-version"), CURRENT_VERSION);
+        configFile.set("config-version", CURRENT_VERSION);
+
         configFile.addComments("config-version", pickStringRegionBased("""
                 Leaf Config
                 GitHub Repo: https://github.com/Winds-Studio/Leaf
@@ -41,6 +46,8 @@ public class LeafGlobalConfig {
     }
 
     // Config Utilities
+
+    /* getAndSet */
 
     public void createTitledSection(String title, String path) {
         configFile.addSection(title);
@@ -97,6 +104,13 @@ public class LeafGlobalConfig {
         return configFile.getStringList(path);
     }
 
+    public ConfigSection getConfigSection(String path, Map<String, Object> defaultKeyValue, String comment) {
+        configFile.addDefault(path, null, comment);
+        configFile.makeSectionLenient(path);
+        defaultKeyValue.forEach((string, object) -> configFile.addExample(path + "." + string, object));
+        return configFile.getConfigSection(path);
+    }
+
     public ConfigSection getConfigSection(String path, Map<String, Object> defaultKeyValue) {
         configFile.addDefault(path, null);
         configFile.makeSectionLenient(path);
@@ -104,10 +118,39 @@ public class LeafGlobalConfig {
         return configFile.getConfigSection(path);
     }
 
-    public ConfigSection getConfigSection(String path, Map<String, Object> defaultKeyValue, String comment) {
-        configFile.addDefault(path, null, comment);
+    /* get */
+
+    public Boolean getBoolean(String path) {
+        String value = configFile.getString(path, null);
+
+        return value == null ? null : Boolean.parseBoolean(value);
+    }
+
+    public String getString(String path) {
+        return configFile.getString(path, null);
+    }
+
+    public Double getDouble(String path) {
+        String value = configFile.getString(path, null);
+
+        return value == null ? null : Double.parseDouble(value); // TODO: Need to check whether need to handle NFE correctly
+    }
+
+    public Integer getInt(String path) {
+        String value = configFile.getString(path, null);
+
+        return value == null ? null : Integer.parseInt(value); // TODO: Need to check whether need to handle NFE correctly
+    }
+
+    public List<String> getList(String path) {
+        return configFile.getList(path, null);
+    }
+
+    // TODO, check
+    public ConfigSection getConfigSection(String path) {
+        configFile.addDefault(path, null);
         configFile.makeSectionLenient(path);
-        defaultKeyValue.forEach((string, object) -> configFile.addExample(path + "." + string, object));
+        //defaultKeyValue.forEach((string, object) -> configFile.addExample(path + "." + string, object));
         return configFile.getConfigSection(path);
     }
 

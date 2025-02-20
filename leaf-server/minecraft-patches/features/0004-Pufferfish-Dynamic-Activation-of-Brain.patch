@@ -32,7 +32,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 diff --git a/io/papermc/paper/entity/activation/ActivationRange.java b/io/papermc/paper/entity/activation/ActivationRange.java
-index 54916fe57ceeab24936ce50709402ecf1fcd9a10..cd2fa33f6e655419f2a1155aed8566742385d922 100644
+index 6db99585fa47fe2d2ae6eff8efe16190dd756511..a9269356de964585028e69a3713ca64f67ba02bf 100644
 --- a/io/papermc/paper/entity/activation/ActivationRange.java
 +++ b/io/papermc/paper/entity/activation/ActivationRange.java
 @@ -173,6 +173,22 @@ public final class ActivationRange {
@@ -73,7 +73,7 @@ index 54916fe57ceeab24936ce50709402ecf1fcd9a10..cd2fa33f6e655419f2a1155aed856674
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 7c9496e8564c2464e79661153fd295bb027b7bdb..95d69c4b40e4ebe12d8033dbcc7ba195a0ccfb5a 100644
+index 9fe9ce0488be5eeb4f5da2f2716accc2093f6a4e..e1f5e3cc57a8c2945b7925a31bde06f6c6525726 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -781,6 +781,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -85,13 +85,13 @@ index 7c9496e8564c2464e79661153fd295bb027b7bdb..95d69c4b40e4ebe12d8033dbcc7ba195
                              if (!tickRateManager.isEntityFrozen(entity)) {
                                  entity.checkDespawn();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a839042a883831ab5bf7bca7fa707b10a97689f8..22af2c4996601847f2bbe9d6fef2fc4bd82725fc 100644
+index 4ea2672aae628ab1b6a72cb486aa917be5ab0cab..c2a2892d34497a616951f4689ab6126191d9f655 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -335,6 +335,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
-     public boolean freezeLocked = false; // Paper - Freeze Tick Lock API
+@@ -336,6 +336,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      public boolean fixedPose = false; // Paper - Expand Pose API
      private final int despawnTime; // Paper - entity despawn time limit
+     public int totalEntityAge; // Paper - age-like counter for all entities
 +    public boolean activatedPriorityReset = false; // Pufferfish - DAB
 +    public int activatedPriority = org.dreeam.leaf.config.modules.opt.DynamicActivationofBrain.maximumActivationPrio; // Pufferfish - DAB (golf score)
      public final io.papermc.paper.entity.activation.ActivationType activationType = io.papermc.paper.entity.activation.ActivationType.activationTypeFor(this); // Paper - EAR 2/tracking ranges
