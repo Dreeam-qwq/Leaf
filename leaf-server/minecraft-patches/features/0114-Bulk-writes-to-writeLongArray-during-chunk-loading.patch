@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 21 Feb 2025 15:06:55 +0100
+Subject: [PATCH] Bulk writes to writeLongArray during chunk loading
+
+
+diff --git a/net/minecraft/network/FriendlyByteBuf.java b/net/minecraft/network/FriendlyByteBuf.java
+index 7c2df09decf90f691d35516a2eb74e97370f6a37..d84f501ed37ae7d8831e7791293eb0b90acf7cbc 100644
+--- a/net/minecraft/network/FriendlyByteBuf.java
++++ b/net/minecraft/network/FriendlyByteBuf.java
+@@ -337,11 +337,9 @@ public class FriendlyByteBuf extends ByteBuf {
+ 
+     public FriendlyByteBuf writeLongArray(long[] array) {
+         this.writeVarInt(array.length);
+-
+-        for (long l : array) {
+-            this.writeLong(l);
+-        }
+-
++        ByteBuffer buffer = ByteBuffer.allocate(array.length * Long.BYTES);
++        buffer.asLongBuffer().put(array);
++        this.source.writeBytes(buffer);
+         return this;
+     }
+ 
