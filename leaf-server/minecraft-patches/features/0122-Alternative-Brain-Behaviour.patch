@@ -5,17 +5,16 @@ Subject: [PATCH] Alternative Brain Behaviour
 
 
 diff --git a/net/minecraft/world/entity/ai/Brain.java b/net/minecraft/world/entity/ai/Brain.java
-index e27284f9897923f67985e3d60c3438bd00cc4a51..8d102741c01ca22dfa1ec8fe9f2d1c47d9958450 100644
+index e27284f9897923f67985e3d60c3438bd00cc4a51..0ff7564e0e848bd38e82f9089bfd7249fa649dc5 100644
 --- a/net/minecraft/world/entity/ai/Brain.java
 +++ b/net/minecraft/world/entity/ai/Brain.java
-@@ -268,23 +268,53 @@ public class Brain<E extends LivingEntity> {
+@@ -268,23 +268,52 @@ public class Brain<E extends LivingEntity> {
          return this.activeActivities;
      }
  
 +    // Leaf start - Alternative Brain Behaviour
 +    private ObjectArrayList<BehaviorControl<? super E>> runningBehaviorsCache;
 +    private long lastRunningBehaviorCheck = -1;
-+    private static final int CACHE_UPDATE_INTERVAL = 5;
 +    // Leaf end - Alternative Brain Behaviour
 +
      @Deprecated
@@ -26,7 +25,7 @@ index e27284f9897923f67985e3d60c3438bd00cc4a51..8d102741c01ca22dfa1ec8fe9f2d1c47
 +        long currentTick = getCurrentTick();
 +
 +        // Use cached result if within update interval
-+        if (runningBehaviorsCache != null && (currentTick - lastRunningBehaviorCheck) < CACHE_UPDATE_INTERVAL) {
++        if (runningBehaviorsCache != null && (currentTick - lastRunningBehaviorCheck) < org.dreeam.leaf.config.modules.opt.BrainRunningBehaviorCacheUpdate.interval) {
 +            return runningBehaviorsCache;
 +        }
 +
