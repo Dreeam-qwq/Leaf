@@ -16,89 +16,99 @@ import java.util.concurrent.ConcurrentHashMap;
  * This implementation provides concurrent access and high performance for concurrent operations.
  */
 @SuppressWarnings({"unused", "deprecation"})
-public final class ConcurrentLongHashSet extends LongOpenHashSet implements LongSet { // Extending LongOpenHashSet for some moonrise usages
-    private final ConcurrentHashMap.KeySetView<Long, Boolean> backing;
+public final class ConcurrentLongHashSet extends LongOpenHashSet implements LongSet {
+    private final ConcurrentHashMap<Long, Boolean> backingMap;
 
     /**
      * Creates a new empty concurrent long set.
      */
     public ConcurrentLongHashSet() {
-        this.backing = ConcurrentHashMap.newKeySet();
+        // Some tips to minimize tree bin conversions:
+        // - Higher initial capacity (64)
+        // - Lower load factor (0.5)
+        // - Concurrency level = number of threads
+        int concurrencyLevel = Runtime.getRuntime().availableProcessors();
+        this.backingMap = new ConcurrentHashMap<>(64, 0.5f, concurrencyLevel);
     }
 
     @Override
     public int size() {
-        return backing.size();
+        return backingMap.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return backing.isEmpty();
+        return backingMap.isEmpty();
     }
 
     @Override
     public @NotNull LongIterator iterator() {
-        return new WrappingLongIterator(backing.iterator());
+        return new WrappingLongIterator(backingMap.keySet().iterator());
     }
 
     @NotNull
     @Override
     public Object @NotNull [] toArray() {
-        return backing.toArray();
+        return backingMap.keySet().toArray();
     }
 
     @NotNull
     @Override
     public <T> T @NotNull [] toArray(@NotNull T @NotNull [] array) {
         Objects.requireNonNull(array, "Array cannot be null");
-        return backing.toArray(array);
+        return backingMap.keySet().toArray(array);
     }
 
     @Override
     public boolean containsAll(@NotNull Collection<?> collection) {
         Objects.requireNonNull(collection, "Collection cannot be null");
-        return backing.containsAll(collection);
+        return backingMap.keySet().containsAll(collection);
     }
 
     @Override
     public boolean addAll(@NotNull Collection<? extends Long> collection) {
         Objects.requireNonNull(collection, "Collection cannot be null");
-        return backing.addAll(collection);
+        return backingMap.keySet().addAll(collection);
     }
 
     @Override
     public boolean removeAll(@NotNull Collection<?> collection) {
         Objects.requireNonNull(collection, "Collection cannot be null");
-        return backing.removeAll(collection);
+        return backingMap.keySet().removeAll(collection);
     }
 
     @Override
     public boolean retainAll(@NotNull Collection<?> collection) {
         Objects.requireNonNull(collection, "Collection cannot be null");
-        return backing.retainAll(collection);
+        return backingMap.keySet().retainAll(collection);
     }
 
     @Override
     public void clear() {
-        backing.clear();
+        backingMap.clear();
     }
 
     @Override
     public boolean add(long key) {
-        return backing.add(key);
+        // Use putIfAbsent to avoid duplicate entries
+        return backingMap.putIfAbsent(key, Boolean.TRUE) == null;
     }
 
     @Override
     public boolean contains(long key) {
-        return backing.contains(key);
+        // Autoboxing cache for common values (-128 to 127)
+        if (key >= -128 && key <= 127) {
+            return backingMap.containsKey((long) key);
+        }
+        return backingMap.containsKey(key);
     }
 
     @Override
     public long[] toLongArray() {
-        int size = backing.size();
+        int size = backingMap.size();
         long[] result = new long[size];
         int i = 0;
-        for (Long value : backing) {
+        for (Long value : backingMap.keySet()) {
             result[i++] = value;
         }
         return result;
@@ -155,12 +165,12 @@ public final class ConcurrentLongHashSet extends LongOpenHashSet implements Long
     @Override
     public boolean retainAll(LongCollection c) {
         Objects.requireNonNull(c, "Collection cannot be null");
-        return backing.retainAll(c);
+        return backingMap.keySet().retainAll(c);
     }
 
     @Override
-    public boolean remove(long k) {
-        return backing.remove(k);
+    public boolean remove(long key) {
+        return backingMap.remove(key) != null;
     }
 
     @Override
@@ -173,12 +183,12 @@ public final class ConcurrentLongHashSet extends LongOpenHashSet implements Long
 
     @Override
     public int hashCode() {
-        return backing.hashCode();
+        return backingMap.hashCode();
     }
 
     @Override
     public String toString() {
-        return backing.toString();
+        return backingMap.toString();
     }
 
     static class WrappingLongIterator implements LongIterator {
@@ -195,7 +205,7 @@ public final class ConcurrentLongHashSet extends LongOpenHashSet implements Long
 
         @Override
         public long nextLong() {
-            return backing.next();
+            return backing.next(); //TODO: Autoboxing still occurs here
         }
 
         @Override
