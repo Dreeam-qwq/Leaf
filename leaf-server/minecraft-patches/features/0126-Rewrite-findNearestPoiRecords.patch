@@ -5,7 +5,7 @@ Subject: [PATCH] Rewrite findNearestPoiRecords
 
 
 diff --git a/io/papermc/paper/util/PoiAccess.java b/io/papermc/paper/util/PoiAccess.java
-index f39294b1f83c4022be5ced4da781103a1eee2daf..f2cfa6725a15189887d61d32c174254dfebc1b74 100644
+index f39294b1f83c4022be5ced4da781103a1eee2daf..16e9715fe8ddd9a6009333a1a805ac82890d2fab 100644
 --- a/io/papermc/paper/util/PoiAccess.java
 +++ b/io/papermc/paper/util/PoiAccess.java
 @@ -8,6 +8,8 @@ import it.unimi.dsi.fastutil.doubles.Double2ObjectRBTreeMap;
@@ -35,15 +35,14 @@ index f39294b1f83c4022be5ced4da781103a1eee2daf..f2cfa6725a15189887d61d32c174254d
          // pos predicate is last thing that runs before adding to ret.
          final Predicate<BlockPos> newPredicate = (final BlockPos pos) -> {
              if (positionPredicate != null && !positionPredicate.test(pos)) {
-@@ -451,27 +453,44 @@ public final class PoiAccess {
+@@ -451,27 +453,46 @@ public final class PoiAccess {
                                               final List<PoiRecord> ret) {
          final Predicate<? super PoiRecord> occupancyFilter = occupancy.getTest();
  
 -        final Double2ObjectRBTreeMap<List<PoiRecord>> closestRecords = new Double2ObjectRBTreeMap<>();
-+        // Use a primitive-optimized map instead of Double2ObjectRBTreeMap with ArrayList
-+        // Maintain a simple array of records with max size and current max distance
+-        int totalRecords = 0;
++        // Use a primitive-optimized array instead of HashMap-based collections
 +        final PoiRecord[] topRecords = new PoiRecord[max];
-         int totalRecords = 0;
          double furthestDistanceSquared = maxDistanceSquared;
  
 -        final int lowerX = Mth.floor(sourcePosition.getX() - range) >> 4;
@@ -78,19 +77,23 @@ index f39294b1f83c4022be5ced4da781103a1eee2daf..f2cfa6725a15189887d61d32c174254d
 +        final int minRangeZ = sourceZ - range;
 +        final int maxRangeZ = sourceZ + range;
 +
-+        // Use primitive queue for better performance
-+        final LongArrayFIFOQueue queue = new LongArrayFIFOQueue(128); // Pre-allocate reasonable size
++        // Use pre-allocated collections with explicit capacity
++        final LongArrayFIFOQueue queue = new LongArrayFIFOQueue(128);
 +        final LongOpenHashSet seen = new LongOpenHashSet(128);
          seen.add(centerKey);
          queue.enqueue(centerKey);
  
-+        // Temporary list to avoid sorting at every iteration
-+        final List<PoiRecord> candidateRecords = new ArrayList<>(max * 2);
++        // Temporary array to hold candidates instead of ArrayList
++        PoiRecord[] candidateBuffer = new PoiRecord[max * 4]; // Larger buffer to reduce reallocations
++        int candidateCount = 0;
++
++        // Track total records found
++        int totalRecords = 0;
 +
          while (!queue.isEmpty()) {
              final long key = queue.dequeueLong();
              final int sectionX = CoordinateUtils.getChunkSectionX(key);
-@@ -484,38 +503,33 @@ public final class PoiAccess {
+@@ -484,180 +505,316 @@ public final class PoiAccess {
              }
  
              final double sectionDistanceSquared = getSmallestDistanceSquared(
@@ -123,45 +126,70 @@ index f39294b1f83c4022be5ced4da781103a1eee2daf..f2cfa6725a15189887d61d32c174254d
 -                        if ((dx & 1) + (dy & 1) + (dz & 1) != 1) {
 -                            continue;
 -                        }
-+            // Queue neighbors - use a more efficient approach
-+            for (int i = 0; i < 6; i++) {
-+                // Get neighbor coordinates using a lookup approach instead of nested loops
-+                final int dx = i == 0 ? -1 : (i == 1 ? 1 : 0);
-+                final int dy = i == 2 ? -1 : (i == 3 ? 1 : 0);
-+                final int dz = i == 4 ? -1 : (i == 5 ? 1 : 0);
++            // Use array-based neighbor calculation - faster than HashMap iteration
++            // Cardinal directions: -X, +X, -Y, +Y, -Z, +Z
++            final int[][] neighbors = {
++                {-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}
++            };
  
 -                        final int neighbourX = sectionX + dx;
 -                        final int neighbourY = sectionY + dy;
 -                        final int neighbourZ = sectionZ + dz;
-+                final int neighbourX = sectionX + dx;
-+                final int neighbourY = sectionY + dy;
-+                final int neighbourZ = sectionZ + dz;
++            for (int[] offset : neighbors) {
++                final int neighborX = sectionX + offset[0];
++                final int neighborY = sectionY + offset[1];
++                final int neighborZ = sectionZ + offset[2];
  
 -                        final long neighbourKey = CoordinateUtils.getChunkSectionKey(neighbourX, neighbourY, neighbourZ);
 -                        if (seen.add(neighbourKey)) {
 -                            queue.enqueue(neighbourKey);
 -                        }
 -                    }
-+                final long neighbourKey = CoordinateUtils.getChunkSectionKey(neighbourX, neighbourY, neighbourZ);
-+                if (seen.add(neighbourKey)) {
-+                    queue.enqueue(neighbourKey);
++                final long neighborKey = CoordinateUtils.getChunkSectionKey(neighborX, neighborY, neighborZ);
++                if (seen.add(neighborKey)) {
++                    queue.enqueue(neighborKey);
                  }
              }
  
-@@ -532,132 +546,186 @@ public final class PoiAccess {
+-            final Optional<PoiSection> poiSectionOptional = load ? poiStorage.getOrLoad(key) : poiStorage.get(key);
+-
+-            if (poiSectionOptional == null || !poiSectionOptional.isPresent()) {
++            // Load POI section, avoiding HashMap iteration where possible
++            final Optional<PoiSection> poiSectionOpt = load ? poiStorage.getOrLoad(key) : poiStorage.get(key);
++            if (poiSectionOpt == null || !poiSectionOpt.isPresent()) {
+                 continue;
+             }
+ 
+-            final PoiSection poiSection = poiSectionOptional.get();
+-
++            final PoiSection poiSection = poiSectionOpt.get();
+             final Map<Holder<PoiType>, Set<PoiRecord>> sectionData = poiSection.getData();
+             if (sectionData.isEmpty()) {
                  continue;
              }
  
 -            // now we search the section data
-+            // Process POI data in this section
-             for (final Map.Entry<Holder<PoiType>, Set<PoiRecord>> entry : sectionData.entrySet()) {
-                 if (!villagePlaceType.test(entry.getKey())) {
+-            for (final Map.Entry<Holder<PoiType>, Set<PoiRecord>> entry : sectionData.entrySet()) {
+-                if (!villagePlaceType.test(entry.getKey())) {
 -                    // filter out by poi type
++            // Direct array access for type checking
++            // This avoids excessive HashMap iteration
++            for (Map.Entry<Holder<PoiType>, Set<PoiRecord>> entry : sectionData.entrySet()) {
++                final Holder<PoiType> poiType = entry.getKey();
++                if (!villagePlaceType.test(poiType)) {
                      continue;
                  }
  
 -                // now we can look at the poi data
-                 for (final PoiRecord poiData : entry.getValue()) {
+-                for (final PoiRecord poiData : entry.getValue()) {
++                // Copy records to an array to avoid iterator overhead
++                final Set<PoiRecord> records = entry.getValue();
++                if (records.isEmpty()) {
++                    continue;
++                }
++
++                // Process each POI record directly
++                for (PoiRecord poiData : records) {
                      if (!occupancyFilter.test(poiData)) {
 -                        // filter by occupancy
                          continue;
@@ -174,7 +202,7 @@ index f39294b1f83c4022be5ced4da781103a1eee2daf..f2cfa6725a15189887d61d32c174254d
 -                    if (Math.abs(poiPosition.getX() - sourcePosition.getX()) > range
 -                            || Math.abs(poiPosition.getZ() - sourcePosition.getZ()) > range) {
 -                        // out of range for square radius
-+                    // Fast range check using pre-calculated bounds
++                    // Fast range check
 +                    if (poiX < minRangeX || poiX > maxRangeX || poiZ < minRangeZ || poiZ > maxRangeZ) {
                          continue;
                      }
@@ -207,87 +235,185 @@ index f39294b1f83c4022be5ced4da781103a1eee2daf..f2cfa6725a15189887d61d32c174254d
 -                    if (dataRange > furthestDistanceSquared) {
 -                        // we know totalRecords < max, so this entry is now our furthest
 -                        furthestDistanceSquared = dataRange;
-+                    // Add to candidates list
-+                    candidateRecords.add(poiData);
-+
-+                    // Track the current max distance
-+                    if (totalRecords < max || dataRangeSquared < furthestDistanceSquared) {
-+                        furthestDistanceSquared = Math.max(furthestDistanceSquared, dataRangeSquared);
++                    // Add to candidate buffer
++                    if (candidateCount >= candidateBuffer.length) {
++                        // Expand buffer if needed
++                        PoiRecord[] newBuffer = new PoiRecord[candidateBuffer.length * 2];
++                        System.arraycopy(candidateBuffer, 0, newBuffer, 0, candidateBuffer.length);
++                        candidateBuffer = newBuffer;
                      }
-+                }
-+            }
++                    candidateBuffer[candidateCount++] = poiData;
  
 -                    closestRecords.computeIfAbsent(dataRange, (final double unused) -> {
 -                        return new ArrayList<>();
 -                    }).add(poiData);
-+            // Process candidate records if we've accumulated enough or reached the end
-+            if (candidateRecords.size() >= max * 2 || queue.isEmpty()) {
-+                processCandidates(candidateRecords, sourcePosition, topRecords, max);
++                    // Update furthest distance tracking
++                    if (totalRecords < max || dataRangeSquared < furthestDistanceSquared) {
++                        furthestDistanceSquared = Math.max(furthestDistanceSquared, dataRangeSquared);
++                    }
++                }
++            }
  
 -                    if (++totalRecords >= max) {
 -                        if (closestRecords.size() >= 2) {
 -                            int entriesInClosest = 0;
 -                            final Iterator<Double2ObjectMap.Entry<List<PoiRecord>>> iterator = closestRecords.double2ObjectEntrySet().iterator();
 -                            double nextFurthestDistanceSquared = 0.0;
-+                // Update furthest distance from our topRecords array
-+                if (totalRecords >= max) {
-+                    furthestDistanceSquared = getMaxDistanceInTopRecords(topRecords, sourcePosition);
-+                }
++            // Process candidates when we have enough or at the end of queue
++            if (candidateCount >= max * 2 || queue.isEmpty()) {
++                if (candidateCount > 0) {
++                    // Use optimized candidate processing
++                    processPoiCandidates(candidateBuffer, candidateCount, sourcePosition, topRecords, max);
  
 -                            for (int i = 0, len = closestRecords.size() - 1; i < len; ++i) {
 -                                final Double2ObjectMap.Entry<List<PoiRecord>> recordEntry = iterator.next();
 -                                entriesInClosest += recordEntry.getValue().size();
 -                                nextFurthestDistanceSquared = recordEntry.getDoubleKey();
 -                            }
-+                totalRecords = countNonNullRecords(topRecords);
-+                candidateRecords.clear();
-+            }
-+        }
++                    // Update total records and furthest distance
++                    totalRecords = countNonNullElements(topRecords);
++                    if (totalRecords >= max) {
++                        furthestDistanceSquared = getFurthestDistance(topRecords, sourcePosition);
++                    }
  
 -                            if (entriesInClosest >= max) {
 -                                // the last set of entries at range wont even be considered for sure... nuke em
 -                                final Double2ObjectMap.Entry<List<PoiRecord>> recordEntry = iterator.next();
 -                                totalRecords -= recordEntry.getValue().size();
 -                                iterator.remove();
-+        // Process any remaining candidates
-+        if (!candidateRecords.isEmpty()) {
-+            processCandidates(candidateRecords, sourcePosition, topRecords, max);
++                    // Reset candidate buffer
++                    candidateCount = 0;
++                }
++            }
 +        }
  
 -                                furthestDistanceSquared = nextFurthestDistanceSquared;
 -                            }
--                        }
--                    }
--                }
-+        // Add final results to return list
++        // Process any remaining candidates
++        if (candidateCount > 0) {
++            processPoiCandidates(candidateBuffer, candidateCount, sourcePosition, topRecords, max);
++        }
++
++        // Add results to return list
 +        for (PoiRecord record : topRecords) {
 +            if (record != null) {
 +                ret.add(record);
-             }
-         }
++            }
++        }
 +    }
++
++    private static void processPoiCandidates(PoiRecord[] candidates, int count, BlockPos sourcePos,
++                                             PoiRecord[] topRecords, int max) {
++        if (count <= 0) return;
++
++        // Cache source coordinates
++        final int sourceX = sourcePos.getX();
++        final int sourceY = sourcePos.getY();
++        final int sourceZ = sourcePos.getZ();
++
++        // Sort the candidates using a more efficient approach
++        sortCandidatesBySection(candidates, count);
++
++        // Insert sorted candidates into result array
++        for (int i = 0; i < count; i++) {
++            PoiRecord poiData = candidates[i];
++            if (poiData == null) continue;
++
++            final BlockPos poiPos = poiData.getPos();
++            final double dx = poiPos.getX() - sourceX;
++            final double dy = poiPos.getY() - sourceY;
++            final double dz = poiPos.getZ() - sourceZ;
++            final double distance = dx * dx + dy * dy + dz * dz;
++
++            // Find insertion point quickly
++            final int insertPos = findInsertionPoint(topRecords, distance, sourcePos, max);
++
++            if (insertPos < max) {
++                // Shift existing elements to make room
++                if (insertPos < max - 1) {
++                    System.arraycopy(topRecords, insertPos, topRecords, insertPos + 1, max - insertPos - 1);
++                }
++                topRecords[insertPos] = poiData;
++            }
++        }
++    }
++
++    private static void sortCandidatesBySection(PoiRecord[] candidates, int count) {
++        // Use insertion sort for small arrays - faster than more complex sorts
++        for (int i = 1; i < count; i++) {
++            PoiRecord tmp = candidates[i];
++            if (tmp == null) continue;
++
++            final BlockPos tmpPos = tmp.getPos();
++            final int tmpZ = tmpPos.getZ() >> 4;
++            final int tmpX = tmpPos.getX() >> 4;
++            final int tmpY = tmpPos.getY() >> 4;
++
++            int j = i;
++            while (j > 0) {
++                PoiRecord prev = candidates[j - 1];
++                if (prev == null) {
++                    j--;
++                    continue;
++                }
++
++                final BlockPos prevPos = prev.getPos();
++                final int prevZ = prevPos.getZ() >> 4;
++
++                if (tmpZ < prevZ) {
++                    candidates[j] = prev;
++                    j--;
++                } else if (tmpZ == prevZ) {
++                    final int prevX = prevPos.getX() >> 4;
++                    if (tmpX < prevX) {
++                        candidates[j] = prev;
++                        j--;
++                    } else if (tmpX == prevX) {
++                        final int prevY = prevPos.getY() >> 4;
++                        if (tmpY < prevY) {
++                            candidates[j] = prev;
++                            j--;
++                        } else {
++                            break;
+                         }
++                    } else {
++                        break;
+                     }
++                } else {
++                    break;
+                 }
+             }
+-        }
  
 -        final List<PoiRecord> closestRecordsUnsorted = new ArrayList<>();
-+    private static int countNonNullRecords(PoiRecord[] records) {
++            candidates[j] = tmp;
++        }
++    }
+ 
+-        // we're done here, so now just flatten the map and sort it.
++    private static int countNonNullElements(Object[] array) {
 +        int count = 0;
-+        for (PoiRecord record : records) {
-+            if (record != null) count++;
++        for (Object obj : array) {
++            if (obj != null) count++;
 +        }
 +        return count;
 +    }
  
--        // we're done here, so now just flatten the map and sort it.
-+    private static void processCandidates(List<PoiRecord> candidates, BlockPos sourcePosition,
-+                                          PoiRecord[] topRecords, int max) {
-+        if (candidates.isEmpty()) return;
- 
 -        for (final List<PoiRecord> records : closestRecords.values()) {
 -            closestRecordsUnsorted.addAll(records);
--        }
-+        // Cache source position coordinates
-+        final int sourceX = sourcePosition.getX();
-+        final int sourceY = sourcePosition.getY();
-+        final int sourceZ = sourcePosition.getZ();
++    private static double getFurthestDistance(PoiRecord[] records, BlockPos sourcePos) {
++        // Fast path: if the array is full, the last element is the furthest
++        for (int i = records.length - 1; i >= 0; i--) {
++            if (records[i] != null) {
++                final BlockPos pos = records[i].getPos();
++                final int dx = pos.getX() - sourcePos.getX();
++                final int dy = pos.getY() - sourcePos.getY();
++                final int dz = pos.getZ() - sourcePos.getZ();
++                return dx * dx + dy * dy + dz * dz;
++            }
+         }
++        return 0.0;
++    }
  
 -        // uh oh! we might have multiple records that match the distance sorting!
 -        // we need to re-order our results by the way vanilla would have iterated over them.
@@ -299,104 +425,86 @@ index f39294b1f83c4022be5ced4da781103a1eee2daf..f2cfa6725a15189887d61d32c174254d
 -            //     for (int z = -dz; z <= dz; ++z)
 -            //  ....
 -            // so we need to reorder such that records with lower chunk z, then lower chunk x come first
-+        // Simple stable sort based on chunk position
-+        candidates.sort((record1, record2) -> {
-             final BlockPos pos1 = record1.getPos();
-             final BlockPos pos2 = record2.getPos();
+-            final BlockPos pos1 = record1.getPos();
+-            final BlockPos pos2 = record2.getPos();
  
 -            final int cx1 = pos1.getX() >> 4;
-             final int cz1 = pos1.getZ() >> 4;
-+            final int cz2 = pos2.getZ() >> 4;
-+            if (cz1 != cz2) return Integer.compare(cz1, cz2);
+-            final int cz1 = pos1.getZ() >> 4;
++    private static int findInsertionPoint(PoiRecord[] records, double distance, BlockPos sourcePos, int max) {
++        // Fast path for empty slots at the beginning
++        for (int i = 0; i < max; i++) {
++            if (records[i] == null) {
++                return i;
++            }
++        }
  
-+            final int cx1 = pos1.getX() >> 4;
-             final int cx2 = pos2.getX() >> 4;
+-            final int cx2 = pos2.getX() >> 4;
 -            final int cz2 = pos2.getZ() >> 4;
-+            if (cx1 != cx2) return Integer.compare(cx1, cx2);
++        // Fast path for the end position
++        if (records[max - 1] != null) {
++            final BlockPos lastPos = records[max - 1].getPos();
++            final int dx = lastPos.getX() - sourcePos.getX();
++            final int dy = lastPos.getY() - sourcePos.getY();
++            final int dz = lastPos.getZ() - sourcePos.getZ();
++            final double lastDist = dx * dx + dy * dy + dz * dz;
  
 -            if (cz2 != cz1) {
 -                // want smaller z
 -                return Integer.compare(cz1, cz2);
-+            return Integer.compare(pos1.getY() >> 4, pos2.getY() >> 4);
-+        });
-+
-+        // Process in order
-+        for (PoiRecord poiData : candidates) {
-+            final BlockPos poiPosition = poiData.getPos();
-+
-+            // Direct distance calculation is faster than caching for most cases
-+            final double dx = poiPosition.getX() - sourceX;
-+            final double dy = poiPosition.getY() - sourceY;
-+            final double dz = poiPosition.getZ() - sourceZ;
-+            final double distance = dx * dx + dy * dy + dz * dz;
-+
-+            // Find insertion point using binary search - much faster for large arrays
-+            int insertPos = findInsertionPoint(topRecords, distance, sourcePosition, max);
-+
-+            // Only proceed if we have a valid insertion point
-+            if (insertPos < max) {
-+                // Shift elements to make space - start from the end
-+                for (int i = max - 1; i > insertPos; i--) {
-+                    topRecords[i] = topRecords[i - 1];
-+                }
-+                topRecords[insertPos] = poiData;
++            if (distance >= lastDist) {
++                return max; // No insertion needed, it would be beyond the end
              }
 +        }
-+    }
  
 -            if (cx2 != cx1) {
 -                // want smaller x
 -                return Integer.compare(cx1, cx2);
-+    private static int findInsertionPoint(PoiRecord[] records, double distance, BlockPos sourcePos, int max) {
-+        // Fast path for empty slots
-+        for (int i = 0; i < max; i++) {
-+            if (records[i] == null) {
-+                return i;
++        // Binary search to find insertion point
++        int low = 0;
++        int high = max - 1;
++
++        while (low < high) {
++            int mid = (low + high) >>> 1;
++
++            if (records[mid] == null) {
++                // Handle null elements in the array
++                high = mid;
++            } else {
++                final BlockPos midPos = records[mid].getPos();
++                final int dx = midPos.getX() - sourcePos.getX();
++                final int dy = midPos.getY() - sourcePos.getY();
++                final int dz = midPos.getZ() - sourcePos.getZ();
++                double midDist = dx * dx + dy * dy + dz * dz;
++
++                if (midDist > distance) {
++                    high = mid;
++                } else {
++                    low = mid + 1;
++                }
              }
 +        }
  
 -            // same chunk
 -            // once vanilla has the chunk, it will iterate from all of the chunk sections starting from smaller y
 -            // so now we just compare section y, wanting smaller section y
-+        // If array is full, check if this record is closer than the furthest one
-+        double lastDistance = records[max-1].getPos().distSqr(sourcePos);
-+        if (distance >= lastDistance) {
-+            return max; // No insertion needed
-+        }
++        return low;
++    }
  
 -            return Integer.compare(pos1.getY() >> 4, pos2.getY() >> 4);
 -        });
-+        // Binary search to find insertion point
-+        int low = 0;
-+        int high = max - 1;
++    private static final ThreadLocal<Map<PoiRecord, Double>> DISTANCE_CACHE =
++        ThreadLocal.withInitial(() -> new it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap<>());
  
 -        // trim out any entries exceeding our maximum
 -        for (int i = closestRecordsUnsorted.size() - 1; i >= max; --i) {
 -            closestRecordsUnsorted.remove(i);
-+        while (low < high) {
-+            int mid = (low + high) >>> 1;
-+            double midDist = records[mid].getPos().distSqr(sourcePos);
-+
-+            if (midDist > distance) {
-+                high = mid;
-+            } else {
-+                low = mid + 1;
-+            }
++    private static double getMaxDistanceInTopRecords(PoiRecord[] records, BlockPos sourcePos) {
++        if (records[0] == null) {
++            return 0.0; // No records yet
          }
  
 -        // now we match perfectly what vanilla would have outputted, without having to search the whole radius (hopefully).
 -        ret.addAll(closestRecordsUnsorted);
-+        return low;
-+    }
-+
-+    private static final ThreadLocal<Map<PoiRecord, Double>> DISTANCE_CACHE =
-+        ThreadLocal.withInitial(() -> new it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap<>());
-+
-+    private static double getMaxDistanceInTopRecords(PoiRecord[] records, BlockPos sourcePos) {
-+        if (records[0] == null) {
-+            return 0.0; // No records yet
-+        }
-+
 +        // When array is full, the last record is always the furthest
 +        for (int i = records.length - 1; i >= 0; i--) {
 +            if (records[i] != null) {
@@ -408,7 +516,7 @@ index f39294b1f83c4022be5ced4da781103a1eee2daf..f2cfa6725a15189887d61d32c174254d
      }
  
      public static BlockPos findAnyPoiPosition(final PoiManager poiStorage,
-@@ -683,7 +751,7 @@ public final class PoiAccess {
+@@ -683,7 +840,7 @@ public final class PoiAccess {
                                             final boolean load,
                                             final int max,
                                             final List<Pair<Holder<PoiType>, BlockPos>> ret) {
