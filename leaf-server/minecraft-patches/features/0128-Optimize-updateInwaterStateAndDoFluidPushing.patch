@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sat, 22 Feb 2025 14:24:36 +0100
+Subject: [PATCH] Optimize updateInwaterStateAndDoFluidPushing
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 6ca446fd9ab38329ba505526a56f8e4f64a9a639..eec7d7981d6b508edf6937783cc41d73e02b0953 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -261,7 +261,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     public boolean wasTouchingWater;
+     protected Object2DoubleMap<TagKey<Fluid>> fluidHeight = new Object2DoubleArrayMap<>(2);
+     protected boolean wasEyeInWater;
+-    private final Set<TagKey<Fluid>> fluidOnEyes = new HashSet<>();
++    private final Set<TagKey<Fluid>> fluidOnEyes = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>(); // Leaf - Optimize collection
+     public int invulnerableTime;
+     protected boolean firstTick = true;
+     protected final SynchedEntityData entityData;
+@@ -1980,11 +1980,24 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     }
+ 
+     protected boolean updateInWaterStateAndDoFluidPushing() {
+-        this.fluidHeight.clear();
++        // Leaf - Avoid expensive clear operation if already empty
++        if (!this.fluidHeight.isEmpty()) {
++            this.fluidHeight.clear();
++        }
++        // Leaf - Check water interaction first
+         this.updateInWaterStateAndDoWaterCurrentPushing();
+-        double d = this.level().dimensionType().ultraWarm() ? 0.007 : 0.0023333333333333335;
+-        boolean flag = this.updateFluidHeightAndDoFluidPushing(FluidTags.LAVA, d);
+-        return this.isInWater() || flag;
++        // Leaf - Cache ultraWarm value and only calculate flow scale once
++        final boolean isUltraWarm = this.level().dimensionType().ultraWarm();
++        final double lavaFlowScale = isUltraWarm ? 0.007 : 0.0023333333333333335;
++        // Leaf - Only perform lava check if not already in water (short-circuit)
++        boolean inWater = this.isInWater();
++        if (inWater) {
++            return true;
++        }
++        // Leaf - Check lava only if not already in water
++        boolean inLava = this.updateFluidHeightAndDoFluidPushing(FluidTags.LAVA, lavaFlowScale);
++
++        return inWater || inLava;
+     }
+ 
+     public void updateInWaterStateAndDoWaterCurrentPushing() { // Purpur - Movement options for armor stands - package-private -> public - TODO: use AT file
