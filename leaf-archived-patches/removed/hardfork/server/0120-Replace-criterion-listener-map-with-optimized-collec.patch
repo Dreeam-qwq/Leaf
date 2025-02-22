@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sun, 9 Feb 2025 01:36:24 +0100
+Subject: [PATCH] Replace criterion listener map with optimized collection
+
+
+diff --git a/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java b/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java
+index 4b2ae046413146b11912e7aa4a9a3d643de6afd1..6a4889d4ba90c1995e15c0daa6bb52682ec87eb4 100644
+--- a/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java
++++ b/net/minecraft/advancements/critereon/SimpleCriterionTrigger.java
+@@ -19,7 +19,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
+ 
+     @Override
+     public final void addPlayerListener(PlayerAdvancements playerAdvancements, CriterionTrigger.Listener<T> listener) {
+-        playerAdvancements.criterionData.computeIfAbsent(this, managerx -> Sets.newHashSet()).add(listener); // Paper - fix PlayerAdvancements leak
++        playerAdvancements.criterionData.computeIfAbsent(this, managerx -> new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>()).add(listener); // Paper - fix PlayerAdvancements leak // Leaf - Replace criterion listener map with optimized collection
+     }
+ 
+     @Override
+@@ -43,7 +43,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
+         Set<CriterionTrigger.Listener<T>> set = (Set) advancements.criterionData.get(this); // Paper - fix PlayerAdvancements leak
+         if (set != null && !set.isEmpty()) {
+             LootContext lootContext = null; // EntityPredicate.createContext(player, player); // Paper - Perf: lazily create LootContext for criterions
+-            List<CriterionTrigger.Listener<T>> list = null;
++            it.unimi.dsi.fastutil.objects.ObjectArrayList<CriterionTrigger.Listener<T>> list = null; // Leaf - Replace criterion listener map with optimized collection
+ 
+             for (CriterionTrigger.Listener<T> listener : set) {
+                 T simpleInstance = listener.trigger();
+@@ -51,7 +51,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
+                     Optional<ContextAwarePredicate> optional = simpleInstance.player();
+                     if (optional.isEmpty() || optional.get().matches(lootContext = (lootContext == null ? EntityPredicate.createContext(player, player) : lootContext))) { // Paper - Perf: lazily create LootContext for criterions
+                         if (list == null) {
+-                            list = Lists.newArrayList();
++                            list = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // Leaf - Replace criterion listener map with optimized collection
+                         }
+ 
+                         list.add(listener);

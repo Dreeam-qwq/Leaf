@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Sun, 23 Jun 2024 11:26:20 +0800
+Subject: [PATCH] Use caffeine cache for kickPermission instead of using
+ google.common.cache
+
+
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 4af5f13eb9a0c76d037074fa0fd5c1b2061dc59b..9960b26d5f5d931bacea3fb5c8fbe14dddd8d0e2 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -328,17 +328,12 @@ public class ServerGamePacketListenerImpl
+     }
+ 
+     // Purpur start - AFK API
+-    private final com.google.common.cache.LoadingCache<org.bukkit.craftbukkit.entity.CraftPlayer, Boolean> kickPermissionCache = com.google.common.cache.CacheBuilder.newBuilder()
++    // Leaf start - Use caffeine cache for kickPermission instead of using google.common.cache
++    private final com.github.benmanes.caffeine.cache.LoadingCache<org.bukkit.craftbukkit.entity.CraftPlayer, Boolean> kickPermissionCache = com.github.benmanes.caffeine.cache.Caffeine.newBuilder()
+         .maximumSize(1000)
+         .expireAfterWrite(1, java.util.concurrent.TimeUnit.MINUTES)
+-        .build(
+-            new com.google.common.cache.CacheLoader<>() {
+-                @Override
+-                public Boolean load(org.bukkit.craftbukkit.entity.CraftPlayer player) {
+-                    return player.hasPermission("purpur.bypassIdleKick");
+-                }
+-            }
+-        );
++        .build(player -> player.hasPermission("purpur.bypassIdleKick"));
++    // Leaf end - Use caffeine cache for kickPermission instead of using google.common.cache
+     // Purpur end - AFK API
+ 
+     public final org.leavesmc.leaves.protocol.syncmatica.exchange.ExchangeTarget exchangeTarget; // Leaves - Syncmatica Protocol
+@@ -403,7 +398,7 @@ public class ServerGamePacketListenerImpl
+             && Util.getMillis() - this.player.getLastActionTime() > this.server.getPlayerIdleTimeout() * 1000L * 60L && !this.player.wonGame) { // Paper - Prevent AFK kick while watching end credits
+             // Purpur start - AFK API
+             this.player.setAfk(true);
+-            if (!this.player.level().purpurConfig.idleTimeoutKick || (!Boolean.parseBoolean(System.getenv("PURPUR_FORCE_IDLE_KICK")) && kickPermissionCache.getUnchecked(this.player.getBukkitEntity()))) {
++            if (!this.player.level().purpurConfig.idleTimeoutKick || (!Boolean.parseBoolean(System.getenv("PURPUR_FORCE_IDLE_KICK")) && kickPermissionCache.get(this.player.getBukkitEntity()))) { // Leaf - Use caffeine cache for kickPermission instead of using google.common.cache
+                 return;
+             }
+             // Purpur end - AFK API

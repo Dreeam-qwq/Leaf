@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sat, 13 Aug 2022 08:58:14 -0500
+Subject: [PATCH] Slice: Smooth Teleports
+
+Original license: MIT
+Original project: https://github.com/Cryptite/Slice
+
+Co-authored-by: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 7b7bb03adbf6aa4f088b2930d2ae702ce0189efa..7c87ad4f7802a0d35b01168d9147fea423dac363 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1384,6 +1384,25 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         // Paper end - Teleportation API
+     }
+ 
++    // Slice start
++    @Override
++    public void teleportWithoutRespawn(Location location) {
++        ServerPlayer serverPlayer = getHandle();
++        serverPlayer.smoothWorldTeleport = true;
++        teleport(location);
++        serverPlayer.smoothWorldTeleport = false;
++    }
++
++    @Override
++    public boolean teleportWithoutRespawnOptionally(Location location) {
++        ServerPlayer serverPlayer = getHandle();
++        serverPlayer.smoothWorldTeleport = true;
++        boolean teleportResult = teleport(location);
++        serverPlayer.smoothWorldTeleport = false;
++        return teleportResult;
++    }
++    // Slice end
++
+     @Override
+     public boolean teleport(Location location, PlayerTeleportEvent.TeleportCause cause) {
+         // Paper start - Teleport API
