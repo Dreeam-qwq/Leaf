@@ -1,0 +1,111 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sat, 22 Feb 2025 11:33:20 +0100
+Subject: [PATCH] Optimize SetLookAndInteract and NearestVisibleLivingEntities
+
+
+diff --git a/net/minecraft/world/entity/ai/behavior/SetLookAndInteract.java b/net/minecraft/world/entity/ai/behavior/SetLookAndInteract.java
+index 13359e484486a5280f408955fe2a365cd3c34a43..d326bf267123ff26d85e63aeb273baf4b59613d6 100644
+--- a/net/minecraft/world/entity/ai/behavior/SetLookAndInteract.java
++++ b/net/minecraft/world/entity/ai/behavior/SetLookAndInteract.java
+@@ -9,7 +9,7 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+ 
+ public class SetLookAndInteract {
+     public static BehaviorControl<LivingEntity> create(EntityType<?> entityType, int maxDist) {
+-        int i = maxDist * maxDist;
++        final int maxDistSq = maxDist * maxDist;
+         return BehaviorBuilder.create(
+             instance -> instance.group(
+                     instance.registered(MemoryModuleType.LOOK_TARGET),
+@@ -19,16 +19,20 @@ public class SetLookAndInteract {
+                 .apply(
+                     instance,
+                     (lookTarget, interactionTarget, nearestVisibleLivingEntities) -> (level, entity, gameTime) -> {
+-                        Optional<LivingEntity> optional = instance.<NearestVisibleLivingEntities>get(nearestVisibleLivingEntities)
+-                            .findClosest(nearEntity -> nearEntity.distanceToSqr(entity) <= i && entityType.equals(nearEntity.getType()));
++                        // Check entity type first as it's likely cheaper than distance calculation
++                        NearestVisibleLivingEntities entities = instance.get(nearestVisibleLivingEntities);
++                        Optional<LivingEntity> optional = entities.findClosest(
++                            nearEntity -> entityType.equals(nearEntity.getType()) && nearEntity.distanceToSqr(entity) <= maxDistSq
++                        );
++
+                         if (optional.isEmpty()) {
+                             return false;
+-                        } else {
+-                            LivingEntity livingEntity = optional.get();
+-                            interactionTarget.set(livingEntity);
+-                            lookTarget.set(new EntityTracker(livingEntity, true));
+-                            return true;
+                         }
++
++                        LivingEntity livingEntity = optional.get();
++                        interactionTarget.set(livingEntity);
++                        lookTarget.set(new EntityTracker(livingEntity, true));
++                        return true;
+                     }
+                 )
+         );
+diff --git a/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java b/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java
+index 2b973a3ba7d65330fa4690e71e5321c28457ec61..99a3c44b95ed0a14d272c5eb07b7db90aaa6e6af 100644
+--- a/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java
++++ b/net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.java
+@@ -2,10 +2,11 @@ package net.minecraft.world.entity.ai.memory;
+ 
+ import com.google.common.collect.Iterables;
+ import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
++import it.unimi.dsi.fastutil.objects.ObjectArrayList;
++import it.unimi.dsi.fastutil.objects.ObjectList;
+ import java.util.List;
+ import java.util.Optional;
+ import java.util.function.Predicate;
+-import java.util.stream.Stream;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.world.entity.LivingEntity;
+ import net.minecraft.world.entity.ai.sensing.Sensor;
+@@ -32,9 +33,26 @@ public class NearestVisibleLivingEntities {
+     }
+ 
+     public Optional<LivingEntity> findClosest(Predicate<LivingEntity> predicate) {
+-        for (LivingEntity livingEntity : this.nearbyEntities) {
+-            if (predicate.test(livingEntity) && this.lineOfSightTest.test(livingEntity)) {
+-                return Optional.of(livingEntity);
++        // Early return if no entities
++        if (this.nearbyEntities.isEmpty()) {
++            return Optional.empty();
++        }
++
++        // Avoid computing line of sight unless necessary
++        LivingEntity closest = null;
++        double closestDistSq = Double.MAX_VALUE;
++
++        for (int i = 0; i < this.nearbyEntities.size(); i++) {
++            LivingEntity entity = this.nearbyEntities.get(i);
++
++            // Check predicate first as it's likely cheaper than line of sight test
++            if (predicate.test(entity)) {
++                // Only do expensive line of sight check if other conditions pass
++                if (this.lineOfSightTest.test(entity)) {
++                    // For SetLookAndInteract we can optimize further since distanceSq check
++                    // is already in the predicate - see if there's a chance to return early
++                    return Optional.of(entity);
++                }
+             }
+         }
+ 
+@@ -45,8 +63,14 @@ public class NearestVisibleLivingEntities {
+         return Iterables.filter(this.nearbyEntities, target -> predicate.test(target) && this.lineOfSightTest.test(target)); // Leaf - Optimize baby villager sensor - diff on change
+     }
+ 
+-    public Stream<LivingEntity> find(Predicate<LivingEntity> predicate) {
+-        return this.nearbyEntities.stream().filter(target -> predicate.test(target) && this.lineOfSightTest.test(target));
++    public List<LivingEntity> find(Predicate<LivingEntity> predicate) {
++        ObjectList<LivingEntity> result = new ObjectArrayList<>();
++        for (LivingEntity entity : this.nearbyEntities) {
++            if (predicate.test(entity) && this.lineOfSightTest.test(entity)) {
++                result.add(entity);
++            }
++        }
++        return result;
+     }
+ 
+     public boolean contains(LivingEntity entity) {
