@@ -36,7 +36,7 @@ public abstract class ConfigModules extends LeafConfig {
             }
         }
         if (!enabledExperimentalModules.isEmpty()) {
-            LeafConfig.LOGGER.warn("You have following experimental module(s) enabled: {}, please proceed with caution!", enabledExperimentalModules.stream().map(f -> f.getClass().getSimpleName() + "." + f.getName()).toList());
+            LeafConfig.LOGGER.warn("You have following experimental module(s) enabled: {}, please proceed with caution!", enabledExperimentalModules.stream().map(f -> f.getDeclaringClass().getSimpleName() + "." + f.getName()).toList());
         }
     }
 
