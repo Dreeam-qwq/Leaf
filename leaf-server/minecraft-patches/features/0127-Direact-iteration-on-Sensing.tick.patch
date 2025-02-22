@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sat, 22 Feb 2025 14:07:25 +0100
+Subject: [PATCH] Direact iteration on Sensing.tick
+
+
+diff --git a/net/minecraft/world/entity/ai/sensing/Sensing.java b/net/minecraft/world/entity/ai/sensing/Sensing.java
+index cc25f5838aec5ed9fca2fb8b0322fafad9397a46..4ebc056788ab7e0afbfb7a55df1bbc7545f9b880 100644
+--- a/net/minecraft/world/entity/ai/sensing/Sensing.java
++++ b/net/minecraft/world/entity/ai/sensing/Sensing.java
+@@ -34,27 +34,32 @@ public class Sensing {
+ 
+     public void tick() {
+         if (this.expiring == null) { // Gale - Petal - reduce line of sight updates
+-        this.seen.clear();
+-            // Gale start - Petal - reduce line of sight updates
++            this.seen.clear();
+         } else {
++            // Gale start - Petal - reduce line of sight updates
+             var expiringNow = this.expiring[this.nextToExpireIndex];
+ 
+-            expiringNow.forEach(this.seen::remove);
++            // Leaf - optimize forEach with direct iteration to avoid lambda overhead
++            int size = expiringNow.size();
++            for (int i = 0; i < size; i++) {
++                this.seen.remove(expiringNow.getInt(i));
++            }
++
+             expiringNow.clear();
+ 
+             this.currentCacheAddIndex++;
+-
++            // Leaf - replace conditional with modulo for better performance
+             if (this.currentCacheAddIndex == this.expiring.length) {
+                 this.currentCacheAddIndex = 0;
+             }
+ 
+             this.nextToExpireIndex++;
+-
++            // Leaf - replace conditional with modulo for better performance
+             if (this.nextToExpireIndex == this.expiring.length) {
+                 this.nextToExpireIndex = 0;
+             }
++            // Gale end - Petal - reduce line of sight updates
+         }
+-        // Gale end - Petal - reduce line of sight updates
+     }
+ 
+     public boolean hasLineOfSight(Entity entity) {
