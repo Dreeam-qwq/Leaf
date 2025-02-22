@@ -177,7 +177,7 @@ index f106373ef3ac4a8685c2939c9e8361688a285913..51ae390c68e7a3aa193329cc3bc47ca6
      public boolean visible = true;
  
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index d8298c7925e3bcea07ead4d438478cc51abcfa16..75670751064add901c2628d53d8028350f966c5d 100644
+index d8298c7925e3bcea07ead4d438478cc51abcfa16..2b559cb1cfd0d3a729a2b14f197880fe4af8cb92 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
 @@ -110,8 +110,16 @@ public class ServerEntity {
@@ -199,7 +199,26 @@ index d8298c7925e3bcea07ead4d438478cc51abcfa16..75670751064add901c2628d53d802835
                          }
                      }
                  );
-@@ -435,12 +443,15 @@ public class ServerEntity {
+@@ -376,6 +384,8 @@ public class ServerEntity {
+         }
+ 
+         if (this.entity instanceof LivingEntity livingEntity) {
++            // Leaf start - Multithreaded tracker
++            Runnable runnable = () -> {
+             List<Pair<EquipmentSlot, ItemStack>> list = Lists.newArrayList();
+ 
+             for (EquipmentSlot equipmentSlot : EquipmentSlot.VALUES) {
+@@ -389,6 +399,9 @@ public class ServerEntity {
+                 consumer.accept(new ClientboundSetEquipmentPacket(this.entity.getId(), list, true)); // Paper - data sanitization
+             }
+             ((LivingEntity) this.entity).detectEquipmentUpdatesPublic(); // CraftBukkit - SPIGOT-3789: sync again immediately after sending
++            };
++            if (org.dreeam.leaf.config.modules.async.MultithreadedTracker.enabled && Thread.currentThread() instanceof org.dreeam.leaf.async.tracker.MultithreadedTracker.MultithreadedTrackerThread) net.minecraft.server.MinecraftServer.getServer().scheduleOnMain(runnable); else runnable.run();
++            // Leaf end - Multithreaded tracker
+         }
+ 
+         if (!this.entity.getPassengers().isEmpty()) {
+@@ -435,12 +448,15 @@ public class ServerEntity {
          if (this.entity instanceof LivingEntity) {
              Set<AttributeInstance> attributesToSync = ((LivingEntity)this.entity).getAttributes().getAttributesToSync();
              if (!attributesToSync.isEmpty()) {
