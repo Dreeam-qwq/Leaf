@@ -1,0 +1,114 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Fri, 21 Feb 2025 18:05:09 +0100
+Subject: [PATCH] Optimize LinearPalette.getSerializedSize
+
+
+diff --git a/net/minecraft/world/level/chunk/LinearPalette.java b/net/minecraft/world/level/chunk/LinearPalette.java
+index 2073f6ff41aa570102621d183ee890b076267d54..6f8bf933337dfd7c8a00feae3da840d6bc1da90c 100644
+--- a/net/minecraft/world/level/chunk/LinearPalette.java
++++ b/net/minecraft/world/level/chunk/LinearPalette.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.world.level.chunk;
+ 
++import java.util.Arrays;
+ import java.util.List;
+ import java.util.function.Predicate;
+ import net.minecraft.core.IdMap;
+@@ -10,6 +11,7 @@ import org.apache.commons.lang3.Validate;
+ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.patches.fast_palette.FastPalette<T> { // Paper - optimise palette reads
+     private final IdMap<T> registry;
+     private final T[] values;
++    private final int[] idCache; // Cached registry IDs for values
+     private final PaletteResize<T> resizeHandler;
+     private final int bits;
+     private int size;
+@@ -23,21 +25,24 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+ 
+     private LinearPalette(IdMap<T> registry, int bits, PaletteResize<T> resizeHandler, List<T> values) {
+         this.registry = registry;
+-        this.values = (T[])(new Object[1 << bits]);
++        this.values = (T[]) (new Object[1 << bits]);
++        this.idCache = new int[1 << bits];
+         this.bits = bits;
+         this.resizeHandler = resizeHandler;
+         Validate.isTrue(values.size() <= this.values.length, "Can't initialize LinearPalette of size %d with %d entries", this.values.length, values.size());
+ 
+         for (int i = 0; i < values.size(); i++) {
+-            this.values[i] = values.get(i);
++            T value = values.get(i);
++            this.values[i] = value;
++            this.idCache[i] = registry.getId(value);
+         }
+-
+         this.size = values.size();
+     }
+ 
+-    private LinearPalette(IdMap<T> registry, T[] values, PaletteResize<T> resizeHandler, int bits, int size) {
++    private LinearPalette(IdMap<T> registry, T[] values, int[] idCache, PaletteResize<T> resizeHandler, int bits, int size) {
+         this.registry = registry;
+         this.values = values;
++        this.idCache = idCache;
+         this.resizeHandler = resizeHandler;
+         this.bits = bits;
+         this.size = size;
+@@ -58,6 +63,7 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+         int ix = this.size;
+         if (ix < this.values.length) {
+             this.values[ix] = state;
++            this.idCache[ix] = registry.getId(state); // Cache ID on insertion
+             this.size++;
+             return ix;
+         } else {
+@@ -88,29 +94,27 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+     @Override
+     public void read(FriendlyByteBuf buffer) {
+         this.size = buffer.readVarInt();
+-
+         for (int i = 0; i < this.size; i++) {
+-            this.values[i] = this.registry.byIdOrThrow(buffer.readVarInt());
++            int id = buffer.readVarInt();
++            this.values[i] = this.registry.byIdOrThrow(id);
++            this.idCache[i] = id; // Cache ID directly from buffer
+         }
+     }
+ 
+     @Override
+     public void write(FriendlyByteBuf buffer) {
+         buffer.writeVarInt(this.size);
+-
+         for (int i = 0; i < this.size; i++) {
+-            buffer.writeVarInt(this.registry.getId(this.values[i]));
++            buffer.writeVarInt(this.idCache[i]); // Use cached ID
+         }
+     }
+ 
+     @Override
+     public int getSerializedSize() {
+-        int byteSize = VarInt.getByteSize(this.getSize());
+-
+-        for (int i = 0; i < this.getSize(); i++) {
+-            byteSize += VarInt.getByteSize(this.registry.getId(this.values[i]));
++        int byteSize = VarInt.getByteSize(this.size);
++        for (int i = 0; i < this.size; i++) {
++            byteSize += VarInt.getByteSize(this.idCache[i]); // Use cached ID
+         }
+-
+         return byteSize;
+     }
+ 
+@@ -121,6 +125,13 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+ 
+     @Override
+     public Palette<T> copy(PaletteResize<T> resizeHandler) {
+-        return new LinearPalette<>(this.registry, (T[])((Object[])this.values.clone()), resizeHandler, this.bits, this.size);
++        return new LinearPalette<>(
++            this.registry,
++            (T[]) this.values.clone(),
++            Arrays.copyOf(this.idCache, this.idCache.length),
++            resizeHandler,
++            this.bits,
++            this.size
++        );
+     }
+ }
