@@ -1,23 +1,19 @@
 package org.dreeam.leaf.util.map;
 
-import com.github.benmanes.caffeine.cache.Interner;
+import com.google.common.collect.Interners;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 import java.util.Map;
 import java.util.function.Function;
 
-/**
- * Backed by an {@link Object2ObjectOpenHashMap}, with string keys interned to save memory.
- */
 public class StringCanonizingOpenHashMap<T> extends Object2ObjectOpenHashMap<String, T> {
 
-    private static final Interner<String> KEY_INTERNER = Interner.newWeakInterner();
+    private static final com.google.common.collect.Interner<String> KEY_INTERNER = Interners.newWeakInterner();
 
     private static String intern(String key) {
         return key != null ? KEY_INTERNER.intern(key) : null;
     }
-
     public StringCanonizingOpenHashMap() {
         super();
     }
