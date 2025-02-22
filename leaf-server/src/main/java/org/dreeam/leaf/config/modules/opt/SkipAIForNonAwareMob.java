@@ -13,6 +13,6 @@ public class SkipAIForNonAwareMob extends ConfigModules {
 
     @Override
     public void onLoaded() {
-        enabled = config().getBoolean(getBasePath() + ".skip-ai-for-non-aware-mob", enabled);
+        enabled = config.getBoolean(getBasePath() + ".skip-ai-for-non-aware-mob", enabled);
     }
 }

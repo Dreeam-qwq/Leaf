@@ -23,6 +23,7 @@ public abstract class ConfigModules extends LeafConfig {
 
     public static void initModules() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         List<Field> enabledExperimentalModules = new ArrayList<>();
+
         for (Class<?> clazz : LeafConfig.getClasses(LeafConfig.I_CONFIG_PKG)) {
             ConfigModules module = (ConfigModules) clazz.getConstructor().newInstance();
             module.onLoaded();
@@ -35,6 +36,7 @@ public abstract class ConfigModules extends LeafConfig {
                 }
             }
         }
+
         if (!enabledExperimentalModules.isEmpty()) {
             LeafConfig.LOGGER.warn("You have following experimental module(s) enabled: {}, please proceed with caution!", enabledExperimentalModules.stream().map(f -> f.getDeclaringClass().getSimpleName() + "." + f.getName()).toList());
         }
@@ -42,12 +44,14 @@ public abstract class ConfigModules extends LeafConfig {
 
     private static List<Field> getAnnotatedStaticFields(Class<?> clazz, Class<? extends Annotation> annotation) {
         List<Field> fields = new ArrayList<>();
+
         for (Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(annotation) && Modifier.isStatic(field.getModifiers())) {
                 field.setAccessible(true);
                 fields.add(field);
             }
         }
+
         return fields;
     }
 

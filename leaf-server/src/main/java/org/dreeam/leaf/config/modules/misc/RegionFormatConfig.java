@@ -44,7 +44,7 @@ public class RegionFormatConfig extends ConfigModules {
                 "Available region formats: MCA, LINEAR",
                 "可用格式: MCA, LINEAR"));
         linearCompressionLevel = config.getInt(getBasePath() + ".linear-compress-level", linearCompressionLevel);
-        throwOnUnknownExtension = config().getBoolean(getBasePath() + ".throw-on-unknown-extension-detected", throwOnUnknownExtension);
+        throwOnUnknownExtension = config.getBoolean(getBasePath() + ".throw-on-unknown-extension-detected", throwOnUnknownExtension);
         linearFlushFrequency = config.getInt(getBasePath() + ".flush-interval-seconds", linearFlushFrequency);
 
         regionFormatType = EnumRegionFileExtension.fromName(regionFormatTypeName);

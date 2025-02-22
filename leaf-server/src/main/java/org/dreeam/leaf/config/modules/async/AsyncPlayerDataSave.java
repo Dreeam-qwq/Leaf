@@ -23,6 +23,6 @@ public class AsyncPlayerDataSave extends ConfigModules {
                 **实验性功能, 在部分场景下可能丢失玩家数据!**
                 异步保存玩家数据.""");
 
-        enabled = config().getBoolean(getBasePath() + ".enabled", enabled);
+        enabled = config.getBoolean(getBasePath() + ".enabled", enabled);
     }
 }
