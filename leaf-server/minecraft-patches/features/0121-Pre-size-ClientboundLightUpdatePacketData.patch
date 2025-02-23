@@ -71,16 +71,3 @@ index a0b54f3a3d11e0f0f1cb806406a870ba36da8f07..da331229c15eee4b20a00f61a21d49d5
          }
      }
  
-diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 0155810aa0c6335abe30a87c8a8ea57591b8e5e3..7005e851b6acb4e83109b7f4dd0cbafe65770c3a 100644
---- a/net/minecraft/server/level/ServerChunkCache.java
-+++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -577,8 +577,6 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
-         if (output instanceof ArrayList<LevelChunk> arrayList) {
-             arrayList.ensureCapacity(size);
-         }
--
--        // Pre-calculate player view rectangles instead of using a LongOpenHashSet
-         List<ServerPlayer> players = this.level.players();
-         int playerCount = players.size();
-         int viewDistance = this.chunkMap.serverViewDistance;

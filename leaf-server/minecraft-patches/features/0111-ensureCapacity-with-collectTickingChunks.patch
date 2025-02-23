@@ -5,50 +5,42 @@ Subject: [PATCH] ensureCapacity with collectTickingChunks
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index dd956431bb882daa70267685f2283d0c358336be..0155810aa0c6335abe30a87c8a8ea57591b8e5e3 100644
+index dd956431bb882daa70267685f2283d0c358336be..7425abf53152b49c554b0057f7c626b8e703f902 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -573,17 +573,40 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -573,17 +573,33 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
          final ServerChunkCache.ChunkAndHolder[] raw = tickingChunks.getRawDataUnchecked();
          final int size = tickingChunks.size();
  
 -        final ChunkMap chunkMap = this.chunkMap;
++        // Precompute chunks near players using a LongSet for O(1) lookups
++        final it.unimi.dsi.fastutil.longs.LongSet nearChunkKeys = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
++        final int viewDistance = this.chunkMap.serverViewDistance;
++        for (ServerPlayer player : this.level.players()) {
++            ChunkPos playerChunk = player.chunkPosition();
++            // Add all chunks within view distance around the player
++            for (int dx = -viewDistance; dx <= viewDistance; ++dx) {
++                for (int dz = -viewDistance; dz <= viewDistance; ++dz) {
++                    nearChunkKeys.add(ChunkPos.asLong(playerChunk.x + dx, playerChunk.z + dz));
++                }
++            }
++        }
++
 +        // Ensure output capacity to avoid resizing
 +        if (output instanceof ArrayList<LevelChunk> arrayList) {
 +            arrayList.ensureCapacity(size);
 +        }
-+
-+        // Pre-calculate player view rectangles instead of using a LongOpenHashSet
-+        List<ServerPlayer> players = this.level.players();
-+        int playerCount = players.size();
-+        int viewDistance = this.chunkMap.serverViewDistance;
-+
-+        // Store player view boundaries for efficient checking
-+        int[][] playerViewBounds = new int[playerCount][4]; // [minX, maxX, minZ, maxZ]
-+        for (int i = 0; i < playerCount; i++) {
-+            ChunkPos playerChunk = players.get(i).chunkPosition();
-+            playerViewBounds[i][0] = playerChunk.x - viewDistance;
-+            playerViewBounds[i][1] = playerChunk.x + viewDistance;
-+            playerViewBounds[i][2] = playerChunk.z - viewDistance;
-+            playerViewBounds[i][3] = playerChunk.z + viewDistance;
-+        }
  
-+        // Check each chunk against player view boundaries
          for (int i = 0; i < size; ++i) {
              final ServerChunkCache.ChunkAndHolder chunkAndHolder = raw[i];
              final LevelChunk levelChunk = chunkAndHolder.chunk();
--
++            final long chunkKey = levelChunk.getPos().toLong();
+ 
 -            if (!this.isChunkNearPlayer(chunkMap, levelChunk.getPos(), levelChunk)) {
 -                continue;
-+            final ChunkPos pos = levelChunk.getPos();
-+
-+            // Check if chunk is in any player's view distance
-+            for (int j = 0; j < playerCount; j++) {
-+                if (pos.x >= playerViewBounds[j][0] && pos.x <= playerViewBounds[j][1] &&
-+                    pos.z >= playerViewBounds[j][2] && pos.z <= playerViewBounds[j][3]) {
-+                    output.add(levelChunk);
-+                    break;
-+                }
++            // Check if the chunk is in the precomputed near chunks
++            if (nearChunkKeys.contains(chunkKey)) {
++                output.add(levelChunk);
              }
 -
 -            output.add(levelChunk);
