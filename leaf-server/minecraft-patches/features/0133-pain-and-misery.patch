@@ -1,0 +1,151 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sun, 23 Feb 2025 22:53:49 +0100
+Subject: [PATCH] pain and misery
+
+
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
+index be820c6093dd2ae7642b9bee11edf65e3a8d7242..855d4faf3659193afa6fc50c8f26fe9e2e01c18b 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
+@@ -555,6 +555,7 @@ public final class ChunkHolderManager {
+     }
+ 
+     <T> boolean addTicketAtLevel(final TicketType<T> type, final long chunk, final int level, final T identifier, final boolean lock) {
++
+         final long removeDelay = type.timeout <= 0 ? NO_TIMEOUT_MARKER : type.timeout;
+         if (level > MAX_TICKET_LEVEL) {
+             return false;
+@@ -563,7 +564,9 @@ public final class ChunkHolderManager {
+         final int chunkX = CoordinateUtils.getChunkX(chunk);
+         final int chunkZ = CoordinateUtils.getChunkZ(chunk);
+         final Ticket<T> ticket = new Ticket<>(type, level, identifier);
+-        ((ChunkSystemTicket<T>)(Object)ticket).moonrise$setRemoveDelay(removeDelay);
++        long timeout = type.timeout;
++        long absoluteExpiration = (timeout > 0) ? this.currentTick + timeout : NO_TIMEOUT_MARKER;
++        ((ChunkSystemTicket<T>) (Object) ticket).moonrise$setRemoveDelay(absoluteExpiration);
+ 
+         final ReentrantAreaLock.Node ticketLock = lock ? this.ticketLockArea.lock(chunkX, chunkZ) : null;
+         try {
+@@ -734,72 +737,75 @@ public final class ChunkHolderManager {
+     public void tick() {
+         ++this.currentTick;
+ 
+-        final int sectionShift = ((ChunkSystemServerLevel)this.world).moonrise$getRegionChunkShift();
++        final int sectionShift = ((ChunkSystemServerLevel) this.world).moonrise$getRegionChunkShift();
+ 
++        // Use absolute expiration check (no per-ticket writes)
+         final Predicate<Ticket<?>> expireNow = (final Ticket<?> ticket) -> {
+-            long removeDelay = ((ChunkSystemTicket<?>)(Object)ticket).moonrise$getRemoveDelay();
+-            if (removeDelay == NO_TIMEOUT_MARKER) {
+-                return false;
+-            }
+-            --removeDelay;
+-            ((ChunkSystemTicket<?>)(Object)ticket).moonrise$setRemoveDelay(removeDelay);
+-            return removeDelay <= 0L;
++            final long removeDelay = ((ChunkSystemTicket<?>) (Object) ticket).moonrise$getRemoveDelay();
++            return removeDelay != NO_TIMEOUT_MARKER && removeDelay <= this.currentTick;
+         };
+ 
+-        for (final PrimitiveIterator.OfLong iterator = this.sectionToChunkToExpireCount.keyIterator(); iterator.hasNext();) {
+-            final long sectionKey = iterator.nextLong();
++        // Precompute sections to process (minimize lock scope)
++        final LongArrayList sectionsToProcess = new LongArrayList();
++        for (final PrimitiveIterator.OfLong it = this.sectionToChunkToExpireCount.keyIterator(); it.hasNext();) {
++            sectionsToProcess.add(it.nextLong());
++        }
+ 
+-            if (!this.sectionToChunkToExpireCount.containsKey(sectionKey)) {
+-                // removed concurrently
+-                continue;
+-            }
++        // Process sections with minimal lock time
++        for (final LongIterator sectionIt = sectionsToProcess.iterator(); sectionIt.hasNext();) {
++            final long sectionKey = sectionIt.nextLong();
+ 
+-            final ReentrantAreaLock.Node ticketLock = this.ticketLockArea.lock(
+-                CoordinateUtils.getChunkX(sectionKey) << sectionShift,
+-                CoordinateUtils.getChunkZ(sectionKey) << sectionShift
+-            );
++            // Skip if section was concurrently removed
++            if (!this.sectionToChunkToExpireCount.containsKey(sectionKey)) continue;
++
++            final int sectionX = CoordinateUtils.getChunkX(sectionKey) << sectionShift;
++            final int sectionZ = CoordinateUtils.getChunkZ(sectionKey) << sectionShift;
+ 
++            final ReentrantAreaLock.Node ticketLock = this.ticketLockArea.lock(sectionX, sectionZ);
+             try {
+                 final Long2IntOpenHashMap chunkToExpireCount = this.sectionToChunkToExpireCount.get(sectionKey);
+-                if (chunkToExpireCount == null) {
+-                    // lost to some race
+-                    continue;
+-                }
+-
+-                for (final Iterator<Long2IntMap.Entry> iterator1 = chunkToExpireCount.long2IntEntrySet().fastIterator(); iterator1.hasNext();) {
+-                    final Long2IntMap.Entry entry = iterator1.next();
++                if (chunkToExpireCount == null || chunkToExpireCount.isEmpty()) continue;
+ 
++                // Batch remove expired tickets per chunk
++                final List<Long> chunksToRemove = new ArrayList<>();
++                for (final Long2IntMap.Entry entry : chunkToExpireCount.long2IntEntrySet()) {
+                     final long chunkKey = entry.getLongKey();
+-                    final int expireCount = entry.getIntValue();
+-
+                     final SortedArraySet<Ticket<?>> tickets = this.tickets.get(chunkKey);
+-                    final int levelBefore = getTicketLevelAt(tickets);
+-
+-                    final int sizeBefore = tickets.size();
+-                    tickets.removeIf(expireNow);
+-                    final int sizeAfter = tickets.size();
+-                    final int levelAfter = getTicketLevelAt(tickets);
++                    if (tickets == null) continue;
+ 
+-                    if (tickets.isEmpty()) {
+-                        this.tickets.remove(chunkKey);
+-                    }
+-                    if (levelBefore != levelAfter) {
+-                        this.updateTicketLevel(chunkKey, levelAfter);
++                    // Single-pass expiration check
++                    final List<Ticket<?>> expired = new ArrayList<>(2);
++                    for (final Ticket<?> ticket : tickets) {
++                        if (expireNow.test(ticket)) expired.add(ticket);
+                     }
+ 
+-                    final int newExpireCount = expireCount - (sizeBefore - sizeAfter);
++                    if (!expired.isEmpty()) {
++                        tickets.removeAll(expired);
++                        final int remaining = tickets.size();
+ 
+-                    if (newExpireCount == expireCount) {
+-                        continue;
+-                    }
++                        // Update ticket level if needed
++                        if (remaining == 0) {
++                            this.tickets.remove(chunkKey);
++                            chunksToRemove.add(chunkKey);
++                        } else {
++                            this.updateTicketLevel(chunkKey, getTicketLevelAt(tickets));
++                        }
+ 
+-                    if (newExpireCount != 0) {
+-                        entry.setValue(newExpireCount);
+-                    } else {
+-                        iterator1.remove();
++                        // Directly adjust expire count
++                        final int newCount = entry.getIntValue() - expired.size();
++                        if (newCount <= 0) {
++                            chunksToRemove.add(chunkKey);
++                        } else {
++                            entry.setValue(newCount);
++                        }
+                     }
+                 }
+ 
++                // Bulk remove empty entries
++                for (final long chunkKey : chunksToRemove) {
++                    chunkToExpireCount.remove(chunkKey);
++                }
++
+                 if (chunkToExpireCount.isEmpty()) {
+                     this.sectionToChunkToExpireCount.remove(sectionKey);
+                 }
