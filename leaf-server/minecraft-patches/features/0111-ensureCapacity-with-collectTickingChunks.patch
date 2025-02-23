@@ -5,45 +5,37 @@ Subject: [PATCH] ensureCapacity with collectTickingChunks
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index dd956431bb882daa70267685f2283d0c358336be..7425abf53152b49c554b0057f7c626b8e703f902 100644
+index dd956431bb882daa70267685f2283d0c358336be..a4449c3b9af13b15540708bade627f0cc3b3365f 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -573,17 +573,33 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -3,6 +3,7 @@ package net.minecraft.server.level;
+ import com.google.common.annotations.VisibleForTesting;
+ import com.mojang.datafixers.DataFixer;
+ import com.mojang.logging.LogUtils;
++import it.unimi.dsi.fastutil.longs.LongComparators;
+ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+ import java.io.IOException;
+ import java.nio.file.Path;
+@@ -573,17 +574,13 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
          final ServerChunkCache.ChunkAndHolder[] raw = tickingChunks.getRawDataUnchecked();
          final int size = tickingChunks.size();
  
 -        final ChunkMap chunkMap = this.chunkMap;
-+        // Precompute chunks near players using a LongSet for O(1) lookups
-+        final it.unimi.dsi.fastutil.longs.LongSet nearChunkKeys = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
-+        final int viewDistance = this.chunkMap.serverViewDistance;
-+        for (ServerPlayer player : this.level.players()) {
-+            ChunkPos playerChunk = player.chunkPosition();
-+            // Add all chunks within view distance around the player
-+            for (int dx = -viewDistance; dx <= viewDistance; ++dx) {
-+                for (int dz = -viewDistance; dz <= viewDistance; ++dz) {
-+                    nearChunkKeys.add(ChunkPos.asLong(playerChunk.x + dx, playerChunk.z + dz));
-+                }
-+            }
-+        }
-+
-+        // Ensure output capacity to avoid resizing
++        // Directly add all pre-filtered ticking chunks to output
 +        if (output instanceof ArrayList<LevelChunk> arrayList) {
 +            arrayList.ensureCapacity(size);
 +        }
  
          for (int i = 0; i < size; ++i) {
-             final ServerChunkCache.ChunkAndHolder chunkAndHolder = raw[i];
-             final LevelChunk levelChunk = chunkAndHolder.chunk();
-+            final long chunkKey = levelChunk.getPos().toLong();
- 
+-            final ServerChunkCache.ChunkAndHolder chunkAndHolder = raw[i];
+-            final LevelChunk levelChunk = chunkAndHolder.chunk();
+-
 -            if (!this.isChunkNearPlayer(chunkMap, levelChunk.getPos(), levelChunk)) {
 -                continue;
-+            // Check if the chunk is in the precomputed near chunks
-+            if (nearChunkKeys.contains(chunkKey)) {
-+                output.add(levelChunk);
-             }
+-            }
 -
 -            output.add(levelChunk);
++            output.add(raw[i].chunk());
          }
          // Paper end - chunk tick iteration optimisation
      }
