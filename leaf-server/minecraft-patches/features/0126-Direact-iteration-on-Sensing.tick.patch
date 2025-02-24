@@ -5,10 +5,10 @@ Subject: [PATCH] Direact iteration on Sensing.tick
 
 
 diff --git a/net/minecraft/world/entity/ai/sensing/Sensing.java b/net/minecraft/world/entity/ai/sensing/Sensing.java
-index cc25f5838aec5ed9fca2fb8b0322fafad9397a46..4ebc056788ab7e0afbfb7a55df1bbc7545f9b880 100644
+index cc25f5838aec5ed9fca2fb8b0322fafad9397a46..bb6a84fbe52fea80b977cf846467d05d0efbd2d5 100644
 --- a/net/minecraft/world/entity/ai/sensing/Sensing.java
 +++ b/net/minecraft/world/entity/ai/sensing/Sensing.java
-@@ -34,27 +34,32 @@ public class Sensing {
+@@ -34,27 +34,29 @@ public class Sensing {
  
      public void tick() {
          if (this.expiring == null) { // Gale - Petal - reduce line of sight updates
@@ -20,27 +20,32 @@ index cc25f5838aec5ed9fca2fb8b0322fafad9397a46..4ebc056788ab7e0afbfb7a55df1bbc75
              var expiringNow = this.expiring[this.nextToExpireIndex];
  
 -            expiringNow.forEach(this.seen::remove);
-+            // Leaf - optimize forEach with direct iteration to avoid lambda overhead
+-            expiringNow.clear();
+-
+-            this.currentCacheAddIndex++;
+-
+-            if (this.currentCacheAddIndex == this.expiring.length) {
+-                this.currentCacheAddIndex = 0;
++            // Leaf - Skip processing if there are no entities to expire
 +            int size = expiringNow.size();
-+            for (int i = 0; i < size; i++) {
-+                this.seen.remove(expiringNow.getInt(i));
-+            }
++            if (size > 0) {
++                // Leaf - optimize forEach with direct iteration to avoid lambda overhead
++                for (int i = 0; i < size; i++) {
++                    this.seen.remove(expiringNow.getInt(i));
++                }
+             }
+ 
+-            this.nextToExpireIndex++;
++            expiringNow.clear();
+ 
+-            if (this.nextToExpireIndex == this.expiring.length) {
+-                this.nextToExpireIndex = 0;
+-            }
++            // Leaf - replace conditional with modulo for better performance
++            this.currentCacheAddIndex = (this.currentCacheAddIndex + 1) % this.expiring.length;
 +
-             expiringNow.clear();
- 
-             this.currentCacheAddIndex++;
--
 +            // Leaf - replace conditional with modulo for better performance
-             if (this.currentCacheAddIndex == this.expiring.length) {
-                 this.currentCacheAddIndex = 0;
-             }
- 
-             this.nextToExpireIndex++;
--
-+            // Leaf - replace conditional with modulo for better performance
-             if (this.nextToExpireIndex == this.expiring.length) {
-                 this.nextToExpireIndex = 0;
-             }
++            this.nextToExpireIndex = (this.nextToExpireIndex + 1) % this.expiring.length;
 +            // Gale end - Petal - reduce line of sight updates
          }
 -        // Gale end - Petal - reduce line of sight updates
