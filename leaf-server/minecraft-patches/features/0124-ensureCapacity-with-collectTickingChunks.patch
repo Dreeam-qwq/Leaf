@@ -5,18 +5,10 @@ Subject: [PATCH] ensureCapacity with collectTickingChunks
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index dd956431bb882daa70267685f2283d0c358336be..a4449c3b9af13b15540708bade627f0cc3b3365f 100644
+index dd956431bb882daa70267685f2283d0c358336be..ca12b33b1297afcb211bf9a4e423ee11c1ec57e9 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -3,6 +3,7 @@ package net.minecraft.server.level;
- import com.google.common.annotations.VisibleForTesting;
- import com.mojang.datafixers.DataFixer;
- import com.mojang.logging.LogUtils;
-+import it.unimi.dsi.fastutil.longs.LongComparators;
- import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
- import java.io.IOException;
- import java.nio.file.Path;
-@@ -573,17 +574,13 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -573,17 +573,13 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
          final ServerChunkCache.ChunkAndHolder[] raw = tickingChunks.getRawDataUnchecked();
          final int size = tickingChunks.size();
  
