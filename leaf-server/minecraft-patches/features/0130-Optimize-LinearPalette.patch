@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Taiyou06 <kaandindar21@gmail.com>
 Date: Fri, 21 Feb 2025 18:05:09 +0100
-Subject: [PATCH] Optimize LinearPalette.getSerializedSize
+Subject: [PATCH] Optimize LinearPalette
 
 
 diff --git a/net/minecraft/world/level/chunk/LinearPalette.java b/net/minecraft/world/level/chunk/LinearPalette.java
-index 2073f6ff41aa570102621d183ee890b076267d54..e5821aee797dc0ccbabd46de2dedf0d775de2a13 100644
+index 2073f6ff41aa570102621d183ee890b076267d54..092e985e92a8ae8f1a736f780b5110b33f2e3545 100644
 --- a/net/minecraft/world/level/chunk/LinearPalette.java
 +++ b/net/minecraft/world/level/chunk/LinearPalette.java
 @@ -1,5 +1,6 @@
@@ -24,7 +24,7 @@ index 2073f6ff41aa570102621d183ee890b076267d54..e5821aee797dc0ccbabd46de2dedf0d7
      private final PaletteResize<T> resizeHandler;
      private final int bits;
      private int size;
-@@ -23,24 +26,31 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+@@ -23,24 +26,34 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
  
      private LinearPalette(IdMap<T> registry, int bits, PaletteResize<T> resizeHandler, List<T> values) {
          this.registry = registry;
@@ -56,11 +56,14 @@ index 2073f6ff41aa570102621d183ee890b076267d54..e5821aee797dc0ccbabd46de2dedf0d7
          this.resizeHandler = resizeHandler;
          this.bits = bits;
          this.size = size;
-+        this.byteSizes = Arrays.stream(idCache).map(VarInt::getByteSize).toArray();
++        this.byteSizes = new int[idCache.length];
++        for (int i = 0; i < idCache.length; i++) {
++            this.byteSizes[i] = VarInt.getByteSize(idCache[i]);
++        }
      }
  
      public static <A> Palette<A> create(int bits, IdMap<A> registry, PaletteResize<A> resizeHandler, List<A> values) {
-@@ -58,6 +68,9 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+@@ -58,6 +71,9 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
          int ix = this.size;
          if (ix < this.values.length) {
              this.values[ix] = state;
@@ -70,7 +73,7 @@ index 2073f6ff41aa570102621d183ee890b076267d54..e5821aee797dc0ccbabd46de2dedf0d7
              this.size++;
              return ix;
          } else {
-@@ -88,29 +101,28 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+@@ -88,29 +104,28 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
      @Override
      public void read(FriendlyByteBuf buffer) {
          this.size = buffer.readVarInt();
@@ -108,7 +111,7 @@ index 2073f6ff41aa570102621d183ee890b076267d54..e5821aee797dc0ccbabd46de2dedf0d7
          return byteSize;
      }
  
-@@ -121,6 +133,13 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+@@ -121,6 +136,13 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
  
      @Override
      public Palette<T> copy(PaletteResize<T> resizeHandler) {
