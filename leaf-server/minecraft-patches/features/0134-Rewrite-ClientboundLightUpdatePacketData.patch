@@ -5,7 +5,7 @@ Subject: [PATCH] Rewrite ClientboundLightUpdatePacketData
 
 
 diff --git a/net/minecraft/network/protocol/game/ClientboundLightUpdatePacketData.java b/net/minecraft/network/protocol/game/ClientboundLightUpdatePacketData.java
-index a0b54f3a3d11e0f0f1cb806406a870ba36da8f07..aae9609df45d7bfef95c56f183655f2865900e82 100644
+index a0b54f3a3d11e0f0f1cb806406a870ba36da8f07..2ef45811f3a3a763f389e8e6e9eeaf255cf668e6 100644
 --- a/net/minecraft/network/protocol/game/ClientboundLightUpdatePacketData.java
 +++ b/net/minecraft/network/protocol/game/ClientboundLightUpdatePacketData.java
 @@ -1,8 +1,8 @@
@@ -27,8 +27,8 @@ index a0b54f3a3d11e0f0f1cb806406a870ba36da8f07..aae9609df45d7bfef95c56f183655f28
 +    private static final byte[][] EMPTY_ARRAY = new byte[0][];
 +
 +    // Pre-sized arrays to avoid dynamic resizing
-+    private static final ThreadLocal<byte[][]> SKY_BUFFER = ThreadLocal.withInitial(() -> new byte[16][]);
-+    private static final ThreadLocal<byte[][]> BLOCK_BUFFER = ThreadLocal.withInitial(() -> new byte[16][]);
++    private static final ThreadLocal<byte[][]> SKY_BUFFER = ThreadLocal.withInitial(() -> new byte[256][]);
++    private static final ThreadLocal<byte[][]> BLOCK_BUFFER = ThreadLocal.withInitial(() -> new byte[256][]);
 +
 +    // Pre-cached BitSets with fixed size
      private final BitSet skyYMask;
