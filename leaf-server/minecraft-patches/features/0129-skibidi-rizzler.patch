@@ -1,0 +1,174 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Tue, 25 Feb 2025 12:30:05 +0100
+Subject: [PATCH] skibidi rizzler
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index eec7d7981d6b508edf6937783cc41d73e02b0953..3bf2edf57807e4f9a1a45119223fd04c4bc481aa 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -1351,20 +1351,45 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     }
+ 
+     public void applyEffectsFromBlocks(Vec3 oldPosition, Vec3 position) {
+-        if (this.isAffectedByBlocks()) {
+-            if (this.onGround()) {
+-                BlockPos onPosLegacy = this.getOnPosLegacy();
+-                BlockState blockState = this.level().getBlockState(onPosLegacy);
++        // Early return if entity isn't affected by blocks
++        if (!this.isAffectedByBlocks()) {
++            return;
++        }
++
++        // Handle ground interaction without creating new BlockPos objects if possible
++        if (this.onGround()) {
++            // Cache the retrieved BlockPos and BlockState to avoid multiple lookups
++            BlockPos onPosLegacy = this.getOnPosLegacy();
++            BlockState blockState = this.level().getBlockState(onPosLegacy);
++            // Only call stepOn if the block actually has behavior (optimization)
++            if (blockState.getBlock() != Blocks.AIR) {
+                 blockState.getBlock().stepOn(this.level(), onPosLegacy, blockState, this);
+             }
++        }
++
++        // Add the current movement to the list
++        this.movementThisTick.add(new Entity.Movement(oldPosition, position));
++
++        // Avoid unnecessary copying of the list
++        boolean isInFireOrLava = false;
++
++        // Process the inside blocks only if the entity can be affected
++        if (!this.isRemoved() && !this.noPhysics) {
++            // Check inside blocks - this is the expensive operation according to the profiler
++            this.checkInsideBlocks(this.movementThisTick, this.blocksInside);
++
++            // Optimize the "any" check - exit as soon as we find fire or lava
++            for (BlockState state : this.blocksInside) {
++                if (state.is(BlockTags.FIRE) || state.is(Blocks.LAVA)) {
++                    isInFireOrLava = true;
++                    break;
++                }
++            }
+ 
+-            this.movementThisTick.add(new Entity.Movement(oldPosition, position));
+-            List<Entity.Movement> list = List.copyOf(this.movementThisTick);
+-            this.movementThisTick.clear();
+-            this.checkInsideBlocks(list, this.blocksInside);
+-            boolean flag = Iterables.any(this.blocksInside, state -> state.is(BlockTags.FIRE) || state.is(Blocks.LAVA));
+             this.blocksInside.clear();
+-            if (!flag && this.isAlive()) {
++
++            // Handle fire logic
++            if (!isInFireOrLava && this.isAlive()) {
+                 if (this.remainingFireTicks <= 0) {
+                     this.setRemainingFireTicks(-this.getFireImmuneTicks());
+                 }
+@@ -1373,10 +1398,14 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+                     this.playEntityOnFireExtinguishedSound();
+                 }
+             }
++        }
+ 
+-            if (this.isOnFire() && (this.isInPowderSnow || this.isInWaterRainOrBubble())) {
+-                this.setRemainingFireTicks(-this.getFireImmuneTicks());
+-            }
++        // Clear the movement list after processing
++        this.movementThisTick.clear();
++
++        // Handle extinguishing fire
++        if (this.isOnFire() && (this.isInPowderSnow || this.isInWaterRainOrBubble())) {
++            this.setRemainingFireTicks(-this.getFireImmuneTicks());
+         }
+     }
+ 
+@@ -1708,45 +1737,57 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     }
+ 
+     private void checkInsideBlocks(List<Entity.Movement> movements, Set<BlockState> blocksInside) {
+-        if (this.isAffectedByBlocks()) {
+-            LongSet set = this.visitedBlocks;
+-
+-            for (Entity.Movement movement : movements) {
+-                Vec3 vec3 = movement.from();
+-                Vec3 vec31 = movement.to();
+-                AABB aabb = this.makeBoundingBox(vec31).deflate(1.0E-5F);
++        if (!this.isAffectedByBlocks()) {
++            return;
++        }
+ 
+-                for (BlockPos blockPos : BlockGetter.boxTraverseBlocks(vec3, vec31, aabb)) {
+-                    if (!this.isAlive()) {
+-                        return;
+-                    }
++        LongSet visitedBlocks = this.visitedBlocks;
++        visitedBlocks.clear();
++        Level level = this.level();
++        boolean isAlive = this.isAlive();
++        if (movements.isEmpty() || !isAlive) {
++            return;
++        }
++        for (Entity.Movement movement : movements) {
++            Vec3 vec3 = movement.from();
++            Vec3 vec31 = movement.to();
++            AABB aabb = this.makeBoundingBox(vec31).deflate(1.0E-5F);
+ 
+-                    BlockState blockState = this.level().getBlockState(blockPos);
+-                    if (!blockState.isAir() && set.add(blockPos.asLong())) {
+-                        try {
+-                            VoxelShape entityInsideCollisionShape = blockState.getEntityInsideCollisionShape(this.level(), blockPos);
+-                            if (entityInsideCollisionShape != Shapes.block()
+-                                && !this.collidedWithShapeMovingFrom(vec3, vec31, blockPos, entityInsideCollisionShape)) {
+-                                continue;
+-                            }
++            for (BlockPos blockPos : BlockGetter.boxTraverseBlocks(vec3, vec31, aabb)) {
++                if (!isAlive) {
++                    return;
++                }
+ 
+-                            blockState.entityInside(this.level(), blockPos, this);
+-                            this.onInsideBlock(blockState);
+-                        } catch (Throwable var16) {
+-                            CrashReport crashReport = CrashReport.forThrowable(var16, "Colliding entity with block");
+-                            CrashReportCategory crashReportCategory = crashReport.addCategory("Block being collided with");
+-                            CrashReportCategory.populateBlockDetails(crashReportCategory, this.level(), blockPos, blockState);
+-                            CrashReportCategory crashReportCategory1 = crashReport.addCategory("Entity being checked for collision");
+-                            this.fillCrashReportCategory(crashReportCategory1);
+-                            throw new ReportedException(crashReport);
+-                        }
++                // Use raw coordinate encoding to avoid excessive object creation
++                long posLong = blockPos.asLong();
++                if (!visitedBlocks.add(posLong)) {
++                    continue;
++                }
++                BlockState blockState = level.getBlockState(blockPos);
++                if (blockState.isAir()) {
++                    continue;
++                }
+ 
+-                        blocksInside.add(blockState);
++                try {
++                    VoxelShape entityInsideCollisionShape = blockState.getEntityInsideCollisionShape(level, blockPos);
++                    if (entityInsideCollisionShape != Shapes.block() &&
++                        !this.collidedWithShapeMovingFrom(vec3, vec31, blockPos, entityInsideCollisionShape)) {
++                        continue;
+                     }
++
++                    blockState.entityInside(level, blockPos, this);
++                    this.onInsideBlock(blockState);
++
++                    blocksInside.add(blockState);
++                } catch (Throwable var16) {
++                    CrashReport crashReport = CrashReport.forThrowable(var16, "Colliding entity with block");
++                    CrashReportCategory crashReportCategory = crashReport.addCategory("Block being collided with");
++                    CrashReportCategory.populateBlockDetails(crashReportCategory, level, blockPos, blockState);
++                    CrashReportCategory crashReportCategory1 = crashReport.addCategory("Entity being checked for collision");
++                    this.fillCrashReportCategory(crashReportCategory1);
++                    throw new ReportedException(crashReport);
+                 }
+             }
+-
+-            set.clear();
+         }
+     }
+ 
