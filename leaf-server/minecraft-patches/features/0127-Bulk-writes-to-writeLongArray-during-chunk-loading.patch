@@ -5,10 +5,10 @@ Subject: [PATCH] Bulk writes to writeLongArray during chunk loading
 
 
 diff --git a/net/minecraft/network/FriendlyByteBuf.java b/net/minecraft/network/FriendlyByteBuf.java
-index 7c2df09decf90f691d35516a2eb74e97370f6a37..c5210345adfd3fe8385bf415bdf5b07eaffef24d 100644
+index abb0141426fd716e79a947b9498a8351daa342fc..838a7d64e717759f506e64c74eb76eea05f72811 100644
 --- a/net/minecraft/network/FriendlyByteBuf.java
 +++ b/net/minecraft/network/FriendlyByteBuf.java
-@@ -337,9 +337,30 @@ public class FriendlyByteBuf extends ByteBuf {
+@@ -341,9 +341,30 @@ public class FriendlyByteBuf extends ByteBuf {
  
      public FriendlyByteBuf writeLongArray(long[] array) {
          this.writeVarInt(array.length);
