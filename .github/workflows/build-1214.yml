@@ -3,15 +3,19 @@ name: Build Leaf 1.21.4
 on:
   push:
     branches: [ "ver/1.21.4" ]
-  pull_request:
-    branches: [ "ver/1.21.4" ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-8vcpu-ubuntu-2204
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+      GRAALVM_ARGS: "-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector"
+
     steps:
-      - uses: actions/checkout@main
-      - name: Set up JDK
+      - name: Checkout repository
+        uses: actions/checkout@main
+
+      - name: Set up GraalVM JDK 21
         uses: graalvm/setup-graalvm@main
         with:
           java-version: 21
@@ -20,23 +24,27 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - name: Configure Git
-        run: git config --global user.email "no-reply@github.com" && git config --global user.name "Github Actions"
+        run: |
+          git config --global user.email "no-reply@github.com"
+          git config --global user.name "Github Actions"
 
       - name: Apply patches
-        run: ./gradlew -Dorg.gradle.jvmargs="-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector" applyAllPatches --stacktrace --no-daemon
-      - name: Create MojmapPaperclipJar
-        run: ./gradlew -Dorg.gradle.jvmargs="-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector" createMojmapPaperclipJar --stacktrace --no-daemon
-      - name: Create ReobfPaperclipJar
-        run: ./gradlew -Dorg.gradle.jvmargs="-Dgraal.CompilerConfiguration=enterprise -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true --add-modules jdk.incubator.vector" -Dpaperweight.debug=true createReobfPaperclipJar --stacktrace --no-daemon
+        run: ./gradlew -Dorg.gradle.jvmargs="${{ env.GRAALVM_ARGS }}" applyAllPatches --stacktrace --no-daemon
 
-      - name: Rename Paperclip Jar
+      - name: Create MojmapPaperclipJar
+        run: ./gradlew -Dorg.gradle.jvmargs="${{ env.GRAALVM_ARGS }}" createMojmapPaperclipJar --stacktrace --no-daemon
+
+      - name: Create ReobfPaperclipJar
+        run: ./gradlew -Dorg.gradle.jvmargs="${{ env.GRAALVM_ARGS }}" -Dpaperweight.debug=true createReobfPaperclipJar --stacktrace --no-daemon
+
+      - name: Rename Paperclip JARs
         run: |
-          mv leaf-server/build/libs/leaf-paperclip-1.21.4-R0.1-SNAPSHOT-mojmap.jar ./leaf-1.21.4-mojmap.jar
-          mv leaf-server/build/libs/leaf-paperclip-1.21.4-R0.1-SNAPSHOT-reobf.jar ./leaf-1.21.4-reobf.jar
+          mv leaf-server/build/libs/leaf-paperclip-1.21.4-R0.1-SNAPSHOT-mojmap.jar ./leaf-1.21.4-${{ env.BUILD_NUMBER }}-mojmap.jar
+          mv leaf-server/build/libs/leaf-paperclip-1.21.4-R0.1-SNAPSHOT-reobf.jar ./leaf-1.21.4-${{ env.BUILD_NUMBER }}-reobf.jar
 
       - name: Publish API
-        if: github.event_name != 'pull_request'
         continue-on-error: true
         run: |
           echo "REPO_USER=${{ secrets.REPO_USER }}" >> $GITHUB_ENV
@@ -44,27 +52,25 @@ jobs:
           echo "REPO_PASSWORD=${{ secrets.REPO_PASSWORD }}" >> $GITHUB_ENV
           export REPO_PASSWORD=${{ secrets.REPO_PASSWORD }}
           ./gradlew publish
-          # TODO
+          # Uncomment when ready to implement:
           # ./gradlew publishDevBundlePublicationToLeafRepository -PpublishDevBundle=true
 
-      - name: Upload Leaf
+      - name: Upload Leaf as build artifact
         uses: actions/upload-artifact@main
         with:
           name: Leaf 1.21.4
           path: ./leaf-1.21.4-*.jar
 
-      - name: Rename Leaf Jar
-        run: |
-          mv ./leaf-1.21.4-mojmap.jar ./leaf-1.21.4.jar
+      - name: Prepare jar for release
+        run: mv ./leaf-1.21.4-${{ env.BUILD_NUMBER }}-mojmap.jar ./leaf-1.21.4-${{ env.BUILD_NUMBER }}.jar
 
-      # TODO: marvinpinto/action-automatic-releases is archived, need to find new one
-      # Notes: create releases every time, similar changelogs with this, all commits for changelogs
       - name: Release Leaf
-        if: github.event_name != 'pull_request'
+        # TODO: Replace with a maintained action as marvinpinto/action-automatic-releases is archived
+        # Recommended alternatives: softprops/action-gh-release or ncipollo/release-action
         uses: marvinpinto/action-automatic-releases@master
         with:
           title: "Leaf 1.21.4"
           automatic_release_tag: "ver-1.21.4"
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          files: "./leaf-1.21.4.jar"
+          files: "./leaf-1.21.4-${{ env.BUILD_NUMBER }}.jar"
           prerelease: false
