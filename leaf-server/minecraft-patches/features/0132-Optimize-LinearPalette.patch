@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize LinearPalette
 
 
 diff --git a/net/minecraft/world/level/chunk/LinearPalette.java b/net/minecraft/world/level/chunk/LinearPalette.java
-index 2073f6ff41aa570102621d183ee890b076267d54..092e985e92a8ae8f1a736f780b5110b33f2e3545 100644
+index 2073f6ff41aa570102621d183ee890b076267d54..f82e55d70c9e7d3549f0603fc493a4d9bf4679e7 100644
 --- a/net/minecraft/world/level/chunk/LinearPalette.java
 +++ b/net/minecraft/world/level/chunk/LinearPalette.java
 @@ -1,5 +1,6 @@
@@ -111,11 +111,21 @@ index 2073f6ff41aa570102621d183ee890b076267d54..092e985e92a8ae8f1a736f780b5110b3
          return byteSize;
      }
  
-@@ -121,6 +136,13 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+@@ -121,6 +136,23 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
  
      @Override
      public Palette<T> copy(PaletteResize<T> resizeHandler) {
 -        return new LinearPalette<>(this.registry, (T[])((Object[])this.values.clone()), resizeHandler, this.bits, this.size);
++        // Optimization: Only clone arrays if the size is above a certain threshold
++        // For very small palettes, copying is unnecessarily expensive
++        if (this.size <= 4) {
++            T[] valuesCopy = (T[]) new Object[this.values.length];
++            System.arraycopy(this.values, 0, valuesCopy, 0, this.size);
++            int[] idCacheCopy = new int[this.idCache.length];
++            System.arraycopy(this.idCache, 0, idCacheCopy, 0, this.size);
++            return new LinearPalette<>(this.registry, valuesCopy, idCacheCopy, resizeHandler, this.bits, this.size);
++        }
++
 +        return new LinearPalette<>(
 +            this.registry,
 +            (T[]) this.values.clone(),
