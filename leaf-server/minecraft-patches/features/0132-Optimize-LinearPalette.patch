@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize LinearPalette
 
 
 diff --git a/net/minecraft/world/level/chunk/LinearPalette.java b/net/minecraft/world/level/chunk/LinearPalette.java
-index 2073f6ff41aa570102621d183ee890b076267d54..f82e55d70c9e7d3549f0603fc493a4d9bf4679e7 100644
+index 2073f6ff41aa570102621d183ee890b076267d54..459b6adca18868354374d00f3da906395fb474ab 100644
 --- a/net/minecraft/world/level/chunk/LinearPalette.java
 +++ b/net/minecraft/world/level/chunk/LinearPalette.java
 @@ -1,5 +1,6 @@
@@ -111,25 +111,56 @@ index 2073f6ff41aa570102621d183ee890b076267d54..f82e55d70c9e7d3549f0603fc493a4d9
          return byteSize;
      }
  
-@@ -121,6 +136,23 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
+@@ -121,6 +136,54 @@ public class LinearPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pat
  
      @Override
      public Palette<T> copy(PaletteResize<T> resizeHandler) {
 -        return new LinearPalette<>(this.registry, (T[])((Object[])this.values.clone()), resizeHandler, this.bits, this.size);
-+        // Optimization: Only clone arrays if the size is above a certain threshold
-+        // For very small palettes, copying is unnecessarily expensive
++        // Special case for empty palette - fastest possible return
++        if (this.size == 0) {
++            return new LinearPalette<>(this.registry, (T[]) new Object[1], new int[1], resizeHandler, this.bits, 0);
++        }
++
++        // For small sizes, allocate exact-sized arrays and use direct assignment
 +        if (this.size <= 4) {
-+            T[] valuesCopy = (T[]) new Object[this.values.length];
-+            System.arraycopy(this.values, 0, valuesCopy, 0, this.size);
-+            int[] idCacheCopy = new int[this.idCache.length];
-+            System.arraycopy(this.idCache, 0, idCacheCopy, 0, this.size);
++            @SuppressWarnings("unchecked")
++            T[] valuesCopy = (T[]) new Object[this.size];
++            int[] idCacheCopy = new int[this.size];
++
++            // Unrolled loop eliminates loop overhead for small arrays
++            switch (this.size) {
++                case 4:
++                    valuesCopy[3] = this.values[3];
++                    idCacheCopy[3] = this.idCache[3];
++                    // Fall through
++                case 3:
++                    valuesCopy[2] = this.values[2];
++                    idCacheCopy[2] = this.idCache[2];
++                    // Fall through
++                case 2:
++                    valuesCopy[1] = this.values[1];
++                    idCacheCopy[1] = this.idCache[1];
++                    // Fall through
++                case 1:
++                    valuesCopy[0] = this.values[0];
++                    idCacheCopy[0] = this.idCache[0];
++            }
++
 +            return new LinearPalette<>(this.registry, valuesCopy, idCacheCopy, resizeHandler, this.bits, this.size);
 +        }
 +
++        // For larger arrays, use optimized bulk operations
++        @SuppressWarnings("unchecked")
++        T[] valuesCopy = (T[]) new Object[this.size];
++        int[] idCacheCopy = new int[this.size];
++
++        System.arraycopy(this.values, 0, valuesCopy, 0, this.size);
++        System.arraycopy(this.idCache, 0, idCacheCopy, 0, this.size);
++
 +        return new LinearPalette<>(
 +            this.registry,
-+            (T[]) this.values.clone(),
-+            Arrays.copyOf(this.idCache, this.idCache.length),
++            valuesCopy,
++            idCacheCopy,
 +            resizeHandler,
 +            this.bits,
 +            this.size
